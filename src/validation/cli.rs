@@ -4,7 +4,7 @@ use crate::validation::{HardwareReportValidator, ValidationConfig, ValidationRes
 use crate::hardware::{HardwareReport, PrivacyLevel};
 use crate::LxHwError;
 use clap::Args;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::fs;
 
 /// CLI arguments for validation command
@@ -153,7 +153,7 @@ async fn validate_single_file(
 
 /// Print validation results in text format
 fn print_text_results(
-    file_path: &PathBuf,
+    file_path: &Path,
     result: &ValidationResult,
     args: &ValidateArgs,
 ) -> Result<(), LxHwError> {
@@ -193,7 +193,7 @@ fn print_text_results(
 
 /// Print validation results in JSON format
 fn print_json_results(
-    file_path: &PathBuf,
+    file_path: &Path,
     result: &ValidationResult,
     _args: &ValidateArgs,
 ) -> Result<(), LxHwError> {
@@ -218,7 +218,7 @@ fn print_json_results(
 
 /// Print validation results in YAML format
 fn print_yaml_results(
-    file_path: &PathBuf,
+    file_path: &Path,
     result: &ValidationResult,
     _args: &ValidateArgs,
 ) -> Result<(), LxHwError> {
@@ -242,7 +242,7 @@ fn print_yaml_results(
 }
 
 /// Parse report file content based on extension or content detection
-fn parse_report_file(content: &str, file_path: &PathBuf) -> Result<HardwareReport, LxHwError> {
+fn parse_report_file(content: &str, file_path: &Path) -> Result<HardwareReport, LxHwError> {
     match file_path.extension().and_then(|ext| ext.to_str()) {
         Some("json") => serde_json::from_str(content)
             .map_err(|e| LxHwError::InvalidInput {

@@ -126,6 +126,12 @@ pub struct LsusbSummary {
 
 pub struct LsusbDetector;
 
+impl Default for LsusbDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LsusbDetector {
     pub fn new() -> Self {
         Self

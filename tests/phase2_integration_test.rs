@@ -174,5 +174,4 @@ async fn test_phase2_hardware_detection_framework() {
     println!("\n=== Phase 2 Integration Test Complete ===");
     
     // Test always passes - we verify graceful handling of various real-world scenarios
-    assert!(true);
 }

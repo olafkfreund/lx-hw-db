@@ -38,7 +38,7 @@ impl PrivacyManager {
     /// Anonymize a hardware identifier using HMAC-SHA256
     pub fn anonymize_identifier(&mut self, identifier: &str) -> Result<String> {
         let salt = self.salt_generator.get_current_salt()?;
-        let key = hmac::Key::new(hmac::HMAC_SHA256, &salt);
+        let key = hmac::Key::new(hmac::HMAC_SHA256, salt);
         let signature = hmac::sign(&key, identifier.as_bytes());
         Ok(hex::encode(signature.as_ref()))
     }

@@ -222,7 +222,7 @@ async fn test_parse_complete_dmidecode_output() {
         assert_eq!(baseboard.version, Some("x.x".to_string()));
         
         // Test Processor information
-        assert!(data.processors.len() > 0);
+        assert!(!data.processors.is_empty());
         let processor = &data.processors[0];
         assert_eq!(processor.socket_designation, "AM4");
         assert_eq!(processor.manufacturer, "Advanced Micro Devices, Inc.");

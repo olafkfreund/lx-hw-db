@@ -26,16 +26,16 @@ impl<'a> IndexBuilder<'a> {
             println!("Building indices from {} reports...", reports.len());
         }
 
-        let mut indices = IndexCollection::default();
-
         // Build each index type
-        indices.by_vendor = self.build_vendor_index(reports)?;
-        indices.by_component = self.build_component_index(reports)?;
-        indices.by_kernel = self.build_kernel_index(reports)?;
-        indices.by_distribution = self.build_distribution_index(reports)?;
-        indices.search_terms = self.build_search_terms_index(reports)?;
-        indices.compatibility_matrix = self.build_compatibility_matrix(reports)?;
-        indices.statistics = self.build_statistics(reports)?;
+        let indices = IndexCollection {
+            by_vendor: self.build_vendor_index(reports)?,
+            by_component: self.build_component_index(reports)?,
+            by_kernel: self.build_kernel_index(reports)?,
+            by_distribution: self.build_distribution_index(reports)?,
+            search_terms: self.build_search_terms_index(reports)?,
+            compatibility_matrix: self.build_compatibility_matrix(reports)?,
+            statistics: self.build_statistics(reports)?,
+        };
 
         if self.config.verbose {
             println!("✅ All indices built successfully");
@@ -396,9 +396,11 @@ impl<'a> IndexBuilder<'a> {
             println!("📈 Building statistics...");
         }
 
-        let mut stats = Statistics::default();
-        stats.total_reports = reports.len();
-        stats.last_updated = Utc::now();
+        let mut stats = Statistics {
+            total_reports: reports.len(),
+            last_updated: Utc::now(),
+            ..Default::default()
+        };
 
         // Count unique systems
         let mut unique_systems = HashSet::new();
@@ -549,7 +551,7 @@ impl<'a> IndexBuilder<'a> {
                 vendor: vendor.clone(),
                 model: model.clone(),
                 report_count: count,
-                avg_compatibility: model_scores.get(&(vendor, model)).unwrap_or(&0.0).clone(),
+                avg_compatibility: *model_scores.get(&(vendor, model)).unwrap_or(&0.0),
             })
             .collect();
 

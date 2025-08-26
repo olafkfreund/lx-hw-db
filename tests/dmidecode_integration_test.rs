@@ -108,5 +108,4 @@ async fn test_dmidecode_real_execution() {
     }
     
     // The test passes as long as we don't panic - the detector should handle various real-world scenarios gracefully
-    assert!(true);
 }

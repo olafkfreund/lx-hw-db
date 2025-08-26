@@ -263,6 +263,12 @@ pub struct InxiSummary {
 
 pub struct InxiDetector;
 
+impl Default for InxiDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InxiDetector {
     pub fn new() -> Self {
         Self
@@ -756,7 +762,7 @@ impl HardwareDetector for InxiDetector {
             return Ok(DetectionResult {
                 tool_name: self.name().to_string(),
                 success: false,
-                data: DetectionData::Inxi(InxiData::default()),
+                data: DetectionData::Inxi(Box::default()),
                 errors: vec![format!("inxi execution failed: {}", error_msg)],
             });
         }
@@ -766,7 +772,7 @@ impl HardwareDetector for InxiDetector {
             return Ok(DetectionResult {
                 tool_name: self.name().to_string(),
                 success: false,
-                data: DetectionData::Inxi(InxiData::default()),
+                data: DetectionData::Inxi(Box::default()),
                 errors: vec!["Empty output from inxi".to_string()],
             });
         }
@@ -789,7 +795,7 @@ impl HardwareDetector for InxiDetector {
                 return Ok(DetectionResult {
                     tool_name: self.name().to_string(),
                     success: false,
-                    data: DetectionData::Inxi(InxiData::default()),
+                    data: DetectionData::Inxi(Box::default()),
                     errors: vec![format!("Failed to parse inxi output: {}", e)],
                 });
             }
@@ -805,7 +811,7 @@ impl HardwareDetector for InxiDetector {
         Ok(DetectionResult {
             tool_name: self.name().to_string(),
             success: true,
-            data: DetectionData::Inxi(data),
+            data: DetectionData::Inxi(Box::new(data)),
             errors,
         })
     }

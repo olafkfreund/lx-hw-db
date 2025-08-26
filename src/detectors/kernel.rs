@@ -91,12 +91,7 @@ impl KernelSupportVerifier {
             "/boot/config".to_string(),
         ];
 
-        for path in possible_paths {
-            if Path::new(&path).exists() {
-                return Some(path);
-            }
-        }
-        None
+        possible_paths.into_iter().find(|path| Path::new(path).exists())
     }
 
     /// Verify support for a specific PCI device

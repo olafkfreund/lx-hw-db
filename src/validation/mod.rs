@@ -265,7 +265,7 @@ pub fn validate_reports(
 ) -> Vec<ValidationResult> {
     let validator = config
         .map(HardwareReportValidator::with_config)
-        .unwrap_or_else(HardwareReportValidator::new);
+        .unwrap_or_default();
     
     reports
         .iter()

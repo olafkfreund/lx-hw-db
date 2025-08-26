@@ -209,7 +209,7 @@ impl KernelSourceAnalyzer {
 
     /// Extract driver name from file path
     fn extract_driver_name(&self, file_path: &str) -> String {
-        if let Some(filename) = file_path.split('/').last() {
+        if let Some(filename) = file_path.split('/').next_back() {
             filename.trim_end_matches(".c").to_string()
         } else {
             "unknown".to_string()

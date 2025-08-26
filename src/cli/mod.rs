@@ -131,6 +131,12 @@ pub enum ConfigCommands {
 /// CLI implementation for handling command execution
 pub struct CliHandler;
 
+impl Default for CliHandler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CliHandler {
     /// Create a new CLI handler
     pub fn new() -> Self {
@@ -198,6 +204,7 @@ impl CliHandler {
     }
 
     /// Handle the detect command
+    #[allow(clippy::too_many_arguments)]
     async fn handle_detect(
         &self,
         privacy: PrivacyLevel,
@@ -458,7 +465,7 @@ impl CliHandler {
                     .map_err(|e| LxHwError::SerializationError(e.to_string()))?;
 
                 std::fs::write(&output, config_toml)
-                    .map_err(|e| LxHwError::IoError(e))?;
+                    .map_err(LxHwError::IoError)?;
 
                 println!("Configuration file generated: {:?}", output);
                 Ok(())

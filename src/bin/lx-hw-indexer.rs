@@ -7,7 +7,7 @@
 use clap::{Parser, Subcommand};
 use lx_hw_detect::indexer::{HardwareIndexer, IndexerConfig};
 use lx_hw_detect::errors::Result;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(
@@ -236,7 +236,7 @@ async fn generate_site(
 }
 
 /// Generate the main index.html file
-fn generate_index_html(output: &PathBuf, verbose: bool) -> Result<()> {
+fn generate_index_html(output: &Path, verbose: bool) -> Result<()> {
     if verbose {
         println!("   Generating index.html...");
     }
@@ -471,7 +471,7 @@ fn generate_index_html(output: &PathBuf, verbose: bool) -> Result<()> {
 }
 
 /// Generate CSS styles
-fn generate_css_styles(output: &PathBuf, verbose: bool) -> Result<()> {
+fn generate_css_styles(output: &Path, verbose: bool) -> Result<()> {
     if verbose {
         println!("   Generating styles.css...");
     }
@@ -482,7 +482,7 @@ fn generate_css_styles(output: &PathBuf, verbose: bool) -> Result<()> {
 }
 
 /// Copy web assets if they exist
-fn copy_web_assets(output: &PathBuf, verbose: bool) -> Result<()> {
+fn copy_web_assets(output: &Path, verbose: bool) -> Result<()> {
     if verbose {
         println!("   Copying web assets...");
     }
@@ -494,7 +494,7 @@ fn copy_web_assets(output: &PathBuf, verbose: bool) -> Result<()> {
         if js_dir.exists() {
             for entry in std::fs::read_dir(js_dir)? {
                 let entry = entry?;
-                if entry.path().extension().map_or(false, |ext| ext == "js") {
+                if entry.path().extension().is_some_and(|ext| ext == "js") {
                     let dest = output.join("js").join(entry.file_name());
                     std::fs::copy(entry.path(), dest)?;
                 }
@@ -506,7 +506,7 @@ fn copy_web_assets(output: &PathBuf, verbose: bool) -> Result<()> {
         if css_dir.exists() {
             for entry in std::fs::read_dir(css_dir)? {
                 let entry = entry?;
-                if entry.path().extension().map_or(false, |ext| ext == "css") {
+                if entry.path().extension().is_some_and(|ext| ext == "css") {
                     let dest = output.join("css").join(entry.file_name());
                     std::fs::copy(entry.path(), dest)?;
                 }

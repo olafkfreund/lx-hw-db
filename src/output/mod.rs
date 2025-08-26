@@ -98,7 +98,7 @@ impl OutputRenderer {
         output.push_str("---\n\n");
         
         // Markdown content
-        output.push_str(&format!("# Hardware Compatibility Report\n\n"));
+        output.push_str("# Hardware Compatibility Report\n\n");
         output.push_str(&format!("Generated: {}\n", report.metadata.generated_at));
         output.push_str(&format!("Privacy Level: {:?}\n", report.metadata.privacy_level));
         output.push_str(&format!("Tools Used: {}\n\n", report.metadata.tools_used.join(", ")));
@@ -133,7 +133,7 @@ impl OutputRenderer {
                     if let Some(ref notes) = device.notes {
                         output.push_str(&format!("- **Notes:** {}\n", notes));
                     }
-                    output.push_str("\n");
+                    output.push('\n');
                 }
             }
         }

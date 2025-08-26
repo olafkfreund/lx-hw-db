@@ -102,7 +102,7 @@ fn validate_cross_references(
         .filter(|usb| {
             usb.product_name
                 .as_ref()
-                .map_or(false, |name| name.to_lowercase().contains("hub"))
+                .is_some_and(|name| name.to_lowercase().contains("hub"))
         })
         .count();
     
@@ -140,7 +140,7 @@ fn validate_tool_consistency(
     // Check dmidecode tool consistency
     if tools_used.contains(&"dmidecode".to_string()) {
         let has_dimm_details = report.memory.as_ref()
-            .map_or(false, |mem| mem.dimms.iter()
+            .is_some_and(|mem| mem.dimms.iter()
                 .any(|dimm| dimm.manufacturer.is_some() || dimm.memory_type.is_some()));
         
         if !has_dimm_details {
@@ -275,20 +275,20 @@ fn validate_system_type_expectations(
     warnings: &mut Vec<String>,
 ) -> Result<(), crate::validation::ValidationError> {
     // Determine system type from available information
-    let is_server = report.cpu.as_ref().map_or(false, |cpu| {
+    let is_server = report.cpu.as_ref().is_some_and(|cpu| {
         cpu.cores > 16 || 
         cpu.model.to_lowercase().contains("xeon") ||
         cpu.model.to_lowercase().contains("epyc") ||
         cpu.model.to_lowercase().contains("threadripper pro")
     });
     
-    let is_workstation = report.cpu.as_ref().map_or(false, |cpu| {
+    let is_workstation = report.cpu.as_ref().is_some_and(|cpu| {
         cpu.cores > 8 || cpu.model.to_lowercase().contains("threadripper")
-    }) || report.memory.as_ref().map_or(false, |mem| {
+    }) || report.memory.as_ref().is_some_and(|mem| {
         mem.total_bytes > 34_359_738_368 // > 32GB
     });
     
-    let is_laptop = report.cpu.as_ref().map_or(false, |cpu| {
+    let is_laptop = report.cpu.as_ref().is_some_and(|cpu| {
         cpu.model.to_lowercase().contains("mobile") ||
         cpu.model.to_lowercase().contains("h") || // Intel mobile suffix
         cpu.model.to_lowercase().contains("u") || // Intel ultrabook suffix
@@ -310,11 +310,10 @@ fn validate_system_type_expectations(
     }
     
     // Workstation expectations
-    if is_workstation && !is_server {
-        if report.graphics.is_empty() {
+    if is_workstation && !is_server
+        && report.graphics.is_empty() {
             warnings.push("Workstation system without dedicated graphics is unusual".to_string());
         }
-    }
     
     // Laptop expectations
     if is_laptop {
@@ -354,7 +353,7 @@ fn validate_essential_components(
     // Most systems should have graphics capability
     if report.graphics.is_empty() {
         // Check if this might be a headless server
-        let is_headless_server = report.cpu.as_ref().map_or(false, |cpu| {
+        let is_headless_server = report.cpu.as_ref().is_some_and(|cpu| {
             cpu.cores > 8 && (
                 cpu.model.to_lowercase().contains("xeon") ||
                 cpu.model.to_lowercase().contains("epyc")

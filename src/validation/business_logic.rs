@@ -196,7 +196,7 @@ fn validate_hardware_compatibility(
             
             // Check memory speed constraints
             if let Some(speed) = dimm.speed_mhz {
-                if speed < 400 || speed > 8000 {
+                if !(400..=8000).contains(&speed) {
                     warnings.push(format!(
                         "Unusual memory speed: {}MHz. Expected range: 400-8000MHz",
                         speed
@@ -206,11 +206,7 @@ fn validate_hardware_compatibility(
         }
         
         // Check if total DIMM size matches system memory
-        let size_diff = if total_dimm_size > memory.total_bytes {
-            total_dimm_size - memory.total_bytes
-        } else {
-            memory.total_bytes - total_dimm_size
-        };
+        let size_diff = total_dimm_size.abs_diff(memory.total_bytes);
         
         let diff_percent = (size_diff as f64 / memory.total_bytes as f64) * 100.0;
         if diff_percent > 10.0 {
@@ -308,7 +304,7 @@ fn validate_system_coherence(
     
     // Check for reasonable kernel version
     if let Ok(major) = kernel_parts[0].parse::<u32>() {
-        if major < 2 || major > 10 {
+        if !(2..=10).contains(&major) {
             warnings.push(format!(
                 "Unusual kernel major version: {}. Expected 2-10",
                 major

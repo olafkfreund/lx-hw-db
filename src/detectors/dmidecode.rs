@@ -271,7 +271,7 @@ impl HardwareDetector for DmidecodeDetector {
             return Ok(DetectionResult {
                 tool_name: self.name().to_string(),
                 success: false,
-                data: DetectionData::Dmidecode(DmidecodeData::default()),
+                data: DetectionData::Dmidecode(Box::default()),
                 errors,
             });
         }
@@ -293,7 +293,7 @@ impl HardwareDetector for DmidecodeDetector {
                 Ok(DetectionResult {
                     tool_name: self.name().to_string(),
                     success: true,
-                    data: DetectionData::Dmidecode(dmidecode_data),
+                    data: DetectionData::Dmidecode(Box::new(dmidecode_data)),
                     errors,
                 })
             }
@@ -303,7 +303,7 @@ impl HardwareDetector for DmidecodeDetector {
                 Ok(DetectionResult {
                     tool_name: self.name().to_string(),
                     success: false,
-                    data: DetectionData::Dmidecode(DmidecodeData::default()),
+                    data: DetectionData::Dmidecode(Box::default()),
                     errors,
                 })
             }

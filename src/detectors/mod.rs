@@ -48,10 +48,10 @@ pub struct DetectionResult {
 #[derive(Debug, Clone)]
 pub enum DetectionData {
     Lshw(lshw::LshwData),
-    Dmidecode(dmidecode::DmidecodeData),
+    Dmidecode(Box<dmidecode::DmidecodeData>),
     Lspci(lspci::LspciData),
     Lsusb(lsusb::LsusbData),
-    Inxi(inxi::InxiData),
+    Inxi(Box<inxi::InxiData>),
     Kernel(kernel::KernelSupportData),
 }
 
@@ -78,10 +78,10 @@ impl DetectorRegistry {
     fn default_data_for_detector(detector_name: &str) -> DetectionData {
         match detector_name {
             "lshw" => DetectionData::Lshw(lshw::LshwData::default()),
-            "dmidecode" => DetectionData::Dmidecode(dmidecode::DmidecodeData::default()),
+            "dmidecode" => DetectionData::Dmidecode(Box::default()),
             "lspci" => DetectionData::Lspci(lspci::LspciData::default()),
             "lsusb" => DetectionData::Lsusb(lsusb::LsusbData::default()),
-            "inxi" => DetectionData::Inxi(inxi::InxiData::default()),
+            "inxi" => DetectionData::Inxi(Box::default()),
             _ => DetectionData::Lshw(lshw::LshwData::default()), // fallback
         }
     }
