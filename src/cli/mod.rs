@@ -602,7 +602,7 @@ impl CliHandler {
             }
 
             // Run detection
-            let detection_results = registry.detect_all().await?;
+            let _detection_results = registry.detect_all().await?;
 
             // Generate hardware report  
             let mut hardware_analyzer = crate::detectors::integration::HardwareAnalyzer::new(global.privacy)?;

@@ -36,6 +36,7 @@ pub struct SubmissionInfo {
 
 /// GitHub API response structures
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct GitHubRepo {
     full_name: String,
     clone_url: String,
@@ -44,6 +45,7 @@ struct GitHubRepo {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct GitHubPullRequest {
     number: u64,
     html_url: String,
