@@ -3,18 +3,8 @@ name: Build Hardware Compatibility Indices
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'hardware-reports/**/*.json'
-      - 'src/indexer/**'
-      - 'src/bin/lx-hw-indexer.rs'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'hardware-reports/**/*.json'
-      - 'src/indexer/**'
-      - 'src/bin/lx-hw-indexer.rs'
   workflow_dispatch:
     inputs:
       force_rebuild:
