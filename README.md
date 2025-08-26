@@ -1,7 +1,7 @@
 # Linux Hardware Compatibility Database
 
-[![Build Indices](https://github.com/lx-hw-db/lx-hw-db/actions/workflows/build-indices.yml/badge.svg)](https://github.com/lx-hw-db/lx-hw-db/actions/workflows/build-indices.yml)
-[![Deploy Pages](https://github.com/lx-hw-db/lx-hw-db/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/lx-hw-db/lx-hw-db/actions/workflows/deploy-pages.yml)
+[![Build Indices](https://github.com/olafkfreund/lx-hw-db/actions/workflows/build-indices.yml/badge.svg)](https://github.com/olafkfreund/lx-hw-db/actions/workflows/build-indices.yml)
+[![Deploy Pages](https://github.com/olafkfreund/lx-hw-db/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/olafkfreund/lx-hw-db/actions/workflows/deploy-pages.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Data: CC0](https://img.shields.io/badge/Data-CC0-green.svg)](https://creativecommons.org/public-domain/cc0/)
 
@@ -21,7 +21,7 @@
 
 ### Access the Database
 
-Visit the live database: **[https://lx-hw-db.github.io/lx-hw-db/](https://lx-hw-db.github.io/lx-hw-db/)**
+Visit the live database: **[https://olafkfreund.github.io/lx-hw-db/](https://olafkfreund.github.io/lx-hw-db/)**
 
 ### API Access
 
@@ -29,16 +29,16 @@ The database provides REST-like JSON APIs:
 
 ```bash
 # Get all vendors
-curl https://lx-hw-db.github.io/lx-hw-db/api/vendors.json
+curl https://olafkfreund.github.io/lx-hw-db/api/vendors.json
 
 # Get specific vendor details
-curl https://lx-hw-db.github.io/lx-hw-db/api/vendors/nvidia.json
+curl https://olafkfreund.github.io/lx-hw-db/api/vendors/nvidia.json
 
 # Get compatibility statistics
-curl https://lx-hw-db.github.io/lx-hw-db/api/statistics.json
+curl https://olafkfreund.github.io/lx-hw-db/api/statistics.json
 
 # Search indices
-curl https://lx-hw-db.github.io/lx-hw-db/indices/search-terms.json
+curl https://olafkfreund.github.io/lx-hw-db/indices/search-terms.json
 ```
 
 ### Contributing Hardware Reports
@@ -239,7 +239,7 @@ The hardware detection system uses a modular architecture with multiple speciali
 ### Installation
 
 ```bash
-git clone https://github.com/your-org/lx-hw-db.git
+git clone https://github.com/olafkfreund/lx-hw-db.git
 cd lx-hw-db
 cargo build --release
 ```

@@ -227,8 +227,8 @@ async fn generate_site(
     // Generate CSS styles
     generate_css_styles(&output, verbose)?;
     
-    // Copy JavaScript files if they exist in web/ directory
-    copy_web_assets(&output, verbose)?;
+    // Generate JavaScript files
+    generate_javascript(&output, verbose)?;
     
     println!("Static website generated successfully!");
     
@@ -321,22 +321,22 @@ fn generate_index_html(output: &Path, verbose: bool) -> Result<()> {
                 <div id="stats-container" class="stats-grid">
                     <!-- Statistics will be loaded here by JavaScript -->
                     <div class="stat-card loading">
-                        <div class="stat-value">Loading...</div>
+                        <div class="stat-value" data-stat="reports">Loading...</div>
                         <div class="stat-label">Hardware Reports</div>
                     </div>
                     
                     <div class="stat-card loading">
-                        <div class="stat-value">Loading...</div>
+                        <div class="stat-value" data-stat="systems">Loading...</div>
                         <div class="stat-label">Unique Systems</div>
                     </div>
                     
                     <div class="stat-card loading">
-                        <div class="stat-value">Loading...</div>
+                        <div class="stat-value" data-stat="vendors">Loading...</div>
                         <div class="stat-label">Hardware Vendors</div>
                     </div>
                     
                     <div class="stat-card loading">
-                        <div class="stat-value">Loading...</div>
+                        <div class="stat-value" data-stat="kernels">Loading...</div>
                         <div class="stat-label">Kernel Versions</div>
                     </div>
                 </div>
@@ -512,6 +512,191 @@ fn copy_web_assets(output: &Path, verbose: bool) -> Result<()> {
                 }
             }
         }
+    }
+    
+    Ok(())
+}
+
+/// Generate JavaScript files for the website
+fn generate_javascript(output: &Path, verbose: bool) -> Result<()> {
+    if verbose {
+        println!("   Generating JavaScript files...");
+    }
+    
+    // Generate stats-dashboard.js
+    let stats_dashboard = r##"
+// Statistics Dashboard for Linux Hardware Compatibility Database
+class StatsDashboard {
+    constructor() {
+        this.apiBase = './api/v1/stats/';
+        this.init();
+    }
+    
+    async init() {
+        await this.loadOverviewStats();
+    }
+    
+    async loadOverviewStats() {
+        try {
+            const response = await fetch(`${this.apiBase}overview.json`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            this.displayOverviewStats(data.data);
+        } catch (error) {
+            console.error('Error loading stats:', error);
+            this.displayError('Failed to load statistics');
+        }
+    }
+    
+    displayOverviewStats(stats) {
+        // Update hardware reports count
+        const reportsElement = document.querySelector('[data-stat="reports"]');
+        if (reportsElement) {
+            reportsElement.textContent = stats.total_reports || 0;
+        }
+        
+        // Update unique systems count
+        const systemsElement = document.querySelector('[data-stat="systems"]');
+        if (systemsElement) {
+            systemsElement.textContent = stats.unique_systems || 0;
+        }
+        
+        // Update vendors count
+        const vendorsElement = document.querySelector('[data-stat="vendors"]');
+        if (vendorsElement) {
+            vendorsElement.textContent = stats.total_vendors || 0;
+        }
+        
+        // Update kernel versions count
+        const kernelsElement = document.querySelector('[data-stat="kernels"]');
+        if (kernelsElement) {
+            kernelsElement.textContent = stats.kernel_versions || 0;
+        }
+        
+        // Remove loading text
+        document.querySelectorAll('.loading').forEach(el => {
+            el.textContent = '';
+            el.classList.remove('loading');
+        });
+    }
+    
+    displayError(message) {
+        document.querySelectorAll('.loading').forEach(el => {
+            el.textContent = 'Error loading data';
+            el.classList.add('error');
+        });
+    }
+}
+
+// Initialize dashboard when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    new StatsDashboard();
+});
+"##;
+    
+    // Generate main.js
+    let main_js = r##"
+// Main JavaScript for Linux Hardware Compatibility Database
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Linux Hardware Compatibility Database loaded');
+    
+    // Add any global functionality here
+    initializeSearch();
+});
+
+function initializeSearch() {
+    const searchInput = document.querySelector('#search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            // Basic search placeholder
+            console.log('Search query:', e.target.value);
+        });
+    }
+}
+"##;
+    
+    // Generate search-engine.js
+    let search_engine = r##"
+// Search Engine for Hardware Compatibility Database
+class SearchEngine {
+    constructor() {
+        this.indices = {};
+        this.loadIndices();
+    }
+    
+    async loadIndices() {
+        try {
+            // Load search indices
+            const searchResponse = await fetch('./indices/search-terms.json');
+            if (searchResponse.ok) {
+                this.indices.searchTerms = await searchResponse.json();
+            }
+            
+            const vendorResponse = await fetch('./indices/by-vendor.json');
+            if (vendorResponse.ok) {
+                this.indices.vendors = await vendorResponse.json();
+            }
+        } catch (error) {
+            console.error('Error loading search indices:', error);
+        }
+    }
+    
+    search(query) {
+        // Basic search implementation
+        console.log('Searching for:', query);
+        return [];
+    }
+}
+
+window.SearchEngine = SearchEngine;
+"##;
+    
+    // Generate search-ui.js
+    let search_ui = r##"
+// Search UI Components
+class SearchUI {
+    constructor() {
+        this.searchEngine = new SearchEngine();
+        this.initializeUI();
+    }
+    
+    initializeUI() {
+        const searchForm = document.querySelector('#search-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.performSearch();
+            });
+        }
+    }
+    
+    performSearch() {
+        const query = document.querySelector('#search-input')?.value;
+        if (query) {
+            const results = this.searchEngine.search(query);
+            this.displayResults(results);
+        }
+    }
+    
+    displayResults(results) {
+        console.log('Search results:', results);
+        // Display results in UI
+    }
+}
+
+window.SearchUI = SearchUI;
+"##;
+    
+    // Write JavaScript files
+    std::fs::write(output.join("js/stats-dashboard.js"), stats_dashboard)?;
+    std::fs::write(output.join("js/main.js"), main_js)?;
+    std::fs::write(output.join("js/search-engine.js"), search_engine)?;
+    std::fs::write(output.join("js/search-ui.js"), search_ui)?;
+    
+    if verbose {
+        println!("   Generated JavaScript files: stats-dashboard.js, main.js, search-engine.js, search-ui.js");
     }
     
     Ok(())

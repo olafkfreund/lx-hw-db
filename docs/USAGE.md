@@ -425,10 +425,10 @@ lx-hw-detect check-permissions
 
 ## Support and Community
 
-- **GitHub Repository**: https://github.com/lx-hw-db/lx-hw-db
-- **Issue Tracker**: https://github.com/lx-hw-db/lx-hw-db/issues
-- **Discussions**: https://github.com/lx-hw-db/lx-hw-db/discussions
-- **Database**: https://lx-hw-db.github.io
+- **GitHub Repository**: https://github.com/olafkfreund/lx-hw-db
+- **Issue Tracker**: https://github.com/olafkfreund/lx-hw-db/issues
+- **Discussions**: https://github.com/olafkfreund/lx-hw-db/discussions
+- **Database**: https://olafkfreund.github.io/lx-hw-db
 
 ### Contributing Hardware Reports
 

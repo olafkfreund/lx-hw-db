@@ -4,10 +4,10 @@
 title: "Linux Hardware Compatibility Database"
 description: "Community-driven hardware compatibility data for Linux systems"
 baseurl: "/lx-hw-db" # Repository name
-url: "https://lx-hw-db.github.io"
+url: "https://olafkfreund.github.io"
 
 # Repository
-repository: "lx-hw-db/lx-hw-db"
+repository: "olafkfreund/lx-hw-db"
 
 # Build settings
 markdown: kramdown
@@ -64,7 +64,7 @@ twitter:
 social:
   name: "Linux Hardware Compatibility Database"
   links:
-    - "https://github.com/lx-hw-db/lx-hw-db"
+    - "https://github.com/olafkfreund/lx-hw-db"
 
 # Google Analytics (if needed)
 # google_analytics: UA-XXXXXXXX-X

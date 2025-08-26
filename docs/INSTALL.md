@@ -26,11 +26,11 @@ Download the latest release for your platform:
 
 ```bash
 # Download for Linux x86_64
-curl -L https://github.com/lx-hw-db/lx-hw-db/releases/latest/download/lx-hw-detect-linux-x86_64.tar.gz | tar xz
+curl -L https://github.com/olafkfreund/lx-hw-db/releases/latest/download/lx-hw-detect-linux-x86_64.tar.gz | tar xz
 sudo mv lx-hw-detect /usr/local/bin/
 
 # Download for Linux ARM64
-curl -L https://github.com/lx-hw-db/lx-hw-db/releases/latest/download/lx-hw-detect-linux-arm64.tar.gz | tar xz
+curl -L https://github.com/olafkfreund/lx-hw-db/releases/latest/download/lx-hw-detect-linux-arm64.tar.gz | tar xz
 sudo mv lx-hw-detect /usr/local/bin/
 
 # Verify installation
@@ -44,14 +44,14 @@ lx-hw-detect --version
 cargo install lx-hw-detect
 
 # Or install from GitHub directly
-cargo install --git https://github.com/lx-hw-db/lx-hw-db.git --bin lx-hw-detect
+cargo install --git https://github.com/olafkfreund/lx-hw-db.git --bin lx-hw-detect
 ```
 
 ### Method 3: Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/lx-hw-db/lx-hw-db.git
+git clone https://github.com/olafkfreund/lx-hw-db.git
 cd lx-hw-db
 
 # Build the hardware detection tool
@@ -247,9 +247,9 @@ cargo build --release
 
 ### Getting Help
 
-- **GitHub Issues**: https://github.com/lx-hw-db/lx-hw-db/issues
-- **Documentation**: https://lx-hw-db.github.io/docs
-- **Community**: https://github.com/lx-hw-db/lx-hw-db/discussions
+- **GitHub Issues**: https://github.com/olafkfreund/lx-hw-db/issues
+- **Documentation**: https://olafkfreund.github.io/lx-hw-db/docs
+- **Community**: https://github.com/olafkfreund/lx-hw-db/discussions
 
 ## Uninstallation
 
