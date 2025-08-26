@@ -110,8 +110,8 @@ impl HardwareDetector for LshwDetector {
             .arg("system,memory,processor,bridge,network,storage,multimedia,display")
             .output()
             .await
-            .map_err(|_e| LxHwError::SystemCommandError {
-                command: "lshw -json -quiet -sanitize -class system,memory,processor,bridge,network,storage,multimedia,display".to_string()
+            .map_err(|e| LxHwError::SystemCommandError {
+                command: format!("lshw: {}", e)
             })?;
             
         debug!("lshw execution completed with status: {}", output.status);
@@ -125,7 +125,7 @@ impl HardwareDetector for LshwDetector {
             ));
         }
         
-        Ok(output.into())
+        Ok(output)
     }
 
     fn parse_output(&self, output: &Output) -> Result<DetectionResult> {

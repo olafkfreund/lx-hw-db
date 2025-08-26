@@ -9,7 +9,6 @@ use crate::hardware::{HardwareReport, KernelCompatibilityInfo, DeviceCompatibili
 use crate::errors::Result;
 use crate::privacy::PrivacyManager;
 use chrono::Utc;
-use std::collections::HashMap;
 
 /// Comprehensive hardware analysis combining detection and kernel verification
 pub struct HardwareAnalyzer {
@@ -94,7 +93,7 @@ impl HardwareAnalyzer {
         for device_support in &kernel_support.supported_devices {
             let device_name = self.get_device_name(&device_support.device_id, detection_results);
             
-            let (support_status, count_target) = match device_support.support_level {
+            let (support_status, _count_target) = match device_support.support_level {
                 SupportLevel::Supported => {
                     supported_count += 1;
                     ("supported", &mut supported_count)
@@ -244,7 +243,7 @@ impl HardwareAnalyzer {
     }
 
     /// Extract system information with privacy protection
-    async fn extract_system_info(&mut self, detection_results: &[DetectionResult]) -> Result<SystemInfo> {
+    async fn extract_system_info(&mut self, _detection_results: &[DetectionResult]) -> Result<SystemInfo> {
         // Get system information from uname and /proc files
         let kernel_version = std::process::Command::new("uname")
             .arg("-r")

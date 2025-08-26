@@ -238,7 +238,7 @@ impl CliHandler {
         match output {
             Some(path) => {
                 std::fs::write(&path, output_content)
-                    .map_err(|e| LxHwError::IoError(e))?;
+                    .map_err(LxHwError::IoError)?;
                 println!("Hardware report saved to: {:?}", path);
             }
             None => {
@@ -251,7 +251,7 @@ impl CliHandler {
 
     /// Handle the check command
     async fn handle_check(&self, detailed: bool) -> Result<()> {
-        use crate::detectors::{DetectorRegistry, HardwareDetector};
+        use crate::detectors::DetectorRegistry;
         
         log::info!("Checking hardware detection tool availability...");
         println!("Checking availability of hardware detection tools...\n");

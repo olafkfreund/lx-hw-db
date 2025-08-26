@@ -7,7 +7,6 @@ use crate::errors::{Result, LxHwError};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::process::Command;
-use tokio::process::Command as AsyncCommand;
 use regex::Regex;
 
 /// Linux kernel source analyzer
@@ -165,7 +164,7 @@ impl KernelSourceAnalyzer {
     /// Perform GitHub code search
     async fn github_code_search(&self, query: &str) -> Result<Vec<HardwareSupportInfo>> {
         // Note: GitHub API has rate limits, so this should be used sparingly
-        let url = format!("{}/search/code?q={}", self.github_api_base, 
+        let _url = format!("{}/search/code?q={}", self.github_api_base, 
                          urlencoding::encode(query));
 
         log::info!("Searching GitHub for: {}", query);
@@ -184,7 +183,7 @@ impl KernelSourceAnalyzer {
         for line in output.lines() {
             if let Some(captures) = line_regex.captures(line) {
                 let file_path = captures.get(1).map_or("", |m| m.as_str());
-                let line_number = captures.get(2).map_or("", |m| m.as_str());
+                let _line_number = captures.get(2).map_or("", |m| m.as_str());
                 let content = captures.get(3).map_or("", |m| m.as_str());
 
                 if file_path.starts_with("drivers/") {
@@ -309,7 +308,7 @@ impl KernelSourceAnalyzer {
     }
 
     /// Parse git log output for version information
-    fn parse_git_log_for_versions(&self, log_output: &str) -> Vec<KernelVersionInfo> {
+    fn parse_git_log_for_versions(&self, _log_output: &str) -> Vec<KernelVersionInfo> {
         // This would be a complex function that correlates git commits
         // with kernel release tags to determine when support was added
         Vec::new() // Placeholder
@@ -357,7 +356,7 @@ impl KernelSourceAnalyzer {
     }
 
     /// Estimate which kernel version first supported a device
-    fn estimate_support_version(&self, device_id: &str, current_kernel: &str) -> Option<String> {
+    fn estimate_support_version(&self, _device_id: &str, current_kernel: &str) -> Option<String> {
         // This would use the cached support data or heuristics
         // Based on device vendor, age, and complexity
         

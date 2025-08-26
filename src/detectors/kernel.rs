@@ -4,13 +4,11 @@
 //! by checking modules.alias files, sysfs information, and kernel device tables.
 
 use crate::errors::{Result, LxHwError};
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
-use tokio::process::Command as AsyncCommand;
 
 /// Kernel support verification data
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,7 +71,7 @@ impl KernelSupportVerifier {
             .arg("-r")
             .output()
             .map_err(|e| LxHwError::SystemCommandError { 
-                command: "uname -r".to_string() 
+                command: format!("uname -r: {}", e) 
             })?;
 
         if !output.status.success() {
@@ -144,7 +142,7 @@ impl KernelSupportVerifier {
         // Parse modules.alias format: alias pci:v00001B21d00000612sv*sd*bc*sc*i* ahci
         for line in alias_content.lines() {
             if line.starts_with("alias pci:") {
-                if let Some((alias, module)) = line.split_once(' ') {
+                if let Some((alias, _module)) = line.split_once(' ') {
                     if let Some(module) = alias.split(' ').nth(1) {
                         // Extract vendor and device IDs from alias
                         if self.matches_pci_alias(device_id, alias) {
@@ -172,7 +170,7 @@ impl KernelSupportVerifier {
     }
 
     /// Check for generic driver support (USB HID, mass storage, etc.)
-    fn check_generic_support(&self, vendor_id: &str, device_id: &str) -> Result<Option<DeviceSupport>> {
+    fn check_generic_support(&self, _vendor_id: &str, _device_id: &str) -> Result<Option<DeviceSupport>> {
         // USB mass storage: class 08
         // USB HID: class 03
         // This would need to be expanded with actual class checking from sysfs
@@ -459,10 +457,10 @@ impl KernelSupportVerifier {
         }
 
         let entries = fs::read_dir(pci_devices_path)
-            .map_err(|e| LxHwError::IoError(e))?;
+            .map_err(LxHwError::IoError)?;
 
         for entry in entries {
-            let entry = entry.map_err(|e| LxHwError::IoError(e))?;
+            let entry = entry.map_err(LxHwError::IoError)?;
             let device_path = entry.path();
             
             // Read vendor and device files
