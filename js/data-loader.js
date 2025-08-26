@@ -21,7 +21,8 @@ class DataLoader {
             return './';
         }
         
-        return window.location.origin + '/';
+        // For GitHub Pages and other servers, use relative paths
+        return './';
     }
     
     init() {
