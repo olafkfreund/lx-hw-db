@@ -81,15 +81,8 @@ pub enum Commands {
         detailed: bool,
     },
 
-    /// Validate a hardware report file
-    Validate {
-        /// Path to the report file to validate
-        file: PathBuf,
-
-        /// Check schema compliance only
-        #[arg(short, long)]
-        schema_only: bool,
-    },
+    /// Validate hardware report files
+    Validate(crate::validation::cli::ValidateArgs),
 
     /// Analyze kernel support and provide upgrade recommendations
     Analyze {
@@ -172,8 +165,9 @@ impl CliHandler {
                 .await
             }
             Commands::Check { detailed } => self.handle_check(detailed).await,
-            Commands::Validate { file, schema_only } => {
-                self.handle_validate(file, schema_only).await
+            Commands::Validate(validate_args) => {
+                crate::validation::cli::execute_validate(validate_args).await?;
+                Ok(())
             }
             Commands::Analyze { device, kernel_source, kernel_repo, recommendations } => {
                 self.handle_analyze(device, kernel_source, kernel_repo, recommendations).await
@@ -289,13 +283,6 @@ impl CliHandler {
         Ok(())
     }
 
-    /// Handle the validate command
-    async fn handle_validate(&self, _file: PathBuf, _schema_only: bool) -> Result<()> {
-        // Placeholder implementation
-        log::info!("Report validation will be implemented in Phase 2");
-        println!("Report validation feature is not yet implemented.");
-        Ok(())
-    }
 
     /// Handle the analyze command
     async fn handle_analyze(

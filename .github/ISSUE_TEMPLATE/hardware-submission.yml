@@ -1,0 +1,181 @@
+name: Hardware Compatibility Report Submission
+description: Submit a hardware compatibility report to the Linux Hardware Database
+title: "[HW-REPORT] System Hardware Compatibility Report"
+labels: ["hardware-report", "community-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Hardware Compatibility Report Submission
+        
+        Thank you for contributing to the Linux Hardware Compatibility Database! 
+        This helps the community understand hardware support across different Linux distributions and kernel versions.
+        
+        **Before submitting:**
+        - Ensure you've run the latest version of `lx-hw-detect`
+        - Verify your report passes validation with `lx-hw-detect validate`
+        - Check that no personally identifiable information (PII) is included
+        
+  - type: dropdown
+    id: report_type
+    attributes:
+      label: Report Type
+      description: What type of hardware report are you submitting?
+      options:
+        - New System Report (first-time submission)
+        - Updated System Report (hardware or software changes)
+        - Kernel Upgrade Report (same hardware, new kernel)
+        - Distribution Change Report (same hardware, different distro)
+    validations:
+      required: true
+
+  - type: input
+    id: system_id
+    attributes:
+      label: Anonymized System ID
+      description: The anonymized system ID from your hardware report (found in metadata.anonymized_system_id)
+      placeholder: "e.g., abc123def456ghi789..."
+    validations:
+      required: true
+
+  - type: input
+    id: kernel_version
+    attributes:
+      label: Kernel Version
+      description: Linux kernel version used during detection
+      placeholder: "e.g., 6.16.0"
+    validations:
+      required: true
+
+  - type: input
+    id: distribution
+    attributes:
+      label: Linux Distribution
+      description: Distribution name and version
+      placeholder: "e.g., NixOS 25.11, Ubuntu 24.04, Arch Linux"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: System Architecture
+      description: CPU architecture of your system
+      options:
+        - x86_64
+        - aarch64
+        - armv7l
+        - i686
+        - riscv64
+    validations:
+      required: true
+
+  - type: textarea
+    id: hardware_summary
+    attributes:
+      label: Hardware Summary
+      description: Brief description of your system's key components
+      placeholder: |
+        Example:
+        - CPU: AMD Ryzen 7 5800X (8 cores, 16 threads)
+        - Memory: 32GB DDR4-3200
+        - Graphics: NVIDIA GeForce RTX 3080
+        - Storage: Samsung 980 PRO NVMe SSD
+        - Network: Intel I225-V Gigabit Ethernet
+      render: markdown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: privacy_level
+    attributes:
+      label: Privacy Level Used
+      description: What privacy level did you use when generating the report?
+      options:
+        - Basic (24-hour salt rotation)
+        - Enhanced (12-hour salt rotation)  
+        - Strict (1-hour salt rotation)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: compatibility_status
+    attributes:
+      label: Hardware Compatibility Status
+      description: Overall hardware compatibility with your kernel/distribution
+      options:
+        - label: All hardware detected and working correctly
+        - label: Most hardware working, minor issues present
+        - label: Some hardware not detected or working
+        - label: Major hardware compatibility issues
+        - label: Unknown/untested compatibility status
+
+  - type: textarea
+    id: issues_notes
+    attributes:
+      label: Known Issues or Notes
+      description: Any hardware compatibility issues, workarounds, or additional notes
+      placeholder: |
+        Example:
+        - WiFi requires firmware installation
+        - GPU needs proprietary drivers
+        - Bluetooth works but requires manual configuration
+        - No issues, all hardware working out-of-the-box
+      render: markdown
+
+  - type: textarea
+    id: tools_used
+    attributes:
+      label: Detection Tools Used
+      description: Which tools were available and used during detection?
+      placeholder: "e.g., lshw, dmidecode, lspci, lsusb, inxi"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: validation_checklist
+    attributes:
+      label: Pre-submission Validation
+      description: Confirm you've completed these validation steps
+      options:
+        - label: "Ran `lx-hw-detect validate` on the report file and it passed"
+          required: true
+        - label: "Confirmed no personally identifiable information (PII) is in the report"
+          required: true
+        - label: "Used a privacy level appropriate for public sharing"
+          required: true
+        - label: "Read and agree to the community submission guidelines"
+          required: true
+
+  - type: textarea
+    id: report_attachment
+    attributes:
+      label: Hardware Report File
+      description: |
+        **Important**: DO NOT paste the report content directly here for security reasons.
+        
+        Instead, you should:
+        1. Create a Pull Request with your hardware report file
+        2. Reference the PR number in the field below
+        3. Or attach the file using GitHub's file attachment feature
+        
+        **File naming convention**: `YYYY-MM-DD_KERNEL-VERSION_ARCH_SYSTEM-ID.json`
+        Example: `2025-08-26_6.16.0_x86_64_abc123def456.json`
+      placeholder: "Pull Request #XXX or attach file via GitHub's attachment feature"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Terms and Conditions
+      description: Agreement to community submission terms
+      options:
+        - label: "I confirm this hardware report was generated from my own system"
+          required: true
+        - label: "I understand this data will be publicly available under an open license"
+          required: true
+        - label: "I have verified no sensitive personal information is included"
+          required: true
+        - label: "I grant permission for this data to be used for Linux hardware compatibility research"
+          required: true

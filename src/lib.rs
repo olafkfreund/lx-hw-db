@@ -10,6 +10,7 @@ pub mod output;
 pub mod hardware;
 pub mod errors;
 pub mod cli;
+pub mod validation;
 
 pub use errors::{Result, LxHwError};
 pub use hardware::{HardwareReport, SystemInfo, PrivacyLevel};
