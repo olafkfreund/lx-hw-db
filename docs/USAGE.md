@@ -294,7 +294,7 @@ lx-hw-indexer serve --port 8080
 {
   "metadata": {
     "tool_version": "0.1.0",
-    "generated_at": "2024-01-15T10:30:00Z",
+    "generated_at": "2025-01-15T10:30:00Z",
     "system_id": "sha256:abc123...",
     "kernel_version": "6.6.8-arch1-1",
     "distribution": "Arch Linux"
@@ -320,7 +320,7 @@ lx-hw-detect detect --format yaml
 ```yaml
 metadata:
   tool_version: "0.1.0"
-  generated_at: "2024-01-15T10:30:00Z"
+  generated_at: "2025-01-15T10:30:00Z"
   system_id: "sha256:abc123..."
 hardware:
   cpu:

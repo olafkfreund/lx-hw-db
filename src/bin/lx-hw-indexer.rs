@@ -452,7 +452,7 @@ fn generate_index_html(output: &Path, verbose: bool) -> Result<()> {
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2024 Linux Hardware Compatibility Database Contributors. Software licensed under AGPL-3.0, data in the public domain.</p>
+                <p>&copy; 2025 Linux Hardware Compatibility Database Contributors. Software licensed under AGPL-3.0, data in the public domain.</p>
                 <p>Built by the Linux community</p>
             </div>
         </div>
