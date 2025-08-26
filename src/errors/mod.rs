@@ -14,6 +14,12 @@ pub enum LxHwError {
     #[error("System command failed: {command}")]
     SystemCommandError { command: String },
     
+    #[error("System error: {message}")]
+    SystemError { message: String },
+    
+    #[error("Invalid input: {message}")]
+    InvalidInput { message: String },
+    
     #[error("IO operation failed: {0}")]
     IoError(#[from] std::io::Error),
     
