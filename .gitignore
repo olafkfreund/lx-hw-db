@@ -1,0 +1,5 @@
+/target
+
+# Agent OS files - local development only
+.agent-os/
+CLAUDE.md
