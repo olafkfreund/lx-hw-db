@@ -253,7 +253,7 @@ fn generate_index_html(output: &Path, verbose: bool) -> Result<()> {
     <link rel="stylesheet" href="css/styles.css">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐧</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>L</text></svg>">
     
     <!-- Open Graph -->
     <meta property="og:title" content="Linux Hardware Compatibility Database">
@@ -272,7 +272,7 @@ fn generate_index_html(output: &Path, verbose: bool) -> Result<()> {
             <div class="header-content">
                 <div class="logo-section">
                     <h1 class="site-title">
-                        <span class="logo-icon">🐧</span>
+                        <span class="logo-icon">LX</span>
                         Linux Hardware Compatibility Database
                     </h1>
                     <p class="site-subtitle">Community-driven hardware compatibility data for Linux systems</p>
@@ -358,7 +358,7 @@ fn generate_index_html(output: &Path, verbose: bool) -> Result<()> {
                     
                     <div class="about-grid">
                         <div class="about-card">
-                            <h3>🎯 Mission</h3>
+                            <h3>Mission</h3>
                             <p>Create a comprehensive, community-driven database of Linux hardware compatibility information to help users make informed decisions about their hardware choices.</p>
                         </div>
                         
@@ -453,7 +453,7 @@ fn generate_index_html(output: &Path, verbose: bool) -> Result<()> {
             
             <div class="footer-bottom">
                 <p>&copy; 2024 Linux Hardware Compatibility Database Contributors. Software licensed under AGPL-3.0, data in the public domain.</p>
-                <p>Built with ❤️ by the Linux community</p>
+                <p>Built by the Linux community</p>
             </div>
         </div>
     </footer>

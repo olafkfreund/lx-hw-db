@@ -110,9 +110,9 @@ pub async fn execute_validate(args: ValidateArgs) -> Result<(), LxHwError> {
         println!("Total warnings: {}", total_warnings);
         
         if valid_files == total_files {
-            println!("✅ All files passed validation!");
+            println!("All files passed validation!");
         } else {
-            println!("❌ Some files failed validation");
+            println!("Some files failed validation");
         }
     }
     
@@ -157,14 +157,14 @@ fn print_text_results(
     result: &ValidationResult,
     args: &ValidateArgs,
 ) -> Result<(), LxHwError> {
-    let status = if result.valid { "✅ VALID" } else { "❌ INVALID" };
+    let status = if result.valid { "VALID" } else { "INVALID" };
     println!("{} {} (confidence: {:.1}%)", status, file_path.display(), result.confidence_score * 100.0);
     
     // Print errors
     if !result.errors.is_empty() {
         println!("  Errors:");
         for error in &result.errors {
-            println!("    ❌ {}", error);
+            println!("    ERROR: {}", error);
         }
     }
     
@@ -172,7 +172,7 @@ fn print_text_results(
     if !result.warnings.is_empty() && !args.quiet {
         println!("  Warnings:");
         for warning in &result.warnings {
-            println!("    ⚠️  {}", warning);
+            println!("    WARNING: {}", warning);
         }
     }
     

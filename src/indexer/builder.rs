@@ -38,7 +38,7 @@ impl<'a> IndexBuilder<'a> {
         };
 
         if self.config.verbose {
-            println!("✅ All indices built successfully");
+            println!("All indices built successfully");
             self.print_index_summary(&indices);
         }
 
@@ -48,7 +48,7 @@ impl<'a> IndexBuilder<'a> {
     /// Build vendor-organized index
     fn build_vendor_index(&self, reports: &[IndexedReport]) -> Result<VendorIndex> {
         if self.config.verbose {
-            println!("📊 Building vendor index...");
+            println!("Building vendor index...");
         }
 
         let mut vendor_index = HashMap::new();
@@ -118,7 +118,7 @@ impl<'a> IndexBuilder<'a> {
     /// Build component type organized index
     fn build_component_index(&self, reports: &[IndexedReport]) -> Result<ComponentIndex> {
         if self.config.verbose {
-            println!("💾 Building component index...");
+            println!("Building component index...");
         }
 
         let mut component_index = HashMap::new();
@@ -163,7 +163,7 @@ impl<'a> IndexBuilder<'a> {
     /// Build kernel version organized index
     fn build_kernel_index(&self, reports: &[IndexedReport]) -> Result<KernelIndex> {
         if self.config.verbose {
-            println!("🐧 Building kernel index...");
+            println!("Building kernel index...");
         }
 
         let mut kernel_index = HashMap::new();
@@ -215,7 +215,7 @@ impl<'a> IndexBuilder<'a> {
     /// Build Linux distribution organized index
     fn build_distribution_index(&self, reports: &[IndexedReport]) -> Result<DistributionIndex> {
         if self.config.verbose {
-            println!("🐧 Building distribution index...");
+            println!("Building distribution index...");
         }
 
         let mut dist_index = HashMap::new();
@@ -272,7 +272,7 @@ impl<'a> IndexBuilder<'a> {
     /// Build full-text search terms index
     fn build_search_terms_index(&self, reports: &[IndexedReport]) -> Result<SearchTermsIndex> {
         if self.config.verbose {
-            println!("🔍 Building search terms index...");
+            println!("Building search terms index...");
         }
 
         let mut search_index = HashMap::new();
@@ -332,7 +332,7 @@ impl<'a> IndexBuilder<'a> {
     /// Build hardware compatibility scoring matrix
     fn build_compatibility_matrix(&self, reports: &[IndexedReport]) -> Result<CompatibilityMatrix> {
         if self.config.verbose {
-            println!("🎯 Building compatibility matrix...");
+            println!("Building compatibility matrix...");
         }
 
         let mut matrix = HashMap::new();
@@ -393,7 +393,7 @@ impl<'a> IndexBuilder<'a> {
     /// Build aggregated statistics
     fn build_statistics(&self, reports: &[IndexedReport]) -> Result<Statistics> {
         if self.config.verbose {
-            println!("📈 Building statistics...");
+            println!("Building statistics...");
         }
 
         let mut stats = Statistics {
@@ -607,7 +607,7 @@ impl<'a> IndexBuilder<'a> {
 
     /// Print summary of built indices
     fn print_index_summary(&self, indices: &IndexCollection) {
-        println!("\n📊 Index Summary:");
+        println!("\nIndex Summary:");
         println!("   Vendors: {}", indices.by_vendor.len());
         println!("   Component Types: {}", indices.by_component.len());
         println!("   Kernel Versions: {}", indices.by_kernel.len());
