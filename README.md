@@ -63,6 +63,35 @@ The system supports distributed collaboration through a federated network:
 - **Storage**: Git-based with optional PostgreSQL for advanced queries
 - **Deployment**: GitHub Actions, GitHub Pages, CDN integration
 
+## Hardware Detection Architecture
+
+The hardware detection system uses a modular architecture with multiple specialized detectors:
+
+### lshw Detector (Complete)
+- **Data Source**: JSON output from `lshw -json -quiet -sanitize`
+- **Capabilities**: Comprehensive hardware tree with PCI, USB, memory, storage, and network devices  
+- **Privilege Handling**: Warns about missing privileges but continues with available data
+- **Privacy Features**: Automatically identifies serial numbers, MAC addresses for anonymization
+- **Performance**: 30-second timeout, efficient JSON parsing with serde
+
+### dmidecode Detector (Complete)
+- **Data Source**: Text output from `dmidecode -t system,baseboard,bios,processor,memory`
+- **Capabilities**: BIOS information, motherboard details, memory modules, processor specifications
+- **Privilege Handling**: Detects `/dev/mem` access issues, gracefully handles unprivileged execution
+- **Privacy Features**: Captures UUIDs, serial numbers, asset tags for anonymization pipeline
+- **Performance**: 15-second timeout, custom text parser for DMI/SMBIOS data structures
+- **Data Coverage**: 
+  - **BIOS**: Vendor, version, release date, characteristics, revision
+  - **System**: Manufacturer, product name, UUID, serial number, SKU
+  - **Baseboard**: Manufacturer, product name, version, serial number, features
+  - **Processor**: Socket, manufacturer, version, cores, threads, speed, flags
+  - **Memory**: DIMMs with size, type, speed, manufacturer, part numbers
+
+### Planned Detectors
+- **lspci**: PCI device enumeration with kernel driver mapping
+- **lsusb**: USB device detection with vendor/product identification  
+- **inxi**: User-friendly system summaries and additional hardware insights
+
 ## Current Status
 
 **Phase 1: Foundation Complete**
@@ -71,10 +100,19 @@ The system supports distributed collaboration through a federated network:
 - Modular project structure ready for hardware detection implementation
 - Configuration management and error handling systems
 
-**Next: Phase 2 - Hardware Detection Integration**
-- Implementation of hardware detection tools (lshw, dmidecode, lspci, lsusb, inxi)
+**Phase 2: Hardware Detection - In Progress**
+- ✅ **lshw detector**: Complete JSON-based hardware information extraction
+- ✅ **dmidecode detector**: Complete BIOS, motherboard, and memory detection with privilege handling
+- ✅ **Comprehensive testing**: Unit and integration tests for both detectors
+- ✅ **Privacy-sensitive data identification**: Automatic detection of serial numbers, UUIDs, and other identifiers for anonymization
+- ⏳ **lspci detector**: Planned - PCI device detection with kernel driver mapping
+- ⏳ **lsusb detector**: Planned - USB device enumeration
+- ⏳ **inxi detector**: Planned - User-friendly system summary information
+
+**Next: Phase 3 - Report Generation & Submission**
 - Report generation and validation
 - Community submission workflows
+- GitHub integration for automated database updates
 
 ## Getting Started
 
@@ -100,7 +138,7 @@ cargo build --release
 # Check available detection tools  
 ./target/release/lx-hw-detect check
 
-# Detect hardware (Phase 2 - not yet implemented)
+# Detect hardware (Phase 2 - lshw and dmidecode implemented)
 ./target/release/lx-hw-detect detect --privacy enhanced --format markdown
 ```
 
