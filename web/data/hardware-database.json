@@ -1,0 +1,387 @@
+{
+  "hardware": [
+    {
+      "id": "nvidia_rtx_3080",
+      "name": "NVIDIA GeForce RTX 3080",
+      "category": "gpu",
+      "manufacturer": "NVIDIA",
+      "model": "RTX 3080",
+      "pci_id": "10de:2206",
+      "compatibility_status": "full",
+      "tested_distributions": {
+        "debian": {
+          "status": "full",
+          "kernel_version": "5.10+",
+          "driver": "nvidia-driver-470",
+          "notes": "Requires non-free repository"
+        },
+        "arch": {
+          "status": "full", 
+          "kernel_version": "5.15+",
+          "driver": "nvidia",
+          "notes": "Install from official repositories"
+        },
+        "fedora": {
+          "status": "full",
+          "kernel_version": "5.14+", 
+          "driver": "akmod-nvidia",
+          "notes": "Requires RPM Fusion repository"
+        },
+        "nixos": {
+          "status": "full",
+          "kernel_version": "5.10+",
+          "driver": "nvidia_x11",
+          "notes": "Configure via hardware.nvidia option"
+        }
+      },
+      "specifications": {
+        "memory": "10GB GDDR6X",
+        "cuda_cores": 8704,
+        "base_clock": "1440 MHz",
+        "boost_clock": "1710 MHz"
+      },
+      "last_tested": "2024-01-15",
+      "community_rating": 4.8,
+      "reports_count": 156
+    },
+    {
+      "id": "amd_rx_6800_xt", 
+      "name": "AMD Radeon RX 6800 XT",
+      "category": "gpu",
+      "manufacturer": "AMD",
+      "model": "RX 6800 XT",
+      "pci_id": "1002:73bf",
+      "compatibility_status": "full",
+      "tested_distributions": {
+        "debian": {
+          "status": "full",
+          "kernel_version": "5.11+",
+          "driver": "amdgpu",
+          "notes": "Works out of box with recent kernels"
+        },
+        "arch": {
+          "status": "full",
+          "kernel_version": "5.10+", 
+          "driver": "mesa",
+          "notes": "Excellent support with mesa drivers"
+        },
+        "fedora": {
+          "status": "full",
+          "kernel_version": "5.11+",
+          "driver": "mesa",
+          "notes": "Works perfectly with recent kernels"
+        },
+        "nixos": {
+          "status": "full",
+          "kernel_version": "5.10+",
+          "driver": "mesa_drivers",
+          "notes": "Enable amdgpu.si_support=1 for older cards"
+        }
+      },
+      "specifications": {
+        "memory": "16GB GDDR6",
+        "stream_processors": 4608,
+        "base_clock": "1825 MHz",
+        "boost_clock": "2250 MHz"
+      },
+      "last_tested": "2024-01-10",
+      "community_rating": 4.9,
+      "reports_count": 203
+    },
+    {
+      "id": "intel_i225_v_ethernet",
+      "name": "Intel I225-V Gigabit Ethernet",
+      "category": "network", 
+      "manufacturer": "Intel",
+      "model": "I225-V",
+      "pci_id": "8086:15f3",
+      "compatibility_status": "partial",
+      "tested_distributions": {
+        "debian": {
+          "status": "partial",
+          "kernel_version": "5.11+",
+          "driver": "igc",
+          "notes": "May require kernel 5.11+ for full stability"
+        },
+        "arch": {
+          "status": "full",
+          "kernel_version": "5.10+",
+          "driver": "igc", 
+          "notes": "Works well with recent kernels"
+        },
+        "fedora": {
+          "status": "full",
+          "kernel_version": "5.10+",
+          "driver": "igc",
+          "notes": "Good support in recent releases"
+        },
+        "nixos": {
+          "status": "partial",
+          "kernel_version": "5.11+",
+          "driver": "igc",
+          "notes": "Enable intel ethernet driver in kernel"
+        }
+      },
+      "specifications": {
+        "speed": "1 Gbps",
+        "interface": "PCIe 3.0",
+        "wake_on_lan": true,
+        "power_management": true
+      },
+      "last_tested": "2023-12-20",
+      "community_rating": 4.2,
+      "reports_count": 89,
+      "known_issues": [
+        "Occasional packet loss on some motherboards",
+        "May require firmware updates"
+      ]
+    },
+    {
+      "id": "realtek_rtl8125b",
+      "name": "Realtek RTL8125B 2.5GbE Controller", 
+      "category": "network",
+      "manufacturer": "Realtek",
+      "model": "RTL8125B",
+      "pci_id": "10ec:8125",
+      "compatibility_status": "partial",
+      "tested_distributions": {
+        "debian": {
+          "status": "limited",
+          "kernel_version": "5.9+",
+          "driver": "r8169",
+          "notes": "May need r8125 driver compilation"
+        },
+        "arch": {
+          "status": "partial",
+          "kernel_version": "5.9+",
+          "driver": "r8125-dkms",
+          "notes": "Install r8125-dkms from AUR"
+        },
+        "fedora": {
+          "status": "partial", 
+          "kernel_version": "5.9+",
+          "driver": "r8125",
+          "notes": "May require manual driver compilation"
+        },
+        "nixos": {
+          "status": "limited",
+          "kernel_version": "5.9+",
+          "driver": "r8169",
+          "notes": "Limited to 1Gbps without additional drivers"
+        }
+      },
+      "specifications": {
+        "speed": "2.5 Gbps",
+        "interface": "PCIe 2.1",
+        "wake_on_lan": true,
+        "energy_efficient": true
+      },
+      "last_tested": "2023-11-30",
+      "community_rating": 3.4,
+      "reports_count": 67,
+      "known_issues": [
+        "2.5Gbps speed may not work without proprietary driver",
+        "Power management issues on some systems"
+      ]
+    },
+    {
+      "id": "amd_ryzen_7_5800x",
+      "name": "AMD Ryzen 7 5800X",
+      "category": "cpu",
+      "manufacturer": "AMD", 
+      "model": "5800X",
+      "compatibility_status": "full",
+      "tested_distributions": {
+        "debian": {
+          "status": "full",
+          "kernel_version": "5.8+",
+          "driver": "acpi-cpufreq",
+          "notes": "Excellent performance and power management"
+        },
+        "arch": {
+          "status": "full",
+          "kernel_version": "5.8+",
+          "driver": "amd-pstate",
+          "notes": "Enable amd-pstate for better power efficiency"
+        },
+        "fedora": {
+          "status": "full",
+          "kernel_version": "5.8+", 
+          "driver": "acpi-cpufreq",
+          "notes": "Works perfectly out of box"
+        },
+        "nixos": {
+          "status": "full",
+          "kernel_version": "5.8+",
+          "driver": "amd-pstate",
+          "notes": "Configure cpufreq governor in configuration.nix"
+        }
+      },
+      "specifications": {
+        "cores": 8,
+        "threads": 16,
+        "base_clock": "3.8 GHz",
+        "boost_clock": "4.7 GHz",
+        "cache_l3": "32 MB",
+        "tdp": "105W"
+      },
+      "last_tested": "2024-01-08", 
+      "community_rating": 4.9,
+      "reports_count": 298
+    },
+    {
+      "id": "intel_i7_12700k",
+      "name": "Intel Core i7-12700K",
+      "category": "cpu",
+      "manufacturer": "Intel",
+      "model": "i7-12700K", 
+      "compatibility_status": "full",
+      "tested_distributions": {
+        "debian": {
+          "status": "full",
+          "kernel_version": "5.16+",
+          "driver": "intel_pstate",
+          "notes": "Requires recent kernel for P/E core scheduling"
+        },
+        "arch": {
+          "status": "full",
+          "kernel_version": "5.15+",
+          "driver": "intel_pstate",
+          "notes": "Excellent support with recent kernels"
+        },
+        "fedora": {
+          "status": "full",
+          "kernel_version": "5.16+",
+          "driver": "intel_pstate", 
+          "notes": "Full P-core and E-core support"
+        },
+        "nixos": {
+          "status": "full",
+          "kernel_version": "5.15+",
+          "driver": "intel_pstate",
+          "notes": "Configure Intel P-state driver"
+        }
+      },
+      "specifications": {
+        "p_cores": 8,
+        "e_cores": 4,
+        "threads": 20,
+        "base_clock": "3.6 GHz",
+        "boost_clock": "5.0 GHz",
+        "cache_l3": "25 MB",
+        "tdp": "125W"
+      },
+      "last_tested": "2024-01-12",
+      "community_rating": 4.7,
+      "reports_count": 187
+    },
+    {
+      "id": "samsung_980_pro_nvme",
+      "name": "Samsung 980 PRO NVMe SSD",
+      "category": "storage",
+      "manufacturer": "Samsung",
+      "model": "980 PRO", 
+      "compatibility_status": "full",
+      "tested_distributions": {
+        "debian": {
+          "status": "full",
+          "kernel_version": "5.4+",
+          "driver": "nvme",
+          "notes": "Works perfectly out of box"
+        },
+        "arch": {
+          "status": "full",
+          "kernel_version": "5.4+",
+          "driver": "nvme",
+          "notes": "Excellent performance and reliability"
+        },
+        "fedora": {
+          "status": "full",
+          "kernel_version": "5.4+",
+          "driver": "nvme",
+          "notes": "No issues, full NVMe performance"
+        },
+        "nixos": {
+          "status": "full", 
+          "kernel_version": "5.4+",
+          "driver": "nvme",
+          "notes": "Enable NVMe support in kernel config"
+        }
+      },
+      "specifications": {
+        "capacity": "1TB",
+        "interface": "PCIe 4.0 x4",
+        "read_speed": "7000 MB/s",
+        "write_speed": "5000 MB/s",
+        "form_factor": "M.2 2280"
+      },
+      "last_tested": "2024-01-05",
+      "community_rating": 4.9,
+      "reports_count": 245
+    },
+    {
+      "id": "focusrite_scarlett_2i2",
+      "name": "Focusrite Scarlett 2i2 Gen 3",
+      "category": "audio",
+      "manufacturer": "Focusrite", 
+      "model": "Scarlett 2i2 Gen 3",
+      "usb_id": "1235:8210",
+      "compatibility_status": "full",
+      "tested_distributions": {
+        "debian": {
+          "status": "full",
+          "kernel_version": "5.4+",
+          "driver": "snd-usb-audio",
+          "notes": "Works with ALSA, excellent with JACK"
+        },
+        "arch": {
+          "status": "full",
+          "kernel_version": "5.4+",
+          "driver": "snd-usb-audio",
+          "notes": "Perfect support, low latency achievable"
+        },
+        "fedora": {
+          "status": "full",
+          "kernel_version": "5.4+",
+          "driver": "snd-usb-audio", 
+          "notes": "Works out of box with PipeWire"
+        },
+        "nixos": {
+          "status": "full",
+          "kernel_version": "5.4+",
+          "driver": "snd-usb-audio",
+          "notes": "Enable sound.enable and configure audio group"
+        }
+      },
+      "specifications": {
+        "inputs": "2 x XLR/TRS",
+        "outputs": "2 x TRS",
+        "sample_rates": "44.1-192 kHz",
+        "bit_depth": "24-bit",
+        "latency": "2.74ms"
+      },
+      "last_tested": "2023-12-28",
+      "community_rating": 4.6,
+      "reports_count": 123
+    }
+  ],
+  "statistics": {
+    "total_hardware": 8,
+    "total_reports": 1368,
+    "distributions_covered": 4,
+    "categories": {
+      "gpu": 2,
+      "cpu": 2, 
+      "network": 2,
+      "storage": 1,
+      "audio": 1
+    },
+    "compatibility_breakdown": {
+      "full": 6,
+      "partial": 2,
+      "limited": 0,
+      "none": 0
+    },
+    "last_updated": "2024-01-15"
+  }
+}

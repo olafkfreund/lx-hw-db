@@ -62,7 +62,39 @@
 
                 <!-- Search Interface Container -->
                 <div id="search-container" class="search-interface-wrapper">
-                    <!-- Search UI will be injected here by JavaScript -->
+                    <!-- Search Form -->
+                    <form id="search-form" class="search-form">
+                        <div class="search-input-container">
+                            <input 
+                                type="text" 
+                                id="search-input" 
+                                placeholder="Search hardware by vendor, model, or distribution..." 
+                                class="search-input"
+                                autocomplete="off"
+                            />
+                            <button type="submit" class="search-button" aria-label="Search">
+                                🔍
+                            </button>
+                            <button type="button" id="clear-search" class="clear-button" aria-label="Clear search">
+                                ✕
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Search Filters -->
+                    <div class="search-filters">
+                        <!-- Filters will be dynamically generated -->
+                    </div>
+
+                    <!-- Search Stats -->
+                    <div id="search-stats" class="search-stats">
+                        <!-- Search result count will appear here -->
+                    </div>
+
+                    <!-- Search Results -->
+                    <div id="search-results" class="search-results">
+                        <!-- Results will be dynamically populated -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -216,8 +248,21 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="https://unpkg.com/flexsearch@0.7.43/dist/flexsearch.bundle.js"></script>
+    <script src="js/data-loader.js"></script>
+    <script src="js/database-indexer.js"></script>
     <script src="js/search-engine.js"></script>
     <script src="js/search-ui.js"></script>
+    <script src="js/category-browser.js"></script>
+    <script src="js/compatibility-matrix.js"></script>
+    <script src="js/configuration-tips.js"></script>
+    <script src="js/github-auth.js"></script>
+    <script src="js/tip-submission.js"></script>
+    <script src="js/tip-moderation.js"></script>
+    <script src="js/tip-search.js"></script>
+    <script src="js/tip-export.js"></script>
+    <script src="js/contributor-leaderboard.js"></script>
+    <script src="js/configuration-profile-builder.js"></script>
     <script src="js/stats-dashboard.js"></script>
     <script src="js/main.js"></script>
 </body>
