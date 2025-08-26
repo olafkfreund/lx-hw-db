@@ -49,6 +49,10 @@ regex = "1.0"
 # Async traits
 async-trait = "0.1"
 
+# HTTP client and URL encoding
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+urlencoding = "2.0"
+
 [dev-dependencies]
 # Testing framework
 tokio-test = "0.4"

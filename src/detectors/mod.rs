@@ -10,6 +10,9 @@ pub mod dmidecode;
 pub mod lspci;
 pub mod lsusb;
 pub mod inxi;
+pub mod kernel;
+pub mod kernel_source;
+pub mod integration;
 
 /// Trait for hardware detection tools
 #[async_trait]
@@ -49,6 +52,7 @@ pub enum DetectionData {
     Lspci(lspci::LspciData),
     Lsusb(lsusb::LsusbData),
     Inxi(inxi::InxiData),
+    Kernel(kernel::KernelSupportData),
 }
 
 /// Registry for managing multiple hardware detectors
@@ -70,6 +74,18 @@ impl DetectorRegistry {
         }
     }
 
+    /// Create default data variant for a specific detector type
+    fn default_data_for_detector(detector_name: &str) -> DetectionData {
+        match detector_name {
+            "lshw" => DetectionData::Lshw(lshw::LshwData::default()),
+            "dmidecode" => DetectionData::Dmidecode(dmidecode::DmidecodeData::default()),
+            "lspci" => DetectionData::Lspci(lspci::LspciData::default()),
+            "lsusb" => DetectionData::Lsusb(lsusb::LsusbData::default()),
+            "inxi" => DetectionData::Inxi(inxi::InxiData::default()),
+            _ => DetectionData::Lshw(lshw::LshwData::default()), // fallback
+        }
+    }
+
     /// Get all available detectors on this system
     pub async fn get_available_detectors(&self) -> Vec<&dyn HardwareDetector> {
         let mut available = Vec::new();
@@ -79,6 +95,11 @@ impl DetectorRegistry {
             }
         }
         available
+    }
+
+    /// Get list of all registered detectors (for checking availability)
+    pub fn list_detectors(&self) -> Vec<&dyn HardwareDetector> {
+        self.detectors.iter().map(|d| d.as_ref()).collect()
     }
 
     /// Run all available detectors in parallel
@@ -95,7 +116,7 @@ impl DetectorRegistry {
                             results.push(DetectionResult {
                                 tool_name: detector.name().to_string(),
                                 success: false,
-                                data: DetectionData::Lshw(lshw::LshwData::default()),
+                                data: Self::default_data_for_detector(detector.name()),
                                 errors: vec![e.to_string()],
                             });
                         }
@@ -105,7 +126,7 @@ impl DetectorRegistry {
                     results.push(DetectionResult {
                         tool_name: detector.name().to_string(),
                         success: false,
-                        data: DetectionData::Lshw(lshw::LshwData::default()),
+                        data: Self::default_data_for_detector(detector.name()),
                         errors: vec![e.to_string()],
                     });
                 }

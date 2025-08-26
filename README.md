@@ -20,7 +20,12 @@ The Linux Hardware Database aims to solve the persistent problem of hardware com
 ### Core Components
 
 **Hardware Detection Tool (`lx-hw-detect`)**
-A Rust-based command-line tool that collects hardware information using multiple Linux utilities (lshw, dmidecode, lspci, lsusb, inxi) while implementing comprehensive privacy protection. The tool generates standardized compatibility reports that can be contributed to the community database.
+A Rust-based command-line tool that collects hardware information using multiple Linux utilities (lshw, dmidecode, lspci, lsusb, inxi) while implementing comprehensive privacy protection. The tool provides real-time kernel compatibility analysis, kernel source code searching, and generates actionable hardware upgrade recommendations. It produces standardized compatibility reports that can be contributed to the community database.
+
+**Key Commands:**
+- `detect`: Comprehensive hardware scanning with kernel compatibility analysis
+- `analyze`: Focused kernel compatibility verification with upgrade recommendations  
+- `check`: Tool availability verification and system readiness assessment
 
 **GitHub-Based Database**
 Hardware compatibility data is stored as markdown files with YAML frontmatter in a hierarchical GitHub repository structure. This approach provides natural version control, distributed redundancy, and transparent governance through pull requests and peer review.
@@ -63,6 +68,75 @@ The system supports distributed collaboration through a federated network:
 - **Storage**: Git-based with optional PostgreSQL for advanced queries
 - **Deployment**: GitHub Actions, GitHub Pages, CDN integration
 
+## Kernel Compatibility Analysis
+
+The system provides advanced kernel compatibility analysis that goes beyond simple hardware detection:
+
+### Real-Time Compatibility Verification
+- **Module Resolution**: Maps detected hardware to kernel modules using `/lib/modules/*/modules.alias`
+- **Support Classification**: Categorizes devices as supported, experimental, generic, or unsupported
+- **Driver Information**: Provides kernel module names, configuration dependencies, and version requirements
+- **Missing Module Detection**: Identifies hardware lacking kernel drivers
+
+### Kernel Source Analysis
+- **Direct Source Queries**: Searches official Linux kernel repositories via GitHub API
+- **MODULE_DEVICE_TABLE Parsing**: Extracts hardware support information directly from driver source code
+- **Version History Tracking**: Determines when hardware support was introduced in specific kernel versions
+- **Experimental Driver Detection**: Identifies staging or experimental drivers for newer hardware
+
+### Upgrade Recommendations
+- **Distribution-Specific Commands**: Provides tailored kernel upgrade instructions for major Linux distributions
+- **Success Probability**: Estimates likelihood of improved hardware support after kernel upgrades
+- **Configuration Guidance**: Suggests kernel configuration options and module parameters
+- **Risk Assessment**: Categorizes upgrade complexity and potential system impact
+
+## Hardware Detection Architecture
+
+The hardware detection system uses a modular architecture with multiple specialized detectors:
+
+### lshw Detector (Complete)
+- **Data Source**: JSON output from `lshw -json -quiet -sanitize`
+- **Capabilities**: Comprehensive hardware tree with PCI, USB, memory, storage, and network devices  
+- **Privilege Handling**: Warns about missing privileges but continues with available data
+- **Privacy Features**: Automatically identifies serial numbers, MAC addresses for anonymization
+- **Performance**: 30-second timeout, efficient JSON parsing with serde
+
+### dmidecode Detector (Complete)
+- **Data Source**: Text output from `dmidecode -t system,baseboard,bios,processor,memory`
+- **Capabilities**: BIOS information, motherboard details, memory modules, processor specifications
+- **Privilege Handling**: Detects `/dev/mem` access issues, gracefully handles unprivileged execution
+- **Privacy Features**: Captures UUIDs, serial numbers, asset tags for anonymization pipeline
+- **Performance**: 15-second timeout, custom text parser for DMI/SMBIOS data structures
+- **Data Coverage**: 
+  - **BIOS**: Vendor, version, release date, characteristics, revision
+  - **System**: Manufacturer, product name, UUID, serial number, SKU
+  - **Baseboard**: Manufacturer, product name, version, serial number, features
+  - **Processor**: Socket, manufacturer, version, cores, threads, speed, flags
+  - **Memory**: DIMMs with size, type, speed, manufacturer, part numbers
+
+### Kernel Compatibility Detector (Complete)
+- **Data Source**: `/lib/modules/*/modules.alias` and sysfs filesystem (`/sys/bus/pci/devices/*`)
+- **Capabilities**: Real-time kernel compatibility verification for detected hardware
+- **Support Analysis**: Identifies supported, unsupported, experimental, and generic driver support
+- **Device Extraction**: Direct PCI device enumeration from sysfs with vendor:device ID mapping
+- **Module Resolution**: Maps hardware IDs to kernel modules using modules.alias database
+- **Upgrade Recommendations**: Distribution-specific kernel upgrade suggestions with estimated success rates
+- **Performance**: Concurrent device analysis with intelligent fallback strategies
+
+### Kernel Source Detector (Complete)
+- **Data Source**: Official Linux kernel Git repositories (GitHub API integration)
+- **Capabilities**: Direct kernel source code analysis for hardware support verification
+- **Search Scope**: MODULE_DEVICE_TABLE definitions, driver source code, Kconfig entries
+- **Repository Support**: Both remote GitHub API queries and local kernel repository analysis
+- **Version Tracking**: Kernel version history for hardware support introduction
+- **Experimental Detection**: Identifies experimental or staging drivers for unsupported hardware
+- **Performance**: Efficient API queries with rate limiting and caching strategies
+
+### Planned Detectors
+- **lspci**: PCI device enumeration with extended kernel driver mapping
+- **lsusb**: USB device detection with vendor/product identification  
+- **inxi**: User-friendly system summaries and additional hardware insights
+
 ## Current Status
 
 **Phase 1: Foundation Complete**
@@ -71,10 +145,23 @@ The system supports distributed collaboration through a federated network:
 - Modular project structure ready for hardware detection implementation
 - Configuration management and error handling systems
 
-**Next: Phase 2 - Hardware Detection Integration**
-- Implementation of hardware detection tools (lshw, dmidecode, lspci, lsusb, inxi)
+**Phase 2: Hardware Detection Complete**
+- **lshw detector**: Complete JSON-based hardware information extraction
+- **dmidecode detector**: Complete BIOS, motherboard, and memory detection with privilege handling
+- **Kernel compatibility detector**: Real-time kernel module compatibility verification
+- **Kernel source detector**: Direct Linux kernel source code analysis via GitHub API
+- **Hardware analyzer**: Unified detection pipeline with privacy-preserving anonymization
+- **CLI integration**: Full command-line interface with multiple output formats (YAML, JSON, Markdown)
+- **Comprehensive testing**: Real-system validation with 31+ detected devices and kernel analysis
+- **Privacy-sensitive data identification**: Automatic detection of serial numbers, UUIDs, and other identifiers for anonymization
+- **lspci detector**: Planned - Enhanced PCI device detection with extended kernel driver mapping
+- **lsusb detector**: Planned - USB device enumeration
+- **inxi detector**: Planned - User-friendly system summary information
+
+**Next: Phase 3 - Report Generation & Submission**
 - Report generation and validation
 - Community submission workflows
+- GitHub integration for automated database updates
 
 ## Getting Started
 
@@ -100,8 +187,17 @@ cargo build --release
 # Check available detection tools  
 ./target/release/lx-hw-detect check
 
-# Detect hardware (Phase 2 - not yet implemented)
+# Detect hardware with kernel compatibility analysis
 ./target/release/lx-hw-detect detect --privacy enhanced --format markdown
+
+# Analyze kernel compatibility for current system
+./target/release/lx-hw-detect analyze --recommendations
+
+# Analyze specific device with kernel source search
+./target/release/lx-hw-detect analyze --device 8086:1234 --kernel-source --recommendations
+
+# Use local kernel repository for faster analysis
+./target/release/lx-hw-detect analyze --kernel-repo /path/to/linux --kernel-source
 ```
 
 ## Contributing

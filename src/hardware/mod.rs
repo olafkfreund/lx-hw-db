@@ -26,6 +26,7 @@ pub struct HardwareReport {
     pub network: Vec<NetworkDevice>,
     pub usb: Vec<UsbDevice>,
     pub audio: Vec<AudioDevice>,
+    pub kernel_support: Option<KernelCompatibilityInfo>,
 }
 
 /// Report metadata and privacy settings
@@ -128,6 +129,31 @@ pub struct AudioDevice {
     pub model: String,
     pub driver: Option<String>,
     pub device_type: String, // playback, capture, etc.
+}
+
+/// Kernel compatibility and support information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KernelCompatibilityInfo {
+    pub kernel_version: String,
+    pub total_devices_detected: u32,
+    pub supported_devices: u32,
+    pub unsupported_devices: u32,
+    pub experimental_devices: u32,
+    pub device_support_details: Vec<DeviceCompatibility>,
+    pub missing_modules: Vec<String>,
+    pub config_recommendations: Vec<String>,
+}
+
+/// Individual device compatibility information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeviceCompatibility {
+    pub device_id: String,
+    pub device_name: String,
+    pub support_status: String, // "supported", "experimental", "unsupported"
+    pub driver_module: String,
+    pub since_kernel_version: Option<String>,
+    pub config_dependencies: Vec<String>,
+    pub notes: Option<String>,
 }
 
 impl Default for PrivacyLevel {
