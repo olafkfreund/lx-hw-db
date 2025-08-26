@@ -5,7 +5,7 @@ class SearchEngine {
         this.indices = {};
         this.loadIndices();
     }
-    
+
     async loadIndices() {
         try {
             // Load search indices
@@ -13,7 +13,7 @@ class SearchEngine {
             if (searchResponse.ok) {
                 this.indices.searchTerms = await searchResponse.json();
             }
-            
+
             const vendorResponse = await fetch('./indices/by-vendor.json');
             if (vendorResponse.ok) {
                 this.indices.vendors = await vendorResponse.json();
@@ -22,7 +22,7 @@ class SearchEngine {
             console.error('Error loading search indices:', error);
         }
     }
-    
+
     search(query) {
         // Basic search implementation
         console.log('Searching for:', query);

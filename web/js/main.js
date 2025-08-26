@@ -2,7 +2,7 @@
 // Main JavaScript for Linux Hardware Compatibility Database
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Linux Hardware Compatibility Database loaded');
-    
+
     // Add any global functionality here
     initializeSearch();
 });

@@ -5,7 +5,7 @@ class SearchUI {
         this.searchEngine = new SearchEngine();
         this.initializeUI();
     }
-    
+
     initializeUI() {
         const searchForm = document.querySelector('#search-form');
         if (searchForm) {
@@ -15,7 +15,7 @@ class SearchUI {
             });
         }
     }
-    
+
     performSearch() {
         const query = document.querySelector('#search-input')?.value;
         if (query) {
@@ -23,7 +23,7 @@ class SearchUI {
             this.displayResults(results);
         }
     }
-    
+
     displayResults(results) {
         console.log('Search results:', results);
         // Display results in UI
