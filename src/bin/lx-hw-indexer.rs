@@ -126,7 +126,7 @@ async fn generate_indices(
     min_reports: usize,
     verbose: bool,
 ) -> Result<()> {
-    println!("🚀 Starting hardware compatibility index generation...");
+    println!("Starting hardware compatibility index generation...");
     
     let config = IndexerConfig {
         reports_dir: input,
@@ -140,29 +140,29 @@ async fn generate_indices(
     let mut indexer = HardwareIndexer::new(config);
     
     // Scan and load all reports
-    println!("📂 Scanning hardware reports...");
+    println!("Scanning hardware reports...");
     indexer.scan_reports()?;
     
     if indexer.reports.is_empty() {
-        println!("⚠️  No hardware reports found. Please check the input directory.");
+        println!("Warning: No hardware reports found. Please check the input directory.");
         return Ok(());
     }
 
-    println!("✅ Loaded {} hardware reports", indexer.reports.len());
+    println!("Loaded {} hardware reports", indexer.reports.len());
     
     // Build indices
-    println!("🔨 Building search indices...");
+    println!("Building search indices...");
     indexer.build_indices()?;
     
     // Write indices to disk
-    println!("💾 Writing indices to disk...");
+    println!("Writing indices to disk...");
     indexer.write_indices()?;
     
     // Validate indices
-    println!("🔍 Validating generated indices...");
+    println!("Validating generated indices...");
     indexer.validate_indices()?;
     
-    println!("🎉 Index generation completed successfully!");
+    println!("Index generation completed successfully!");
     
     // Print summary
     if verbose {
@@ -174,7 +174,7 @@ async fn generate_indices(
 
 /// Validate generated indices
 async fn validate_indices(indices_dir: PathBuf, reports_dir: PathBuf, verbose: bool) -> Result<()> {
-    println!("🔍 Validating hardware compatibility indices...");
+    println!("Validating hardware compatibility indices...");
     
     // Load indices and validate
     let config = IndexerConfig {
@@ -192,11 +192,11 @@ async fn validate_indices(indices_dir: PathBuf, reports_dir: PathBuf, verbose: b
     
     match indexer.validate_indices() {
         Ok(_) => {
-            println!("✅ All indices validated successfully!");
+            println!("All indices validated successfully!");
             Ok(())
         },
         Err(e) => {
-            println!("❌ Index validation failed: {}", e);
+            println!("Index validation failed: {}", e);
             std::process::exit(1);
         }
     }
@@ -209,7 +209,7 @@ async fn generate_site(
     indices: PathBuf,
     verbose: bool,
 ) -> Result<()> {
-    println!("🌐 Generating static website...");
+    println!("Generating static website...");
     
     if verbose {
         println!("   Output directory: {}", output.display());
@@ -230,7 +230,7 @@ async fn generate_site(
     // Copy JavaScript files if they exist in web/ directory
     copy_web_assets(&output, verbose)?;
     
-    println!("✅ Static website generated successfully!");
+    println!("Static website generated successfully!");
     
     Ok(())
 }
@@ -241,7 +241,7 @@ fn generate_index_html(output: &PathBuf, verbose: bool) -> Result<()> {
         println!("   Generating index.html...");
     }
     
-    let index_html = r#"<!DOCTYPE html>
+    let index_html = r###"<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -299,7 +299,7 @@ fn generate_index_html(output: &PathBuf, verbose: bool) -> Result<()> {
         <section id="search" class="search-section">
             <div class="container">
                 <div class="search-intro">
-                    <h2>🔍 Search Hardware Compatibility</h2>
+                    <h2>Search Hardware Compatibility</h2>
                     <p>Find compatibility information for your Linux hardware across different distributions and kernel versions.</p>
                 </div>
                 
@@ -314,7 +314,7 @@ fn generate_index_html(output: &PathBuf, verbose: bool) -> Result<()> {
         <section id="stats" class="stats-section">
             <div class="container">
                 <div class="stats-intro">
-                    <h2>📊 Database Statistics</h2>
+                    <h2>Database Statistics</h2>
                     <p>Overview of our community-contributed hardware compatibility data.</p>
                 </div>
                 
@@ -368,18 +368,18 @@ fn generate_index_html(output: &PathBuf, verbose: bool) -> Result<()> {
                         </div>
                         
                         <div class="about-card">
-                            <h3>📖 Open Source</h3>
+                            <h3>Open Source</h3>
                             <p>This project is completely open source under the AGPL-3.0 license. Data is available under CC0 - no rights reserved.</p>
                         </div>
                         
                         <div class="about-card">
-                            <h3>🌍 Community Driven</h3>
+                            <h3>Community Driven</h3>
                             <p>Hardware compatibility reports are contributed by the Linux community. Everyone can contribute data and help improve hardware support.</p>
                         </div>
                     </div>
                     
                     <div class="contribute-section">
-                        <h3>🚀 Contribute Data</h3>
+                        <h3>Contribute Data</h3>
                         <p>Help make Linux hardware compatibility better for everyone by contributing your hardware reports.</p>
                         <div class="contribute-steps">
                             <div class="step">
@@ -464,7 +464,7 @@ fn generate_index_html(output: &PathBuf, verbose: bool) -> Result<()> {
     <script src="js/stats-dashboard.js"></script>
     <script src="js/main.js"></script>
 </body>
-</html>"#;
+</html>"###;
 
     std::fs::write(output.join("index.html"), index_html)?;
     Ok(())
@@ -519,7 +519,7 @@ fn copy_web_assets(output: &PathBuf, verbose: bool) -> Result<()> {
 
 /// Show statistics about hardware reports
 async fn show_stats(input: PathBuf, verbose: bool) -> Result<()> {
-    println!("📊 Analyzing hardware reports...");
+    println!("Analyzing hardware reports...");
     
     let config = IndexerConfig {
         reports_dir: input,
@@ -534,7 +534,7 @@ async fn show_stats(input: PathBuf, verbose: bool) -> Result<()> {
     indexer.scan_reports()?;
     
     if indexer.reports.is_empty() {
-        println!("⚠️  No hardware reports found.");
+        println!("Warning: No hardware reports found.");
         return Ok(());
     }
 
@@ -542,7 +542,7 @@ async fn show_stats(input: PathBuf, verbose: bool) -> Result<()> {
     
     let stats = &indexer.indices.statistics;
     
-    println!("\n📈 Database Statistics:");
+    println!("\nDatabase Statistics:");
     println!("========================");
     println!("Total Reports: {}", stats.total_reports);
     println!("Unique Systems: {}", stats.unique_systems);
@@ -551,44 +551,44 @@ async fn show_stats(input: PathBuf, verbose: bool) -> Result<()> {
     println!("Kernel Versions: {}", stats.kernel_versions);
     println!("Linux Distributions: {}", stats.distributions);
     
-    println!("\n🎯 Compatibility Overview:");
+    println!("\nCompatibility Overview:");
     for (status, count) in &stats.compatibility_overview {
         let percentage = (*count as f64 / stats.total_reports as f64) * 100.0;
         println!("  {:?}: {} ({:.1}%)", status, count, percentage);
     }
     
     if verbose && !stats.top_hardware.is_empty() {
-        println!("\n🏆 Top Hardware (by report count):");
+        println!("\nTop Hardware (by report count):");
         for (i, hw) in stats.top_hardware.iter().take(10).enumerate() {
             println!("  {}. {} {} - {} reports (compatibility: {:.1})",
                 i + 1, hw.vendor, hw.model, hw.report_count, hw.avg_compatibility);
         }
     }
     
-    println!("\n📅 Last Updated: {}", stats.last_updated);
+    println!("\nLast Updated: {}", stats.last_updated);
     
     Ok(())
 }
 
 /// Print detailed generation summary
 fn print_generation_summary(indexer: &HardwareIndexer) {
-    println!("\n📋 Generation Summary:");
+    println!("\nGeneration Summary:");
     println!("======================");
     
     let stats = &indexer.indices.statistics;
     
     println!("Reports Processed: {}", indexer.reports.len());
     println!("Indices Generated:");
-    println!("  • Vendor Index: {} vendors", indexer.indices.by_vendor.len());
-    println!("  • Component Index: {} component types", indexer.indices.by_component.len()); 
-    println!("  • Kernel Index: {} kernel versions", indexer.indices.by_kernel.len());
-    println!("  • Distribution Index: {} distributions", indexer.indices.by_distribution.len());
-    println!("  • Search Terms: {} terms", indexer.indices.search_terms.len());
-    println!("  • Compatibility Matrix: {} hardware/kernel combinations", 
+    println!("  - Vendor Index: {} vendors", indexer.indices.by_vendor.len());
+    println!("  - Component Index: {} component types", indexer.indices.by_component.len()); 
+    println!("  - Kernel Index: {} kernel versions", indexer.indices.by_kernel.len());
+    println!("  - Distribution Index: {} distributions", indexer.indices.by_distribution.len());
+    println!("  - Search Terms: {} terms", indexer.indices.search_terms.len());
+    println!("  - Compatibility Matrix: {} hardware/kernel combinations", 
         indexer.indices.compatibility_matrix.values().map(|v| v.len()).sum::<usize>());
     
     println!("Statistics:");
-    println!("  • Database Health Score: {}/100", stats.health_score());
-    println!("  • Growth Trend: {:?}", stats.growth_trend());
-    println!("  • Data Quality: High");
+    println!("  - Database Health Score: {}/100", stats.health_score());
+    println!("  - Growth Trend: {:?}", stats.growth_trend());
+    println!("  - Data Quality: High");
 }

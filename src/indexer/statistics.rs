@@ -3,7 +3,7 @@
 use super::*;
 use crate::errors::Result;
 use std::collections::{HashMap, BTreeMap};
-use chrono::{DateTime, Utc, Duration, Datelike};
+use chrono::{Utc, Datelike, TimeZone};
 
 /// Advanced statistics generator for hardware compatibility analysis
 pub struct StatisticsGenerator<'a> {
@@ -17,26 +17,18 @@ impl<'a> StatisticsGenerator<'a> {
 
     /// Generate comprehensive statistics from all reports
     pub fn generate_statistics(&self) -> Result<Statistics> {
-        let mut stats = Statistics::default();
-        
-        stats.total_reports = self.reports.len();
-        stats.last_updated = Utc::now();
-
-        // Basic counts
-        stats.unique_systems = self.count_unique_systems();
-        stats.total_vendors = self.count_unique_vendors(); 
-        stats.component_types = self.count_component_types();
-        stats.kernel_versions = self.count_kernel_versions();
-        stats.distributions = self.count_distributions();
-
-        // Compatibility overview
-        stats.compatibility_overview = self.build_compatibility_overview();
-
-        // Top hardware
-        stats.top_hardware = self.build_top_hardware_list();
-
-        // Growth statistics
-        stats.growth_stats = self.build_growth_statistics();
+        let stats = Statistics {
+            total_reports: self.reports.len(),
+            last_updated: Utc::now(),
+            unique_systems: self.count_unique_systems(),
+            total_vendors: self.count_unique_vendors(),
+            component_types: self.count_component_types(),
+            kernel_versions: self.count_kernel_versions(),
+            distributions: self.count_distributions(),
+            compatibility_overview: self.build_compatibility_overview(),
+            top_hardware: self.build_top_hardware_list(),
+            growth_stats: self.build_growth_statistics(),
+        };
 
         Ok(stats)
     }
@@ -122,7 +114,7 @@ impl<'a> StatisticsGenerator<'a> {
         }
 
         // Convert to trend data
-        trends.monthly_trends = monthly_data.into_iter().map(|(_, data)| data).collect();
+        trends.monthly_trends = monthly_data.into_values().collect();
         trends.overall_growth_rate = self.calculate_overall_growth_rate(&trends.monthly_trends);
         trends.vendor_trends = self.calculate_vendor_trends();
         trends.compatibility_trends = self.calculate_compatibility_trends();
@@ -131,7 +123,6 @@ impl<'a> StatisticsGenerator<'a> {
     }
 
     /// Private helper methods
-
     fn count_unique_systems(&self) -> usize {
         let mut systems = std::collections::HashSet::new();
         for report in self.reports {
@@ -236,8 +227,8 @@ impl<'a> StatisticsGenerator<'a> {
             cumulative_total += new_reports;
             
             // Create first day of month for the date
-            let date = chrono::Utc.ymd_opt(year, month, 1)
-                .and_then(|date| date.and_hms_opt(0, 0, 0))
+            let date = chrono::Utc.with_ymd_and_hms(year, month, 1, 0, 0, 0)
+                .single()
                 .unwrap_or_else(Utc::now);
 
             growth_stats.push(GrowthDataPoint {

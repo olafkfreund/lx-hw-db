@@ -178,7 +178,7 @@ impl KernelSourceAnalyzer {
     fn parse_git_grep_output(&self, output: &str, device_id: &str) -> Result<Vec<HardwareSupportInfo>> {
         let mut results = Vec::new();
         let line_regex = Regex::new(r"^([^:]+):(\d+):(.*)$")
-            .map_err(|e| LxHwError::ValidationError(format!("Regex error: {}", e)))?;
+            .map_err(|e| LxHwError::ValidationError { message: format!("Regex error: {}", e) })?;
 
         for line in output.lines() {
             if let Some(captures) = line_regex.captures(line) {

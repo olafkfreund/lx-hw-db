@@ -1,9 +1,9 @@
 //! Index builder implementation for generating search indices from hardware reports
 
 use super::*;
-use crate::errors::{Result, LxHwError};
+use crate::errors::Result;
 use std::collections::{HashMap, HashSet};
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 
 /// Builder for generating all types of indices from hardware reports
 pub struct IndexBuilder<'a> {
@@ -363,7 +363,7 @@ impl<'a> IndexBuilder<'a> {
                     let total_samples = score_entry.sample_size + 1;
                     
                     // Calculate weighted average
-                    score_entry.score = ((score_entry.score as usize * score_entry.sample_size) + component_score as usize) as u8 / total_samples;
+                    score_entry.score = (((score_entry.score as usize * score_entry.sample_size) + component_score as usize) / total_samples) as u8;
                     score_entry.sample_size = total_samples;
                     score_entry.last_updated = Utc::now();
                     
@@ -444,7 +444,6 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Helper methods
-
     /// Create vendor name normalization aliases
     fn create_vendor_aliases() -> HashMap<String, String> {
         let mut aliases = HashMap::new();

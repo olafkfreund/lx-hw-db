@@ -88,7 +88,7 @@ impl<'a> IndexValidator<'a> {
     fn validate_component_index(&self) -> Result<IndexValidation> {
         let mut validation = IndexValidation::new("component_index");
         
-        let known_components = vec![
+        let known_components = [
             "CPU", "GPU", "Storage", "Network", "Audio", "Bluetooth",
             "USB", "Camera", "Touchpad", "Keyboard", "Display"
         ];

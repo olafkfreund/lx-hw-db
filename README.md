@@ -5,25 +5,25 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Data: CC0](https://img.shields.io/badge/Data-CC0-green.svg)](https://creativecommons.org/public-domain/cc0/)
 
-> 🐧 A community-driven, privacy-preserving Linux hardware compatibility database built entirely on GitHub infrastructure
+> A community-driven, privacy-preserving Linux hardware compatibility database built entirely on GitHub infrastructure
 
-## 🌟 Features
+## Features
 
-- **🔍 Fast Client-Side Search** - Search hardware compatibility across vendors, models, kernels, and distributions
-- **📊 Real-Time Statistics** - Live dashboard showing compatibility trends and database health
-- **🤖 Automated Processing** - GitHub Actions automatically build indices from community reports
-- **🔒 Privacy-First** - All data is anonymized and contains no personally identifiable information
-- **📱 Modern Interface** - Responsive web design with dark mode support
-- **🌐 GitHub-Native** - Fully hosted on GitHub Pages with no external dependencies
-- **⚡ Zero-Server Architecture** - Static site with pre-built JSON indices for instant search
+- **Fast Client-Side Search** - Search hardware compatibility across vendors, models, kernels, and distributions
+- **Real-Time Statistics** - Live dashboard showing compatibility trends and database health
+- **Automated Processing** - GitHub Actions automatically build indices from community reports
+- **Privacy-First** - All data is anonymized and contains no personally identifiable information
+- **Modern Interface** - Responsive web design with dark mode support
+- **GitHub-Native** - Fully hosted on GitHub Pages with no external dependencies
+- **Zero-Server Architecture** - Static site with pre-built JSON indices for instant search
 
-## 🚀 Quick Start
+## Quick Start
 
-### 🔗 Access the Database
+### Access the Database
 
 Visit the live database: **[https://lx-hw-db.github.io/lx-hw-db/](https://lx-hw-db.github.io/lx-hw-db/)**
 
-### 📡 API Access
+### API Access
 
 The database provides REST-like JSON APIs:
 
@@ -41,7 +41,7 @@ curl https://lx-hw-db.github.io/lx-hw-db/api/statistics.json
 curl https://lx-hw-db.github.io/lx-hw-db/indices/search-terms.json
 ```
 
-### 🤝 Contributing Hardware Reports
+### Contributing Hardware Reports
 
 Help improve Linux hardware compatibility by contributing your system's hardware report:
 
@@ -72,14 +72,14 @@ lx-hw-detect --privacy-level high --output my-hardware-report.json
 
 The automated system will process your report and update the database indices within minutes of merging.
 
-## 🏗️ Architecture
+## Architecture
 
 ### GitHub-Native Design
 
 This project uses a novel **GitHub-native database architecture**:
 
 ```
-📁 Repository Structure
+Repository Structure
 ├── hardware-reports/           # Raw JSON reports (community contributed)
 ├── indices/                   # Generated search indices  
 ├── api/                       # REST-like JSON API endpoints
@@ -97,10 +97,10 @@ This project uses a novel **GitHub-native database architecture**:
 
 ### Key Components
 
-- **🦀 Rust Indexer** (`lx-hw-indexer`) - Processes reports into structured indices
-- **⚙️ GitHub Actions** - Automated CI/CD pipeline for index generation
-- **🌐 Static Web App** - Modern JavaScript search interface
-- **📊 Analytics Dashboard** - Real-time statistics and compatibility trends
+- **Rust Indexer** (`lx-hw-indexer`) - Processes reports into structured indices
+- **GitHub Actions** - Automated CI/CD pipeline for index generation
+- **Static Web App** - Modern JavaScript search interface
+- **Analytics Dashboard** - Real-time statistics and compatibility trends
 
 ### Privacy-First Architecture
 

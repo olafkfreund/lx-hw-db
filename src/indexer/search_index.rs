@@ -248,7 +248,7 @@ impl<'a> ApiBuilder<'a> {
         for (vendor, entry) in &self.indices.by_vendor {
             let recommendations = self.generate_vendor_recommendations(vendor, entry);
             
-            let vendor_filename = vendor.to_lowercase().replace(' ', '-') + ".json";
+            let vendor_filename = vendor.to_lowercase().replace(' ', "-") + ".json";
             let vendor_data = json!({
                 "version": "1.0",
                 "generated": Utc::now().to_rfc3339(),
@@ -269,7 +269,7 @@ impl<'a> ApiBuilder<'a> {
         for (component_type, entry) in &self.indices.by_component {
             let recommendations = self.generate_component_recommendations(component_type, entry);
             
-            let component_filename = component_type.to_lowercase().replace(' ', '-') + ".json";
+            let component_filename = component_type.to_lowercase().replace(' ', "-") + ".json";
             let component_data = json!({
                 "version": "1.0",
                 "generated": Utc::now().to_rfc3339(),
@@ -433,7 +433,6 @@ impl<'a> ApiBuilder<'a> {
     }
 
     /// Helper methods for recommendations
-
     fn get_recommendation_level(&self, score: f64) -> &'static str {
         match score {
             s if s >= 90.0 => "Excellent",

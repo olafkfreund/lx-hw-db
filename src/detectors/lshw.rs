@@ -65,6 +65,12 @@ pub struct LshwSummary {
 
 pub struct LshwDetector;
 
+impl Default for LshwDetector {
+    fn default() -> Self {
+        Self
+    }
+}
+
 impl LshwDetector {
     pub fn new() -> Self {
         Self

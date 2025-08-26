@@ -3,7 +3,6 @@
 use super::*;
 
 /// Additional model implementations and utilities for indexing
-
 impl CompatibilityStatus {
     /// Convert to numerical score for calculations
     pub fn to_score(&self) -> u8 {
@@ -64,17 +63,17 @@ impl HardwareComponent {
     pub fn get_identifier(&self) -> String {
         match (&self.vendor, &self.model) {
             (Some(vendor), Some(model)) => format!("{}_{}", 
-                vendor.to_lowercase().replace(' ', '_'),
-                model.to_lowercase().replace(' ', '_')
+                vendor.to_lowercase().replace(' ', "_"),
+                model.to_lowercase().replace(' ', "_")
             ),
             (Some(vendor), None) => format!("{}_unknown", 
-                vendor.to_lowercase().replace(' ', '_')
+                vendor.to_lowercase().replace(' ', "_")
             ),
             (None, Some(model)) => format!("unknown_{}", 
-                model.to_lowercase().replace(' ', '_')
+                model.to_lowercase().replace(' ', "_")
             ),
             (None, None) => format!("unknown_{}", 
-                self.component_type.to_lowercase().replace(' ', '_')
+                self.component_type.to_lowercase().replace(' ', "_")
             ),
         }
     }
@@ -156,7 +155,7 @@ impl ComponentEntry {
         let successful = self.compatibility_distribution.get(&CompatibilityStatus::Excellent).unwrap_or(&0)
             + self.compatibility_distribution.get(&CompatibilityStatus::Good).unwrap_or(&0);
         
-        (*successful as f64 / total as f64) * 100.0
+        (successful as f64 / total as f64) * 100.0
     }
 }
 
@@ -171,7 +170,7 @@ impl KernelEntry {
         let good = self.compatibility_stats.get("good").unwrap_or(&0);
         let successful = excellent + good;
 
-        (*successful as f64 / self.total_reports as f64) * 100.0
+        (successful as f64 / self.total_reports as f64) * 100.0
     }
 
     /// Check if this is a long-term support kernel
@@ -303,7 +302,6 @@ impl GrowthDataPoint {
 }
 
 /// Utility functions for data processing
-
 /// Normalize hardware vendor names to canonical forms
 pub fn normalize_vendor_name(vendor: &str) -> String {
     match vendor.to_lowercase().as_str() {

@@ -603,7 +603,7 @@ impl InxiDetector {
     }
     
     /// Parse graphics section
-    fn parse_graphics_section(&self, content: &[String]) -> Result<InxiGraphics> {
+    fn parse_graphics_section(&self, _content: &[String]) -> Result<InxiGraphics> {
         Ok(InxiGraphics {
             devices: Vec::new(),
             display: None,
@@ -612,7 +612,7 @@ impl InxiDetector {
     }
     
     /// Parse audio section
-    fn parse_audio_section(&self, content: &[String]) -> Result<InxiAudio> {
+    fn parse_audio_section(&self, _content: &[String]) -> Result<InxiAudio> {
         Ok(InxiAudio {
             devices: Vec::new(),
             server: None,
@@ -620,7 +620,7 @@ impl InxiDetector {
     }
     
     /// Parse network section
-    fn parse_network_section(&self, content: &[String]) -> Result<InxiNetwork> {
+    fn parse_network_section(&self, _content: &[String]) -> Result<InxiNetwork> {
         Ok(InxiNetwork {
             devices: Vec::new(),
             interfaces: Vec::new(),
@@ -642,7 +642,7 @@ impl InxiDetector {
     }
     
     /// Parse drives section
-    fn parse_drives_section(&self, content: &[String]) -> Result<InxiDrives> {
+    fn parse_drives_section(&self, _content: &[String]) -> Result<InxiDrives> {
         Ok(InxiDrives {
             local_storage_total: None,
             local_storage_used: None,
@@ -680,7 +680,7 @@ impl InxiDetector {
     }
     
     /// Parse sensors section
-    fn parse_sensors_section(&self, content: &[String]) -> Result<InxiSensors> {
+    fn parse_sensors_section(&self, _content: &[String]) -> Result<InxiSensors> {
         Ok(InxiSensors {
             cpu_temp: None,
             mobo_temp: None,

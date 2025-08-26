@@ -178,6 +178,12 @@ pub struct DmidecodeSummary {
 
 pub struct DmidecodeDetector;
 
+impl Default for DmidecodeDetector {
+    fn default() -> Self {
+        Self
+    }
+}
+
 impl DmidecodeDetector {
     pub fn new() -> Self {
         Self
@@ -242,7 +248,7 @@ impl HardwareDetector for DmidecodeDetector {
             }
         }
         
-        Ok(output.into())
+        Ok(output)
     }
 
     fn parse_output(&self, output: &Output) -> Result<DetectionResult> {

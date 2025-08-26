@@ -19,6 +19,9 @@ use std::path::{Path, PathBuf};
 use chrono::{DateTime, Utc};
 use glob::glob;
 
+// Re-export utility functions from models
+pub use models::normalize_vendor_name;
+
 /// Main hardware indexer that processes reports and builds indices
 pub struct HardwareIndexer {
     /// All loaded hardware reports
@@ -115,7 +118,7 @@ pub struct CompatibilityInfo {
 }
 
 /// Compatibility status levels
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Hash, Eq, PartialEq)]
 pub enum CompatibilityStatus {
     /// All hardware working perfectly
     Excellent,
@@ -320,7 +323,7 @@ impl HardwareIndexer {
         let pattern = format!("{}/**/*.json", self.config.reports_dir.display());
         let files: Vec<PathBuf> = glob(&pattern)
             .map_err(|e| LxHwError::ConfigError(format!("Invalid glob pattern: {}", e)))?
-            .filter_map(Result::ok)
+            .filter_map(|entry| entry.ok())
             .collect();
 
         if self.config.verbose {
@@ -353,7 +356,7 @@ impl HardwareIndexer {
     /// Load and parse a single hardware report
     fn load_report(&self, file_path: &Path) -> Result<IndexedReport> {
         let content = std::fs::read_to_string(file_path)
-            .map_err(|e| LxHwError::IoError(e))?;
+            .map_err(LxHwError::IoError)?;
 
         let report: HardwareReport = serde_json::from_str(&content)
             .map_err(|e| LxHwError::SerializationError(format!("Failed to parse JSON: {}", e)))?;
@@ -387,7 +390,7 @@ impl HardwareIndexer {
     }
 
     /// Extract metadata from hardware report
-    fn extract_metadata(&self, report: &HardwareReport) -> Result<ReportMetadata> {
+    fn extract_metadata(&self, _report: &HardwareReport) -> Result<ReportMetadata> {
         // This would extract metadata from the actual report structure
         // For now, return a placeholder that matches expected fields
         Ok(ReportMetadata {
@@ -401,7 +404,7 @@ impl HardwareIndexer {
     }
 
     /// Extract hardware components from report
-    fn extract_components(&self, report: &HardwareReport) -> Result<Vec<HardwareComponent>> {
+    fn extract_components(&self, _report: &HardwareReport) -> Result<Vec<HardwareComponent>> {
         // This would parse the actual hardware data from the report
         // For now, return a placeholder
         Ok(Vec::new())
@@ -532,9 +535,10 @@ impl HardwareIndexer {
     pub fn validate_indices(&self) -> Result<()> {
         // Validate index consistency and completeness
         let validator = compatibility::IndexValidator::new(&self.indices);
-        validator.validate()?;
+        let validation_report = validator.validate()?;
 
         if self.config.verbose {
+            validation_report.print_report();
             println!("Index validation completed successfully");
         }
 

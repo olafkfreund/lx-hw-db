@@ -73,7 +73,15 @@ pub struct LspciSummary {
     pub warnings: Vec<String>,
 }
 
+type NumericData = (String, String, String, Option<String>);
+
 pub struct LspciDetector;
+
+impl Default for LspciDetector {
+    fn default() -> Self {
+        Self
+    }
+}
 
 impl LspciDetector {
     pub fn new() -> Self {
@@ -171,34 +179,34 @@ impl LspciDetector {
     
     /// Parse device property lines (subsystem, flags, etc.)
     fn parse_device_property(&self, device: &mut PciDevice, line: &str) -> Result<()> {
-        if line.starts_with("Subsystem: ") {
-            device.subsystem = Some(line[11..].to_string());
-        } else if line.starts_with("Flags: ") {
-            device.flags = line[7..].split(", ").map(|s| s.to_string()).collect();
+        if let Some(subsystem) = line.strip_prefix("Subsystem: ") {
+            device.subsystem = Some(subsystem.to_string());
+        } else if let Some(flags_str) = line.strip_prefix("Flags: ") {
+            device.flags = flags_str.split(", ").map(|s| s.to_string()).collect();
             
             // Extract IRQ from flags
             for flag in &device.flags {
-                if flag.starts_with("IRQ ") {
-                    if let Ok(irq) = flag[4..].parse::<u32>() {
+                if let Some(irq_str) = flag.strip_prefix("IRQ ") {
+                    if let Ok(irq) = irq_str.parse::<u32>() {
                         device.irq = Some(irq);
                     }
                 }
-                if flag.starts_with("IOMMU group ") {
-                    if let Ok(group) = flag[12..].parse::<u32>() {
+                if let Some(group_str) = flag.strip_prefix("IOMMU group ") {
+                    if let Ok(group) = group_str.parse::<u32>() {
                         device.iommu_group = Some(group);
                     }
                 }
             }
-        } else if line.starts_with("Bus: ") {
-            device.bus_info = self.parse_bus_info(&line[5..]);
+        } else if let Some(bus_str) = line.strip_prefix("Bus: ") {
+            device.bus_info = self.parse_bus_info(bus_str);
         } else if line.starts_with("I/O behind bridge: ") || line.starts_with("I/O ports at ") {
             device.io_ports.push(line.to_string());
         } else if line.starts_with("Memory behind bridge: ") || line.starts_with("Memory at ") {
             device.memory_regions.push(line.to_string());
-        } else if line.starts_with("Kernel driver in use: ") {
-            device.kernel_driver = Some(line[22..].to_string());
-        } else if line.starts_with("Kernel modules: ") {
-            device.kernel_modules = line[16..].split(", ").map(|s| s.to_string()).collect();
+        } else if let Some(driver_str) = line.strip_prefix("Kernel driver in use: ") {
+            device.kernel_driver = Some(driver_str.to_string());
+        } else if let Some(modules_str) = line.strip_prefix("Kernel modules: ") {
+            device.kernel_modules = modules_str.split(", ").map(|s| s.to_string()).collect();
         }
         
         Ok(())
@@ -231,7 +239,7 @@ impl LspciDetector {
     }
     
     /// Parse numeric lspci output to get vendor/device IDs and class codes
-    fn parse_numeric_output(&self, output: &str) -> Result<HashMap<String, (String, String, String, Option<String>)>> {
+    fn parse_numeric_output(&self, output: &str) -> Result<HashMap<String, NumericData>> {
         let mut numeric_data = HashMap::new();
         
         for line in output.lines() {

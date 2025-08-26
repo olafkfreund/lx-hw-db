@@ -45,10 +45,10 @@ jobs:
       run: |
         if [ -d "web" ]; then
           echo "web_exists=true" >> $GITHUB_OUTPUT
-          echo "✅ Web directory found"
+          echo "Web directory found"
         else
           echo "web_exists=false" >> $GITHUB_OUTPUT
-          echo "⚠️ Web directory not found, will create minimal deployment"
+          echo "Web directory not found, will create minimal deployment"
         fi
         
     - name: Create deployment structure
@@ -112,14 +112,14 @@ jobs:
         </head>
         <body>
             <div class="container">
-                <h1>🐧 Linux Hardware Compatibility Database</h1>
+                <h1>Linux Hardware Compatibility Database</h1>
                 <p class="subtitle">Community-driven hardware compatibility data for Linux systems</p>
                 
                 <div class="links">
-                    <a href="api/" class="link">📡 API</a>
-                    <a href="indices/" class="link">🔍 Search Indices</a>
-                    <a href="statistics/" class="link">📊 Statistics</a>
-                    <a href="https://github.com/lx-hw-db/lx-hw-db" class="link">💻 GitHub</a>
+                    <a href="api/" class="link">API</a>
+                    <a href="indices/" class="link">Search Indices</a>
+                    <a href="statistics/" class="link">Statistics</a>
+                    <a href="https://github.com/lx-hw-db/lx-hw-db" class="link">GitHub</a>
                 </div>
                 
                 <div class="status">
@@ -133,9 +133,9 @@ jobs:
         fi
         
         # Copy data directories if they exist
-        [ -d "indices" ] && cp -r indices _site/ || echo "⚠️ No indices directory found"
-        [ -d "api" ] && cp -r api _site/ || echo "⚠️ No api directory found" 
-        [ -d "statistics" ] && cp -r statistics _site/ || echo "⚠️ No statistics directory found"
+        [ -d "indices" ] && cp -r indices _site/ || echo "No indices directory found"
+        [ -d "api" ] && cp -r api _site/ || echo "No api directory found" 
+        [ -d "statistics" ] && cp -r statistics _site/ || echo "No statistics directory found"
         
         # Create .nojekyll file to prevent Jekyll processing
         touch _site/.nojekyll
@@ -184,22 +184,22 @@ jobs:
         }
         EOF
         
-        echo "✅ Deployment structure created"
-        echo "📁 Site contents:"
+        echo "Deployment structure created"
+        echo "Site contents:"
         find _site -type f -name "*.html" -o -name "*.json" -o -name "*.css" -o -name "*.js" | head -20
         
     - name: Validate deployment
       run: |
-        echo "🔍 Validating deployment structure..."
+        echo "Validating deployment structure..."
         
         # Check required files exist
         if [ ! -f "_site/index.html" ]; then
-          echo "❌ Missing index.html"
+          echo "Missing index.html"
           exit 1
         fi
         
         if [ ! -f "_site/.nojekyll" ]; then
-          echo "❌ Missing .nojekyll file"
+          echo "Missing .nojekyll file"
           exit 1
         fi
         
@@ -209,7 +209,7 @@ jobs:
         CSS_COUNT=$(find _site -name "*.css" | wc -l) 
         JS_COUNT=$(find _site -name "*.js" | wc -l)
         
-        echo "📊 Deployment Statistics:"
+        echo "Deployment Statistics:"
         echo "  HTML files: $HTML_COUNT"
         echo "  JSON files: $JSON_COUNT"
         echo "  CSS files: $CSS_COUNT"
@@ -221,17 +221,17 @@ jobs:
         
         # Validate JSON files if they exist
         if [ $JSON_COUNT -gt 0 ]; then
-          echo "🔍 Validating JSON files..."
+          echo "Validating JSON files..."
           find _site -name "*.json" | head -10 | while read json_file; do
             if ! jq empty "$json_file" 2>/dev/null; then
-              echo "❌ Invalid JSON: $json_file"
+              echo "Error Invalid JSON: $json_file"
               exit 1
             fi
           done
-          echo "✅ JSON validation passed"
+          echo "JSON validation passed"
         fi
         
-        echo "✅ Deployment validation successful"
+        echo "Deployment validation successful"
         
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v2
@@ -244,9 +244,9 @@ jobs:
       
     - name: Update deployment status
       run: |
-        echo "🚀 Deployment completed successfully!"
-        echo "🌐 Website URL: ${{ steps.deployment.outputs.page_url }}"
-        echo "📝 Deployment details:"
+        echo "Deployment completed successfully!"
+        echo "Website URL: ${{ steps.deployment.outputs.page_url }}"
+        echo "Deployment details:"
         echo "  - Commit: ${{ github.sha }}"
         echo "  - Branch: ${{ github.ref_name }}"
         echo "  - Run: ${{ github.run_number }}"
@@ -266,7 +266,7 @@ jobs:
         
     - name: Post deployment checks
       run: |
-        echo "🔍 Running post-deployment checks..."
+        echo "Running post-deployment checks..."
         
         # Wait a moment for deployment to propagate
         sleep 30
@@ -274,16 +274,16 @@ jobs:
         # Check if site is accessible (optional - might fail due to DNS propagation)
         SITE_URL="${{ steps.deployment.outputs.page_url }}"
         if curl -f -s -o /dev/null "$SITE_URL"; then
-          echo "✅ Site is accessible at $SITE_URL"
+          echo "Site is accessible at $SITE_URL"
         else
-          echo "⚠️ Site may not be immediately accessible (DNS propagation)"
+          echo "Site may not be immediately accessible (DNS propagation)"
         fi
         
         # Create deployment summary
         cat > deployment-summary.md << EOF
         # Deployment Summary
         
-        - **Status**: ✅ Successful
+        - **Status**: Successful
         - **URL**: ${{ steps.deployment.outputs.page_url }}
         - **Commit**: ${{ github.sha }}
         - **Time**: $(date -u)
@@ -291,9 +291,9 @@ jobs:
         
         ## Deployment Contents
         - Web Interface: ${{ steps.check-web.outputs.web_exists }}
-        - API Endpoints: $([ -d "api" ] && echo "✅" || echo "❌")
-        - Search Indices: $([ -d "indices" ] && echo "✅" || echo "❌") 
-        - Statistics: $([ -d "statistics" ] && echo "✅" || echo "❌")
+        - API Endpoints: $([ -d "api" ] && echo "Success" || echo "Error")
+        - Search Indices: $([ -d "indices" ] && echo "Success" || echo "Error") 
+        - Statistics: $([ -d "statistics" ] && echo "Success" || echo "Error")
         
         ## Next Steps
         - Test the deployed site

@@ -78,37 +78,37 @@ jobs:
         
     - name: Build indexer binary
       run: |
-        echo "🔨 Building hardware compatibility indexer..."
+        echo "Building hardware compatibility indexer..."
         cargo build --release --bin lx-hw-indexer
         
     - name: Validate hardware reports
       run: |
-        echo "🔍 Validating hardware report JSON files..."
+        echo "Validating hardware report JSON files..."
         find hardware-reports -name "*.json" -type f | head -5 | while read file; do
           echo "Validating: $file"
           if ! jq empty "$file" 2>/dev/null; then
-            echo "❌ Invalid JSON in $file"
+            echo "Error Invalid JSON in $file"
             exit 1
           fi
         done
-        echo "✅ JSON validation completed"
+        echo "JSON validation completed"
         
     - name: Check for existing reports
       id: check-reports
       run: |
         REPORT_COUNT=$(find hardware-reports -name "*.json" -type f | wc -l)
         echo "report_count=$REPORT_COUNT" >> $GITHUB_OUTPUT
-        echo "📊 Found $REPORT_COUNT hardware report files"
+        echo "Found $REPORT_COUNT hardware report files"
         
         if [ "$REPORT_COUNT" -eq 0 ]; then
-          echo "⚠️ No hardware reports found. Creating sample data structure..."
+          echo "No hardware reports found. Creating sample data structure..."
           mkdir -p hardware-reports/sample
           echo '{"sample": true}' > hardware-reports/sample/.gitkeep.json
         fi
         
     - name: Generate compatibility indices
       run: |
-        echo "🚀 Starting hardware compatibility index generation..."
+        echo "Starting hardware compatibility index generation..."
         
         MIN_REPORTS="${{ github.event.inputs.min_reports || '1' }}"
         
@@ -120,32 +120,32 @@ jobs:
           --min-reports "$MIN_REPORTS" \
           --verbose
           
-        echo "✅ Index generation completed"
+        echo "Index generation completed"
         
     - name: Validate generated indices
       run: |
-        echo "🔍 Validating generated indices..."
+        echo "Validating generated indices..."
         
         ./target/release/lx-hw-indexer validate \
           --indices indices \
           --reports hardware-reports \
           --verbose
           
-        echo "✅ Index validation completed"
+        echo "Index validation completed"
         
     - name: Generate statistics report
       run: |
-        echo "📊 Generating statistics report..."
+        echo "Generating statistics report..."
         
         ./target/release/lx-hw-indexer stats \
           --input hardware-reports \
           --verbose > statistics/latest-stats.txt
           
-        echo "✅ Statistics generation completed"
+        echo "Statistics generation completed"
         
     - name: Generate static website
       run: |
-        echo "🌐 Generating static website..."
+        echo "Generating static website..."
         
         ./target/release/lx-hw-indexer generate-site \
           --output web \
@@ -158,7 +158,7 @@ jobs:
         cp -r api web/
         cp -r statistics web/
         
-        echo "✅ Static website generation completed"
+        echo "Static website generation completed"
         
     - name: Archive build artifacts
       uses: actions/upload-artifact@v3
@@ -173,7 +173,7 @@ jobs:
         
     - name: Create deployment package
       run: |
-        echo "📦 Creating deployment package..."
+        echo "Creating deployment package..."
         
         # Create deployment info
         cat > web/build-info.json << EOF
@@ -210,7 +210,7 @@ jobs:
     - name: Commit updated indices (if on main)
       if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
       run: |
-        echo "💾 Committing updated indices to repository..."
+        echo "Committing updated indices to repository..."
         
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
@@ -223,7 +223,7 @@ jobs:
           echo "ℹ️ No changes to commit"
         else
           # Create commit with build info
-          git commit -m "🤖 Update hardware compatibility indices
+          git commit -m "Automated Update hardware compatibility indices
           
           - Build: ${{ github.run_number }}
           - Commit: ${{ github.sha }}
@@ -235,13 +235,13 @@ jobs:
           # Push changes
           git push
           
-          echo "✅ Indices committed to repository"
+          echo "Indices committed to repository"
         fi
         
     - name: Create release (on main branch, weekly)
       if: github.ref == 'refs/heads/main' && github.event.schedule
       run: |
-        echo "🎉 Creating weekly data release..."
+        echo "Creating weekly data release..."
         
         RELEASE_TAG="data-$(date +%Y.%W)"
         RELEASE_NAME="Hardware Compatibility Data - Week $(date +%W, %Y)"
@@ -250,7 +250,7 @@ jobs:
         cat > release-notes.md << EOF
         # Hardware Compatibility Database - Week $(date +%W, %Y)
         
-        ## 📊 Database Statistics
+        ## Analyzing Database Statistics
         - **Total Reports**: ${{ steps.check-reports.outputs.report_count }}
         - **API Endpoints**: $(find api -name "*.json" | wc -l)
         - **Search Indices**: $(find indices -name "*.json" | wc -l)
@@ -291,5 +291,5 @@ jobs:
       
     - name: Update deployment status
       run: |
-        echo "🚀 Deployment completed successfully!"
-        echo "🌐 Website URL: ${{ steps.deployment.outputs.page_url }}"
+        echo "Deployment completed successfully!"
+        echo "Website URL: ${{ steps.deployment.outputs.page_url }}"

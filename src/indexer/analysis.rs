@@ -5,9 +5,10 @@
 
 use super::*;
 use crate::errors::Result;
-use std::collections::{HashMap, BTreeMap, HashSet};
-use chrono::{DateTime, Utc, Duration, Datelike};
+use std::collections::HashMap;
+use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
+use super::statistics::TrendAnalysis;
 
 /// Advanced compatibility analyzer
 pub struct CompatibilityAnalyzer<'a> {
@@ -624,7 +625,8 @@ impl<'a> CompatibilityAnalyzer<'a> {
     
     /// Analyze kernel compatibility trends
     fn analyze_kernel_trends(&self) -> Result<Vec<KernelTrend>> {
-        let mut kernel_data: HashMap<String, Vec<(DateTime<Utc>, f64)>> = HashMap::new();
+        type KernelTrendData = HashMap<String, Vec<(DateTime<Utc>, f64)>>;
+        let mut kernel_data: KernelTrendData = HashMap::new();
         
         // Group reports by kernel version
         for report in self.reports {
@@ -633,7 +635,7 @@ impl<'a> CompatibilityAnalyzer<'a> {
             let date = report.metadata.submission_date;
             
             kernel_data.entry(kernel.clone())
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push((date, score));
         }
         
@@ -663,7 +665,7 @@ impl<'a> CompatibilityAnalyzer<'a> {
                 if let Some(vendor) = &component.vendor {
                     let normalized = normalize_vendor_name(vendor);
                     vendor_data.entry(normalized)
-                        .or_insert_with(Vec::new)
+                        .or_default()
                         .push(report);
                 }
             }
@@ -696,7 +698,7 @@ impl<'a> CompatibilityAnalyzer<'a> {
         for report in self.reports {
             for component in &report.components {
                 category_data.entry(component.component_type.clone())
-                    .or_insert_with(Vec::new)
+                    .or_default()
                     .push(report);
             }
         }
@@ -731,9 +733,9 @@ impl<'a> CompatibilityAnalyzer<'a> {
                     
                     hardware_kernel_scores
                         .entry(hardware_id)
-                        .or_insert_with(HashMap::new)
+                        .or_default()
                         .entry(kernel.clone())
-                        .or_insert_with(Vec::new)
+                        .or_default()
                         .push(score);
                 }
             }
@@ -764,7 +766,7 @@ impl<'a> CompatibilityAnalyzer<'a> {
         // Group reports by distribution
         for report in self.reports {
             dist_data.entry(report.metadata.distribution.clone())
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(report);
         }
         
@@ -960,7 +962,7 @@ impl<'a> CompatibilityAnalyzer<'a> {
         })
     }
     
-    fn detect_hardware_regression(&self, hardware_id: &str, kernel_scores: &HashMap<String, Vec<f64>>) -> Result<Option<CompatibilityRegression>> {
+    fn detect_hardware_regression(&self, _hardware_id: &str, _kernel_scores: &HashMap<String, Vec<f64>>) -> Result<Option<CompatibilityRegression>> {
         // Implement regression detection algorithm
         // This would compare scores across kernel versions
         Ok(None) // Placeholder
