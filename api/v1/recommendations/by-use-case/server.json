@@ -1,0 +1,13 @@
+{
+  "data": {
+    "compatibility_notes": [
+      "Prioritize stability and long-term support",
+      "ECC memory support important for servers",
+      "Network hardware compatibility critical"
+    ],
+    "recommended_hardware": []
+  },
+  "generated": "2025-08-26T15:43:40.553802299+00:00",
+  "use_case": "server",
+  "version": "1.0"
+}

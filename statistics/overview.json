@@ -1,0 +1,20 @@
+{
+  "total_reports": 1,
+  "unique_systems": 1,
+  "total_vendors": 0,
+  "component_types": 0,
+  "kernel_versions": 1,
+  "distributions": 1,
+  "compatibility_overview": {
+    "Unknown": 1
+  },
+  "top_hardware": [],
+  "growth_stats": [
+    {
+      "date": "2025-08-26T15:43:40.552056788Z",
+      "total_reports": 1,
+      "new_reports": 1
+    }
+  ],
+  "last_updated": "2025-08-26T15:43:40.552047580Z"
+}

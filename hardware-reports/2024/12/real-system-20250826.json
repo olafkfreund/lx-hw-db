@@ -1,0 +1,350 @@
+{
+  "metadata": {
+    "version": "0.1.0",
+    "generated_at": "2025-08-26T15:43:12.399481051Z",
+    "privacy_level": "Basic",
+    "tools_used": [
+      "lshw",
+      "lspci",
+      "lsusb",
+      "inxi"
+    ],
+    "anonymized_system_id": "f3a0af50643047440281b26c9658191d3746158c87b3eba38b9e814235989b8e"
+  },
+  "system": {
+    "anonymized_hostname": "4d006577f935e578ed47c1e99cbd8b085ffcd48b2b73bb845847c7cbe69afecc",
+    "kernel_version": "6.16.0",
+    "distribution": "NixOS 25.11 (Xantusia)",
+    "architecture": "x86_64",
+    "boot_time": null
+  },
+  "cpu": null,
+  "memory": null,
+  "storage": [],
+  "graphics": [],
+  "network": [],
+  "usb": [],
+  "audio": [],
+  "kernel_support": {
+    "kernel_version": "6.16.0",
+    "total_devices_detected": 31,
+    "supported_devices": 0,
+    "unsupported_devices": 31,
+    "experimental_devices": 0,
+    "device_support_details": [
+      {
+        "device_id": "1002:1478",
+        "device_name": "Device 1002:1478",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1002:1479",
+        "device_name": "Device 1002:1479",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1002:744c",
+        "device_name": "Device 1002:744c",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1002:ab30",
+        "device_name": "HDMI",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1480",
+        "device_name": "Device 1022:1480",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1481",
+        "device_name": "Unknown Device 1022:1481",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1482",
+        "device_name": "Device 1022:1482",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1483",
+        "device_name": "Device 1022:1483",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1484",
+        "device_name": "Device 1022:1484",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1485",
+        "device_name": "Unknown Device 1022:1485",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1486",
+        "device_name": "Unknown Device 1022:1486",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:148a",
+        "device_name": "Unknown Device 1022:148a",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:148c",
+        "device_name": "Unknown Device 1022:148c",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1490",
+        "device_name": "Device 1022:1490",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1491",
+        "device_name": "Device 1022:1491",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1492",
+        "device_name": "Device 1022:1492",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1493",
+        "device_name": "Device 1022:1493",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1494",
+        "device_name": "Device 1022:1494",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1495",
+        "device_name": "Device 1022:1495",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1496",
+        "device_name": "Device 1022:1496",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1497",
+        "device_name": "Device 1022:1497",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:149c",
+        "device_name": "Unknown Device 1022:149c",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:57a3",
+        "device_name": "Device 1022:57a3",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:57a4",
+        "device_name": "Device 1022:57a4",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:57ad",
+        "device_name": "Device 1022:57ad",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:7901",
+        "device_name": "Device 1022:7901",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:790b",
+        "device_name": "Unknown Device 1022:790b",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:790e",
+        "device_name": "Device 1022:790e",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1b21:2142",
+        "device_name": "Unknown Device 1b21:2142",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1d6a:07b1",
+        "device_name": "Ethernet interface",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "2646:5019",
+        "device_name": "NVMe device",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      }
+    ],
+    "missing_modules": [
+      "No driver for 1002:1478",
+      "No driver for 1002:1479",
+      "No driver for 1002:744c",
+      "No driver for 1002:ab30",
+      "No driver for 1022:1480",
+      "No driver for 1022:1481",
+      "No driver for 1022:1482",
+      "No driver for 1022:1483",
+      "No driver for 1022:1484",
+      "No driver for 1022:1485",
+      "No driver for 1022:1486",
+      "No driver for 1022:148a",
+      "No driver for 1022:148c",
+      "No driver for 1022:1490",
+      "No driver for 1022:1491",
+      "No driver for 1022:1492",
+      "No driver for 1022:1493",
+      "No driver for 1022:1494",
+      "No driver for 1022:1495",
+      "No driver for 1022:1496",
+      "No driver for 1022:1497",
+      "No driver for 1022:149c",
+      "No driver for 1022:57a3",
+      "No driver for 1022:57a4",
+      "No driver for 1022:57ad",
+      "No driver for 1022:7901",
+      "No driver for 1022:790b",
+      "No driver for 1022:790e",
+      "No driver for 1b21:2142",
+      "No driver for 1d6a:07b1",
+      "No driver for 2646:5019"
+    ],
+    "config_recommendations": []
+  }
+}

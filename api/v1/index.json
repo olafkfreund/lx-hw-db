@@ -1,0 +1,29 @@
+{
+  "data_sources": {
+    "hardware_reports": "/hardware-reports/",
+    "raw_indices": "/indices/"
+  },
+  "documentation": "/web/api-docs/",
+  "endpoints": {
+    "recommendations": {
+      "by_component": "/api/v1/recommendations/by-component/",
+      "by_use_case": "/api/v1/recommendations/by-use-case/",
+      "by_vendor": "/api/v1/recommendations/by-vendor/"
+    },
+    "search": {
+      "components": "/api/v1/search/components.json",
+      "distributions": "/api/v1/search/distributions.json",
+      "kernels": "/api/v1/search/kernels.json",
+      "vendors": "/api/v1/search/vendors.json"
+    },
+    "stats": {
+      "overview": "/api/v1/stats/overview.json",
+      "top_hardware": "/api/v1/stats/top-hardware.json",
+      "trends": "/api/v1/stats/trends.json"
+    }
+  },
+  "generated": "2025-08-26T15:43:40.554015230+00:00",
+  "name": "Linux Hardware Compatibility Database API",
+  "rate_limits": "None (static files)",
+  "version": "1.0"
+}
