@@ -1,0 +1,342 @@
+/**
+ * Hardware Details Modal
+ * Displays detailed information about hardware components
+ */
+
+class HardwareDetails {
+    constructor() {
+        this.modal = null;
+        this.init();
+    }
+    
+    init() {
+        // Create modal container if it doesn't exist
+        if (!document.getElementById('hardware-details-modal')) {
+            this.createModal();
+        }
+        
+        // Add event delegation for View Details buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('view-details-btn') || 
+                e.target.textContent === 'View Details') {
+                e.preventDefault();
+                const hardwareId = e.target.dataset.hardwareId || 
+                                 e.target.closest('[data-hardware-id]')?.dataset.hardwareId;
+                if (hardwareId) {
+                    this.showDetails(hardwareId);
+                }
+            }
+        });
+    }
+    
+    createModal() {
+        const modal = document.createElement('div');
+        modal.id = 'hardware-details-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-overlay"></div>
+            <div class="modal-content hardware-details-content">
+                <button class="modal-close">×</button>
+                <div class="modal-header">
+                    <h2>Hardware Details</h2>
+                </div>
+                <div class="modal-body" id="hardware-details-body">
+                    <!-- Details will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary copy-specs-btn">📋 Copy Specifications</button>
+                    <button class="btn-secondary submit-report-btn">📤 Submit Compatibility Report</button>
+                    <button class="btn-secondary close-modal-btn">Close</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        this.modal = modal;
+        
+        // Add event listeners
+        modal.querySelector('.modal-overlay').addEventListener('click', () => this.hideModal());
+        modal.querySelector('.modal-close').addEventListener('click', () => this.hideModal());
+        modal.querySelector('.close-modal-btn').addEventListener('click', () => this.hideModal());
+        modal.querySelector('.copy-specs-btn').addEventListener('click', () => this.copySpecs());
+        modal.querySelector('.submit-report-btn').addEventListener('click', () => this.submitReport());
+    }
+    
+    async showDetails(hardwareId) {
+        // Load hardware data
+        const hardware = await this.getHardwareData(hardwareId);
+        if (!hardware) {
+            this.showError('Hardware information not found');
+            return;
+        }
+        
+        // Populate modal with hardware details
+        const body = document.getElementById('hardware-details-body');
+        body.innerHTML = this.renderHardwareDetails(hardware);
+        
+        // Show modal
+        this.modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    async getHardwareData(hardwareId) {
+        try {
+            // Try to get data from the loaded database
+            if (window.dataLoader && window.dataLoader.hardwareData) {
+                const hardware = window.dataLoader.hardwareData.hardware.find(h => h.id === hardwareId);
+                if (hardware) return hardware;
+            }
+            
+            // Fallback: load from file
+            const response = await fetch('./data/hardware-database.json');
+            if (response.ok) {
+                const data = await response.json();
+                return data.hardware.find(h => h.id === hardwareId);
+            }
+        } catch (error) {
+            console.error('Error loading hardware data:', error);
+        }
+        
+        // Return mock data if nothing found (for demonstration)
+        return this.getMockHardware(hardwareId);
+    }
+    
+    getMockHardware(hardwareId) {
+        // Mock data for demonstration
+        const mockData = {
+            'realtek_rtl8125': {
+                id: 'realtek_rtl8125',
+                name: 'Realtek RTL8125 2.5GbE Controller',
+                category: 'network',
+                manufacturer: 'Realtek',
+                model: 'RTL8125',
+                pci_id: '10ec:8125',
+                compatibility_status: 'excellent',
+                last_tested: '2025-08-25',
+                kernel_support: '5.9+',
+                driver: 'r8169',
+                specifications: {
+                    speed: '2.5 Gbps',
+                    interface: 'PCIe 2.0 x1',
+                    features: ['Wake-on-LAN', 'TSO', 'RSS', 'VLAN'],
+                    power: '2.5W typical'
+                },
+                compatibility: {
+                    debian: {
+                        status: 'excellent',
+                        kernel_min: '5.9',
+                        packages: ['firmware-realtek'],
+                        notes: 'Works out of the box with kernel 5.9+'
+                    },
+                    ubuntu: {
+                        status: 'excellent',
+                        kernel_min: '5.8',
+                        packages: ['linux-firmware'],
+                        notes: 'Native support in Ubuntu 20.10+'
+                    },
+                    arch: {
+                        status: 'excellent',
+                        kernel_min: '5.9',
+                        packages: ['linux-firmware'],
+                        notes: 'Full support with latest kernel'
+                    },
+                    fedora: {
+                        status: 'excellent',
+                        kernel_min: '5.9',
+                        packages: ['linux-firmware'],
+                        notes: 'Works perfectly since Fedora 33'
+                    }
+                },
+                known_issues: [
+                    'Some users report wake-on-LAN issues with kernels before 6.0',
+                    'Performance may be limited on older PCIe 1.0 slots'
+                ],
+                community_rating: 4.7,
+                reports_count: 156
+            },
+            'intel_ax211': {
+                id: 'intel_ax211',
+                name: 'Intel AX211 WiFi 6E',
+                category: 'network',
+                manufacturer: 'Intel',
+                model: 'AX211',
+                pci_id: '8086:51f0',
+                compatibility_status: 'excellent',
+                last_tested: '2025-08-25',
+                kernel_support: '5.12+',
+                driver: 'iwlwifi',
+                specifications: {
+                    standard: 'WiFi 6E (802.11ax)',
+                    bands: '2.4GHz, 5GHz, 6GHz',
+                    max_speed: '2.4 Gbps',
+                    bluetooth: '5.3',
+                    interface: 'M.2 2230 (E-key)'
+                },
+                compatibility: {
+                    debian: {
+                        status: 'excellent',
+                        kernel_min: '5.14',
+                        packages: ['firmware-iwlwifi'],
+                        notes: 'Requires non-free firmware'
+                    },
+                    ubuntu: {
+                        status: 'excellent',
+                        kernel_min: '5.13',
+                        packages: ['linux-firmware'],
+                        notes: 'Works out of the box in Ubuntu 22.04+'
+                    },
+                    arch: {
+                        status: 'excellent',
+                        kernel_min: '5.12',
+                        packages: ['linux-firmware'],
+                        notes: 'Full support with latest firmware'
+                    },
+                    fedora: {
+                        status: 'excellent',
+                        kernel_min: '5.14',
+                        packages: ['iwlax2xx-firmware'],
+                        notes: 'Native support since Fedora 35'
+                    }
+                },
+                known_issues: [
+                    '6GHz band requires regulatory database update',
+                    'Bluetooth may conflict with USB 3.0 devices'
+                ],
+                community_rating: 4.8,
+                reports_count: 243
+            }
+        };
+        
+        return mockData[hardwareId] || null;
+    }
+    
+    renderHardwareDetails(hardware) {
+        return `
+            <div class="hardware-detail-full">
+                <div class="detail-header">
+                    <h3>${hardware.name}</h3>
+                    <span class="compatibility-badge ${hardware.compatibility_status}">
+                        ${hardware.compatibility_status}
+                    </span>
+                </div>
+                
+                <div class="detail-sections">
+                    <div class="detail-section">
+                        <h4>General Information</h4>
+                        <table class="detail-table">
+                            <tr><td>Manufacturer:</td><td>${hardware.manufacturer}</td></tr>
+                            <tr><td>Model:</td><td>${hardware.model}</td></tr>
+                            <tr><td>Category:</td><td>${hardware.category}</td></tr>
+                            <tr><td>PCI ID:</td><td><code>${hardware.pci_id || 'N/A'}</code></td></tr>
+                            <tr><td>Driver:</td><td><code>${hardware.driver || 'N/A'}</code></td></tr>
+                            <tr><td>Kernel Support:</td><td>${hardware.kernel_support || 'Unknown'}</td></tr>
+                            <tr><td>Last Tested:</td><td>${hardware.last_tested}</td></tr>
+                            <tr><td>Community Rating:</td><td>⭐ ${hardware.community_rating || 'N/A'}/5</td></tr>
+                            <tr><td>Reports:</td><td>${hardware.reports_count || 0} submissions</td></tr>
+                        </table>
+                    </div>
+                    
+                    ${hardware.specifications ? `
+                    <div class="detail-section">
+                        <h4>Specifications</h4>
+                        <table class="detail-table">
+                            ${Object.entries(hardware.specifications).map(([key, value]) => `
+                                <tr>
+                                    <td>${key.replace(/_/g, ' ').charAt(0).toUpperCase() + key.slice(1)}:</td>
+                                    <td>${Array.isArray(value) ? value.join(', ') : value}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="detail-section">
+                        <h4>Linux Distribution Compatibility</h4>
+                        <div class="distro-compat-grid">
+                            ${Object.entries(hardware.compatibility || {}).map(([distro, info]) => `
+                                <div class="distro-compat-card">
+                                    <h5>${distro.charAt(0).toUpperCase() + distro.slice(1)}</h5>
+                                    <span class="compatibility-badge ${info.status}">${info.status}</span>
+                                    <div class="compat-details">
+                                        <p><strong>Min Kernel:</strong> ${info.kernel_min || 'N/A'}</p>
+                                        <p><strong>Packages:</strong> ${info.packages ? info.packages.join(', ') : 'None'}</p>
+                                        <p><strong>Notes:</strong> ${info.notes || 'No additional notes'}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    ${hardware.known_issues && hardware.known_issues.length > 0 ? `
+                    <div class="detail-section">
+                        <h4>Known Issues</h4>
+                        <ul class="issues-list">
+                            ${hardware.known_issues.map(issue => `<li>${issue}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    hideModal() {
+        this.modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+    
+    copySpecs() {
+        const body = document.getElementById('hardware-details-body');
+        const text = body.innerText;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            this.showNotification('Specifications copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            this.showNotification('Failed to copy specifications', 'error');
+        });
+    }
+    
+    submitReport() {
+        // Open submission form or redirect to GitHub
+        this.showNotification('Opening submission form...');
+        setTimeout(() => {
+            window.open('https://github.com/lx-hw-db/lx-hw-db/issues/new', '_blank');
+        }, 1000);
+    }
+    
+    showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    showError(message) {
+        const body = document.getElementById('hardware-details-body');
+        body.innerHTML = `
+            <div class="error-message">
+                <p>❌ ${message}</p>
+            </div>
+        `;
+        this.modal.classList.add('show');
+    }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.hardwareDetails = new HardwareDetails();
+    });
+} else {
+    window.hardwareDetails = new HardwareDetails();
+}
