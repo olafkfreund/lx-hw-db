@@ -1,0 +1,10 @@
+{
+  "6.16.0": {
+    "total_reports": 1,
+    "compatibility_stats": {
+      "unknown": 1
+    },
+    "problematic_hardware": [],
+    "release_date": null
+  }
+}
