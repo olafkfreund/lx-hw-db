@@ -11,6 +11,7 @@ pub mod hardware;
 pub mod errors;
 pub mod cli;
 pub mod validation;
+pub mod indexer;
 
 pub use errors::{Result, LxHwError};
 pub use hardware::{HardwareReport, SystemInfo, PrivacyLevel};

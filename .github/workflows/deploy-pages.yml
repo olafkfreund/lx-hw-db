@@ -1,0 +1,306 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'indices/**'
+      - 'api/**' 
+      - 'statistics/**'
+      - 'web/**'
+      - '.github/workflows/build-indices.yml'
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if no changes detected'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+      
+    - name: Check for web directory
+      id: check-web
+      run: |
+        if [ -d "web" ]; then
+          echo "web_exists=true" >> $GITHUB_OUTPUT
+          echo "✅ Web directory found"
+        else
+          echo "web_exists=false" >> $GITHUB_OUTPUT
+          echo "⚠️ Web directory not found, will create minimal deployment"
+        fi
+        
+    - name: Create deployment structure
+      run: |
+        # Create deployment directory
+        mkdir -p _site
+        
+        if [ "${{ steps.check-web.outputs.web_exists }}" = "true" ]; then
+          # Copy web assets
+          cp -r web/* _site/
+        else
+          # Create minimal index if web directory doesn't exist
+          cat > _site/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Linux Hardware Compatibility Database</title>
+            <style>
+                body { 
+                    font-family: system-ui, sans-serif; 
+                    margin: 2rem; 
+                    text-align: center; 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    min-height: 100vh;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                }
+                .container { 
+                    background: rgba(255,255,255,0.1); 
+                    padding: 2rem; 
+                    border-radius: 1rem; 
+                    backdrop-filter: blur(10px);
+                    max-width: 600px;
+                }
+                h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+                .subtitle { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9; }
+                .links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+                .link { 
+                    padding: 0.75rem 1.5rem; 
+                    background: rgba(255,255,255,0.2); 
+                    border-radius: 0.5rem; 
+                    text-decoration: none; 
+                    color: white; 
+                    transition: all 0.3s ease;
+                }
+                .link:hover { 
+                    background: rgba(255,255,255,0.3); 
+                    transform: translateY(-2px);
+                }
+                .status { 
+                    margin-top: 2rem; 
+                    font-size: 0.9rem; 
+                    opacity: 0.8; 
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🐧 Linux Hardware Compatibility Database</h1>
+                <p class="subtitle">Community-driven hardware compatibility data for Linux systems</p>
+                
+                <div class="links">
+                    <a href="api/" class="link">📡 API</a>
+                    <a href="indices/" class="link">🔍 Search Indices</a>
+                    <a href="statistics/" class="link">📊 Statistics</a>
+                    <a href="https://github.com/lx-hw-db/lx-hw-db" class="link">💻 GitHub</a>
+                </div>
+                
+                <div class="status">
+                    <p>Database is building... Full web interface will be available soon!</p>
+                    <p>Built on: $(date -u)</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        EOF
+        fi
+        
+        # Copy data directories if they exist
+        [ -d "indices" ] && cp -r indices _site/ || echo "⚠️ No indices directory found"
+        [ -d "api" ] && cp -r api _site/ || echo "⚠️ No api directory found" 
+        [ -d "statistics" ] && cp -r statistics _site/ || echo "⚠️ No statistics directory found"
+        
+        # Create .nojekyll file to prevent Jekyll processing
+        touch _site/.nojekyll
+        
+        # Create robots.txt
+        cat > _site/robots.txt << 'EOF'
+        User-agent: *
+        Allow: /
+        
+        Sitemap: https://lx-hw-db.github.io/lx-hw-db/sitemap.xml
+        EOF
+        
+        # Create basic sitemap.xml
+        cat > _site/sitemap.xml << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url>
+            <loc>https://lx-hw-db.github.io/lx-hw-db/</loc>
+            <changefreq>daily</changefreq>
+            <priority>1.0</priority>
+          </url>
+          <url>
+            <loc>https://lx-hw-db.github.io/lx-hw-db/api/</loc>
+            <changefreq>daily</changefreq>
+            <priority>0.8</priority>
+          </url>
+          <url>
+            <loc>https://lx-hw-db.github.io/lx-hw-db/statistics/</loc>
+            <changefreq>weekly</changefreq>
+            <priority>0.7</priority>
+          </url>
+        </urlset>
+        EOF
+        
+        # Create deployment manifest
+        cat > _site/deployment-info.json << EOF
+        {
+          "deployment_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "commit_sha": "${{ github.sha }}",
+          "commit_ref": "${{ github.ref }}",
+          "workflow_run": "${{ github.run_number }}",
+          "has_web_interface": ${{ steps.check-web.outputs.web_exists }},
+          "has_indices": $([ -d "indices" ] && echo "true" || echo "false"),
+          "has_api": $([ -d "api" ] && echo "true" || echo "false"),
+          "has_statistics": $([ -d "statistics" ] && echo "true" || echo "false")
+        }
+        EOF
+        
+        echo "✅ Deployment structure created"
+        echo "📁 Site contents:"
+        find _site -type f -name "*.html" -o -name "*.json" -o -name "*.css" -o -name "*.js" | head -20
+        
+    - name: Validate deployment
+      run: |
+        echo "🔍 Validating deployment structure..."
+        
+        # Check required files exist
+        if [ ! -f "_site/index.html" ]; then
+          echo "❌ Missing index.html"
+          exit 1
+        fi
+        
+        if [ ! -f "_site/.nojekyll" ]; then
+          echo "❌ Missing .nojekyll file"
+          exit 1
+        fi
+        
+        # Count files
+        HTML_COUNT=$(find _site -name "*.html" | wc -l)
+        JSON_COUNT=$(find _site -name "*.json" | wc -l)
+        CSS_COUNT=$(find _site -name "*.css" | wc -l) 
+        JS_COUNT=$(find _site -name "*.js" | wc -l)
+        
+        echo "📊 Deployment Statistics:"
+        echo "  HTML files: $HTML_COUNT"
+        echo "  JSON files: $JSON_COUNT"
+        echo "  CSS files: $CSS_COUNT"
+        echo "  JavaScript files: $JS_COUNT"
+        
+        # Check total size
+        TOTAL_SIZE=$(du -sh _site | cut -f1)
+        echo "  Total size: $TOTAL_SIZE"
+        
+        # Validate JSON files if they exist
+        if [ $JSON_COUNT -gt 0 ]; then
+          echo "🔍 Validating JSON files..."
+          find _site -name "*.json" | head -10 | while read json_file; do
+            if ! jq empty "$json_file" 2>/dev/null; then
+              echo "❌ Invalid JSON: $json_file"
+              exit 1
+            fi
+          done
+          echo "✅ JSON validation passed"
+        fi
+        
+        echo "✅ Deployment validation successful"
+        
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: _site/
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
+      
+    - name: Update deployment status
+      run: |
+        echo "🚀 Deployment completed successfully!"
+        echo "🌐 Website URL: ${{ steps.deployment.outputs.page_url }}"
+        echo "📝 Deployment details:"
+        echo "  - Commit: ${{ github.sha }}"
+        echo "  - Branch: ${{ github.ref_name }}"
+        echo "  - Run: ${{ github.run_number }}"
+        echo "  - Time: $(date -u)"
+        
+        # Create deployment badge data
+        mkdir -p .github/badges
+        cat > .github/badges/deployment.json << EOF
+        {
+          "schemaVersion": 1,
+          "label": "deployment",
+          "message": "active",
+          "color": "success",
+          "namedLogo": "github"
+        }
+        EOF
+        
+    - name: Post deployment checks
+      run: |
+        echo "🔍 Running post-deployment checks..."
+        
+        # Wait a moment for deployment to propagate
+        sleep 30
+        
+        # Check if site is accessible (optional - might fail due to DNS propagation)
+        SITE_URL="${{ steps.deployment.outputs.page_url }}"
+        if curl -f -s -o /dev/null "$SITE_URL"; then
+          echo "✅ Site is accessible at $SITE_URL"
+        else
+          echo "⚠️ Site may not be immediately accessible (DNS propagation)"
+        fi
+        
+        # Create deployment summary
+        cat > deployment-summary.md << EOF
+        # Deployment Summary
+        
+        - **Status**: ✅ Successful
+        - **URL**: ${{ steps.deployment.outputs.page_url }}
+        - **Commit**: ${{ github.sha }}
+        - **Time**: $(date -u)
+        - **Run**: #${{ github.run_number }}
+        
+        ## Deployment Contents
+        - Web Interface: ${{ steps.check-web.outputs.web_exists }}
+        - API Endpoints: $([ -d "api" ] && echo "✅" || echo "❌")
+        - Search Indices: $([ -d "indices" ] && echo "✅" || echo "❌") 
+        - Statistics: $([ -d "statistics" ] && echo "✅" || echo "❌")
+        
+        ## Next Steps
+        - Test the deployed site
+        - Verify search functionality
+        - Check API endpoints
+        - Review statistics dashboard
+        EOF
+        
+        echo "📋 Deployment Summary:"
+        cat deployment-summary.md

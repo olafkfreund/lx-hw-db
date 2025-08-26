@@ -1,0 +1,81 @@
+# GitHub Pages Configuration for Linux Hardware Compatibility Database
+
+# Site settings
+title: "Linux Hardware Compatibility Database"
+description: "Community-driven hardware compatibility data for Linux systems"
+baseurl: "/lx-hw-db" # Repository name
+url: "https://lx-hw-db.github.io"
+
+# Repository
+repository: "lx-hw-db/lx-hw-db"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Plugins
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed
+
+# Exclude files from processing
+exclude:
+  - Cargo.toml
+  - Cargo.lock
+  - target/
+  - src/
+  - .github/
+  - README.md
+  - LICENSE
+  - CONTRIBUTING.md
+  - CODE_OF_CONDUCT.md
+  - .gitignore
+  - docs/
+
+# Include files that would normally be excluded
+include:
+  - api/
+  - indices/
+  - statistics/
+  - web/
+
+# Collections
+collections:
+  hardware_reports:
+    output: false
+    permalink: /:collection/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+# SEO and metadata
+author: "Linux Hardware Database Contributors"
+twitter:
+  card: summary
+  site: "@lxhwdb"
+  
+social:
+  name: "Linux Hardware Compatibility Database"
+  links:
+    - "https://github.com/lx-hw-db/lx-hw-db"
+
+# Google Analytics (if needed)
+# google_analytics: UA-XXXXXXXX-X
+
+# Theme (using minimal mistakes or another theme if desired)
+# theme: minimal-mistakes-jekyll
+# remote_theme: "mmistakes/minimal-mistakes@4.24.0"
+
+# Custom variables
+lx_hw_db:
+  version: "0.1.0"
+  api_base: "/lx-hw-db/api"
+  indices_base: "/lx-hw-db/indices"
+  stats_base: "/lx-hw-db/statistics"

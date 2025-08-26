@@ -1,40 +1,106 @@
-# Linux Hardware Database (lx-hw-db)
+# Linux Hardware Compatibility Database
 
-A privacy-first, community-driven Linux hardware compatibility database that leverages GitHub's infrastructure for transparent governance and distributed collaboration.
+[![Build Indices](https://github.com/lx-hw-db/lx-hw-db/actions/workflows/build-indices.yml/badge.svg)](https://github.com/lx-hw-db/lx-hw-db/actions/workflows/build-indices.yml)
+[![Deploy Pages](https://github.com/lx-hw-db/lx-hw-db/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/lx-hw-db/lx-hw-db/actions/workflows/deploy-pages.yml)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![Data: CC0](https://img.shields.io/badge/Data-CC0-green.svg)](https://creativecommons.org/public-domain/cc0/)
 
-## Warning: AI-Assisted Development
+> 🐧 A community-driven, privacy-preserving Linux hardware compatibility database built entirely on GitHub infrastructure
 
-This project is being developed with assistance from Claude AI (Anthropic's AI assistant). While human oversight ensures quality and decision-making, some code, documentation, and architectural decisions have been generated or influenced by artificial intelligence. All AI contributions are reviewed and validated by human developers before integration.
+## 🌟 Features
 
-## Project Goal
+- **🔍 Fast Client-Side Search** - Search hardware compatibility across vendors, models, kernels, and distributions
+- **📊 Real-Time Statistics** - Live dashboard showing compatibility trends and database health
+- **🤖 Automated Processing** - GitHub Actions automatically build indices from community reports
+- **🔒 Privacy-First** - All data is anonymized and contains no personally identifiable information
+- **📱 Modern Interface** - Responsive web design with dark mode support
+- **🌐 GitHub-Native** - Fully hosted on GitHub Pages with no external dependencies
+- **⚡ Zero-Server Architecture** - Static site with pre-built JSON indices for instant search
 
-The Linux Hardware Database aims to solve the persistent problem of hardware compatibility uncertainty in Linux systems by creating a comprehensive, community-maintained database that provides:
+## 🚀 Quick Start
 
-- **Hardware Compatibility Information**: Detailed compatibility reports for Linux hardware across different kernel versions and distributions
-- **Privacy-Preserving Data Collection**: Comprehensive anonymization using cryptographic hashing and differential privacy techniques
-- **Actionable Configuration Recommendations**: Automated generation of kernel parameters, driver configurations, and system optimizations
-- **Community-Driven Validation**: Transparent peer review and expert validation through GitHub's collaborative workflows
+### 🔗 Access the Database
 
-## What We're Building
+Visit the live database: **[https://lx-hw-db.github.io/lx-hw-db/](https://lx-hw-db.github.io/lx-hw-db/)**
 
-### Core Components
+### 📡 API Access
 
-**Hardware Detection Tool (`lx-hw-detect`)**
-A Rust-based command-line tool that collects hardware information using multiple Linux utilities (lshw, dmidecode, lspci, lsusb, inxi) while implementing comprehensive privacy protection. The tool provides real-time kernel compatibility analysis, kernel source code searching, and generates actionable hardware upgrade recommendations. It produces standardized compatibility reports that can be contributed to the community database.
+The database provides REST-like JSON APIs:
 
-**Key Commands:**
-- `detect`: Comprehensive hardware scanning with kernel compatibility analysis
-- `analyze`: Focused kernel compatibility verification with upgrade recommendations  
-- `check`: Tool availability verification and system readiness assessment
+```bash
+# Get all vendors
+curl https://lx-hw-db.github.io/lx-hw-db/api/vendors.json
 
-**GitHub-Based Database**
-Hardware compatibility data is stored as markdown files with YAML frontmatter in a hierarchical GitHub repository structure. This approach provides natural version control, distributed redundancy, and transparent governance through pull requests and peer review.
+# Get specific vendor details
+curl https://lx-hw-db.github.io/lx-hw-db/api/vendors/nvidia.json
 
-**Automated Processing Pipeline**
-GitHub Actions workflows handle submission validation, duplicate detection, schema compliance checking, and automated index generation for search functionality.
+# Get compatibility statistics
+curl https://lx-hw-db.github.io/lx-hw-db/api/statistics.json
 
-**Search and Discovery Interface**
-Multiple search interfaces including static site generation, client-side search capabilities, and programmatic API access enable users to find compatible hardware and configuration recommendations.
+# Search indices
+curl https://lx-hw-db.github.io/lx-hw-db/indices/search-terms.json
+```
+
+### 🤝 Contributing Hardware Reports
+
+Help improve Linux hardware compatibility by contributing your system's hardware report:
+
+#### 1. Install the Detection Tool
+
+```bash
+cargo install lx-hw-detect
+```
+
+#### 2. Generate Your Hardware Report
+
+```bash
+# Generate with medium privacy level (recommended)
+lx-hw-detect --privacy-level medium --output my-hardware-report.json
+
+# Or with high privacy for maximum anonymization
+lx-hw-detect --privacy-level high --output my-hardware-report.json
+```
+
+#### 3. Submit Your Report
+
+1. Fork this repository
+2. Add your report to the `hardware-reports/` directory:
+   ```bash
+   cp my-hardware-report.json hardware-reports/$(date +%Y-%m-%d)-$(hostname)-report.json
+   ```
+3. Create a pull request with your report
+
+The automated system will process your report and update the database indices within minutes of merging.
+
+## 🏗️ Architecture
+
+### GitHub-Native Design
+
+This project uses a novel **GitHub-native database architecture**:
+
+```
+📁 Repository Structure
+├── hardware-reports/           # Raw JSON reports (community contributed)
+├── indices/                   # Generated search indices  
+├── api/                       # REST-like JSON API endpoints
+├── statistics/                # Database analytics and trends
+├── web/                       # Static website assets
+└── .github/workflows/         # Automated processing pipeline
+```
+
+### Data Flow
+
+1. **Community Contribution** → Hardware reports submitted via PRs
+2. **GitHub Actions** → Automatically processes reports into search indices
+3. **Static Hosting** → GitHub Pages serves the complete database
+4. **Client Search** → Fast, offline-capable search using pre-built indices
+
+### Key Components
+
+- **🦀 Rust Indexer** (`lx-hw-indexer`) - Processes reports into structured indices
+- **⚙️ GitHub Actions** - Automated CI/CD pipeline for index generation
+- **🌐 Static Web App** - Modern JavaScript search interface
+- **📊 Analytics Dashboard** - Real-time statistics and compatibility trends
 
 ### Privacy-First Architecture
 

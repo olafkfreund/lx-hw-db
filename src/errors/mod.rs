@@ -28,9 +28,12 @@ pub enum LxHwError {
     
     #[error("Configuration error: {0}")]
     ConfigError(String),
-    
-    #[error("Validation error: {0}")]
-    ValidationError(String),
+
+    #[error("Database error: {message}")]
+    DatabaseError { message: String },
+
+    #[error("Validation error: {message}")]
+    ValidationError { message: String },
 }
 
 /// Result type alias for hardware detection operations
