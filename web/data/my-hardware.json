@@ -1,0 +1,619 @@
+{
+  "metadata": {
+    "version": "0.1.0",
+    "generated_at": "2025-08-26T21:52:36.769193754Z",
+    "privacy_level": "Enhanced",
+    "tools_used": [
+      "lshw",
+      "lspci",
+      "lsusb",
+      "inxi"
+    ],
+    "anonymized_system_id": "1f370e13dd5d4daba0ab85520101a783c055c0c1ae5fa4d95746d4f78c76d822"
+  },
+  "system": {
+    "anonymized_hostname": "12441ab07f59ffb50a04119c6003814137ed5fec0b4c791c90b08ae7b7dd4cbd",
+    "kernel_version": "6.16.0",
+    "distribution": "NixOS 25.11 (Xantusia)",
+    "architecture": "x86_64",
+    "boot_time": null
+  },
+  "cpu": {
+    "model": "AMD Ryzen Threadripper PRO 3995WX 64-Cores",
+    "vendor": "Advanced Micro Devices [AMD]",
+    "cores": 64,
+    "threads": 64,
+    "base_frequency": 2701000000.0,
+    "max_frequency": 2701000000.0,
+    "cache_l1": null,
+    "cache_l2": null,
+    "cache_l3": null,
+    "flags": []
+  },
+  "memory": {
+    "total_bytes": 242665652224,
+    "available_bytes": 218399087002,
+    "dimms": []
+  },
+  "storage": [
+    {
+      "anonymized_serial": "unknown",
+      "device_type": "HDD",
+      "size_bytes": 0,
+      "model": "Unknown Storage",
+      "vendor": null,
+      "interface": null
+    },
+    {
+      "anonymized_serial": "unknown",
+      "device_type": "HDD",
+      "size_bytes": 0,
+      "model": "Unknown Storage",
+      "vendor": null,
+      "interface": null
+    },
+    {
+      "anonymized_serial": "409d41db81c4661241a3453a7de336b4ef17cd2889b9c3c59a032263b5e8b377",
+      "device_type": "NVMe SSD",
+      "size_bytes": 0,
+      "model": "KINGSTON SNV2S1000G",
+      "vendor": null,
+      "interface": null
+    }
+  ],
+  "graphics": [
+    {
+      "vendor": "Advanced Micro Devices, Inc.",
+      "model": "Graphics Device 1002:744c",
+      "driver": "amdgpu",
+      "memory_bytes": null,
+      "pci_id": "1002:744c"
+    }
+  ],
+  "network": [
+    {
+      "device_type": "ethernet",
+      "vendor": "Aquantia Corp. AQtion AQC107 NBase-T/IEEE 802.3an Ethernet Controller",
+      "model": "Network Device 1d6a:07b1",
+      "driver": "atlantic",
+      "anonymized_mac": "unknown"
+    },
+    {
+      "device_type": "ethernet",
+      "vendor": "Unknown",
+      "model": "Ethernet interface",
+      "driver": null,
+      "anonymized_mac": "unknown"
+    }
+  ],
+  "usb": [
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0002",
+      "vendor_name": "Linux Foundation",
+      "product_name": "2.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0003",
+      "vendor_name": "Linux Foundation",
+      "product_name": "3.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0002",
+      "vendor_name": "Linux Foundation",
+      "product_name": "2.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "2109",
+      "product_id": "2822",
+      "vendor_name": "VIA Labs, Inc.",
+      "product_name": "USB2.0 Hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "2109",
+      "product_id": "2822",
+      "vendor_name": "VIA Labs, Inc.",
+      "product_name": "USB2.0 Hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1532",
+      "product_id": "007b",
+      "vendor_name": null,
+      "product_name": "Razer USA, Ltd RC30-0305 Gaming Mouse Dongle [Viper Ultimate (Wireless)]",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "3434",
+      "product_id": "d030",
+      "vendor_name": null,
+      "product_name": "Keychron Keychron Link",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "2357",
+      "product_id": "0604",
+      "vendor_name": null,
+      "product_name": "TP-Link TP-Link Bluetooth USB Adapter",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0003",
+      "vendor_name": "Linux Foundation",
+      "product_name": "3.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "2109",
+      "product_id": "0822",
+      "vendor_name": "VIA Labs, Inc.",
+      "product_name": "USB3.1 Hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "2109",
+      "product_id": "0822",
+      "vendor_name": "VIA Labs, Inc.",
+      "product_name": "USB3.1 Hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0002",
+      "vendor_name": "Linux Foundation",
+      "product_name": "2.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "17aa",
+      "product_id": "104d",
+      "vendor_name": null,
+      "product_name": "Generic Realtek USB Audio Front",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1532",
+      "product_id": "0528",
+      "vendor_name": null,
+      "product_name": "Razer USA, Ltd Razer BlackShark V2 Pro",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1532",
+      "product_id": "0083",
+      "vendor_name": null,
+      "product_name": "Razer USA, Ltd RC30-0315, Gaming Mouse [Basilisk X HyperSpeed]",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "17aa",
+      "product_id": "1046",
+      "vendor_name": null,
+      "product_name": "Generic Realtek USB Audio Rear",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0003",
+      "vendor_name": "Linux Foundation",
+      "product_name": "3.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "0fd9",
+      "product_id": "0079",
+      "vendor_name": null,
+      "product_name": "Elgato Systems GmbH Elgato Facecam Pro",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0002",
+      "vendor_name": "Linux Foundation",
+      "product_name": "2.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0003",
+      "vendor_name": "Linux Foundation",
+      "product_name": "3.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0002",
+      "vendor_name": "Linux Foundation",
+      "product_name": "2.0 root hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "2109",
+      "product_id": "2210",
+      "vendor_name": "VIA Labs, Inc.",
+      "product_name": "Hub",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1532",
+      "product_id": "007e",
+      "vendor_name": null,
+      "product_name": "Razer USA, Ltd RC30-030502 Mouse Dock",
+      "usb_version": null
+    },
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0003",
+      "vendor_name": "Linux Foundation",
+      "product_name": "3.0 root hub",
+      "usb_version": null
+    }
+  ],
+  "audio": [
+    {
+      "vendor": "Advanced Micro Devices, Inc.",
+      "model": "Audio Device 1002:ab30",
+      "driver": "snd_hda_intel",
+      "device_type": "audio"
+    },
+    {
+      "vendor": "Unknown",
+      "model": "HDMI",
+      "driver": null,
+      "device_type": "multimedia"
+    },
+    {
+      "vendor": "Unknown",
+      "model": "Loopback",
+      "driver": null,
+      "device_type": "multimedia"
+    },
+    {
+      "vendor": "Unknown",
+      "model": "Main",
+      "driver": null,
+      "device_type": "multimedia"
+    },
+    {
+      "vendor": "Unknown",
+      "model": "Pro",
+      "driver": null,
+      "device_type": "multimedia"
+    },
+    {
+      "vendor": "Unknown",
+      "model": "Rear",
+      "driver": null,
+      "device_type": "multimedia"
+    }
+  ],
+  "kernel_support": {
+    "kernel_version": "6.16.0",
+    "total_devices_detected": 31,
+    "supported_devices": 0,
+    "unsupported_devices": 31,
+    "experimental_devices": 0,
+    "device_support_details": [
+      {
+        "device_id": "1002:1478",
+        "device_name": "Device 1002:1478",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1002:1479",
+        "device_name": "Device 1002:1479",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1002:744c",
+        "device_name": "Device 1002:744c",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1002:ab30",
+        "device_name": "HDMI",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1480",
+        "device_name": "Device 1022:1480",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1481",
+        "device_name": "Unknown Device 1022:1481",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1482",
+        "device_name": "Device 1022:1482",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1483",
+        "device_name": "Device 1022:1483",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1484",
+        "device_name": "Device 1022:1484",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1485",
+        "device_name": "Unknown Device 1022:1485",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1486",
+        "device_name": "Unknown Device 1022:1486",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:148a",
+        "device_name": "Unknown Device 1022:148a",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:148c",
+        "device_name": "Unknown Device 1022:148c",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1490",
+        "device_name": "Device 1022:1490",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1491",
+        "device_name": "Device 1022:1491",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1492",
+        "device_name": "Device 1022:1492",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1493",
+        "device_name": "Device 1022:1493",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1494",
+        "device_name": "Device 1022:1494",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1495",
+        "device_name": "Device 1022:1495",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1496",
+        "device_name": "Device 1022:1496",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:1497",
+        "device_name": "Device 1022:1497",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:149c",
+        "device_name": "Unknown Device 1022:149c",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:57a3",
+        "device_name": "Device 1022:57a3",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:57a4",
+        "device_name": "Device 1022:57a4",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:57ad",
+        "device_name": "Device 1022:57ad",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:7901",
+        "device_name": "Device 1022:7901",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:790b",
+        "device_name": "Unknown Device 1022:790b",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1022:790e",
+        "device_name": "Device 1022:790e",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1b21:2142",
+        "device_name": "Unknown Device 1b21:2142",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "1d6a:07b1",
+        "device_name": "Ethernet interface",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      },
+      {
+        "device_id": "2646:5019",
+        "device_name": "NVMe device",
+        "support_status": "unsupported",
+        "driver_module": "none",
+        "since_kernel_version": null,
+        "config_dependencies": [],
+        "notes": "No kernel driver found for this device. May require proprietary drivers or manual compilation."
+      }
+    ],
+    "missing_modules": [
+      "No driver for 1002:1478",
+      "No driver for 1002:1479",
+      "No driver for 1002:744c",
+      "No driver for 1002:ab30",
+      "No driver for 1022:1480",
+      "No driver for 1022:1481",
+      "No driver for 1022:1482",
+      "No driver for 1022:1483",
+      "No driver for 1022:1484",
+      "No driver for 1022:1485",
+      "No driver for 1022:1486",
+      "No driver for 1022:148a",
+      "No driver for 1022:148c",
+      "No driver for 1022:1490",
+      "No driver for 1022:1491",
+      "No driver for 1022:1492",
+      "No driver for 1022:1493",
+      "No driver for 1022:1494",
+      "No driver for 1022:1495",
+      "No driver for 1022:1496",
+      "No driver for 1022:1497",
+      "No driver for 1022:149c",
+      "No driver for 1022:57a3",
+      "No driver for 1022:57a4",
+      "No driver for 1022:57ad",
+      "No driver for 1022:7901",
+      "No driver for 1022:790b",
+      "No driver for 1022:790e",
+      "No driver for 1b21:2142",
+      "No driver for 1d6a:07b1",
+      "No driver for 2646:5019"
+    ],
+    "config_recommendations": []
+  }
+}
