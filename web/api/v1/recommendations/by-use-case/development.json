@@ -1,0 +1,13 @@
+{
+  "data": {
+    "compatibility_notes": [
+      "Intel hardware typically has excellent Linux support",
+      "Focus on stable, well-supported components",
+      "Consider multiple monitors and USB devices"
+    ],
+    "recommended_hardware": []
+  },
+  "generated": "2025-08-26T17:46:57.713084766+00:00",
+  "use_case": "development",
+  "version": "1.0"
+}

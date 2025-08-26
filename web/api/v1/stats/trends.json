@@ -1,0 +1,24 @@
+{
+  "data": {
+    "growth_stats": [
+      {
+        "date": "2025-08-26T17:46:57.712000770Z",
+        "new_reports": 1,
+        "total_reports": 1
+      }
+    ],
+    "kernel_adoption": [
+      {
+        "compatibility_percentage": 0,
+        "compatibility_stats": {
+          "unknown": 1
+        },
+        "kernel_version": "6.16.0",
+        "total_reports": 1
+      }
+    ],
+    "vendor_growth": []
+  },
+  "generated": "2025-08-26T17:46:57.712873301+00:00",
+  "version": "1.0"
+}

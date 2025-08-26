@@ -1,0 +1,14 @@
+{
+  "data": {
+    "compatibility_notes": [
+      "NVIDIA GPUs generally have better gaming performance on Linux",
+      "AMD GPUs have excellent open-source driver support",
+      "Consider kernel version for latest hardware support"
+    ],
+    "recommended_cpus": [],
+    "recommended_gpus": []
+  },
+  "generated": "2025-08-26T17:46:57.713026798+00:00",
+  "use_case": "gaming",
+  "version": "1.0"
+}
