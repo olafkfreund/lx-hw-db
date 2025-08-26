@@ -6,16 +6,11 @@
     <title>Linux Hardware Compatibility Database</title>
     <meta name="description" content="Community-driven Linux hardware compatibility database with search capabilities across different distributions and kernel versions.">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%23d79921%22>🐧</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>L</text></svg>">
 
     <!-- Open Graph -->
     <meta property="og:title" content="Linux Hardware Compatibility Database">
@@ -28,34 +23,27 @@
     <meta name="twitter:description" content="Community-driven hardware compatibility data for Linux systems">
 </head>
 <body>
-    <!-- Background particles -->
-    <div class="bg-particles"></div>
-    
     <!-- Header -->
     <header class="site-header">
         <div class="container">
             <div class="header-content">
                 <div class="logo-section">
-                    <div class="logo-container">
-                        <div class="logo-icon">🐧</div>
-                        <div class="logo-text">
-                            <h1 class="site-title">lx-hw-db</h1>
-                            <span class="logo-subtitle">Hardware Compatibility Database</span>
-                        </div>
-                    </div>
-                    <p class="site-description">Privacy-first, community-driven Linux hardware compatibility data</p>
+                    <h1 class="site-title">
+                        <span class="logo-icon">LX</span>
+                        Linux Hardware Compatibility Database
+                    </h1>
+                    <p class="site-subtitle">Community-driven hardware compatibility data for Linux systems</p>
                 </div>
 
                 <nav class="header-nav">
-                    <a href="#hero" class="nav-link active">Home</a>
                     <a href="#search" class="nav-link">Search</a>
-                    <a href="#stats" class="nav-link">Stats</a>
+                    <a href="#stats" class="nav-link">Statistics</a>
                     <a href="#about" class="nav-link">About</a>
-                    <a href="https://github.com/olafkfreund/lx-hw-db" class="nav-link nav-link-external" target="_blank" rel="noopener">
-                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                    <a href="https://github.com/lx-hw-db/lx-hw-db" class="nav-link" target="_blank" rel="noopener">
+                        <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
                         </svg>
-                        <span>GitHub</span>
+                        GitHub
                     </a>
                 </nav>
             </div>
@@ -64,119 +52,17 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Hero Section -->
-        <section id="hero" class="hero-section">
-            <div class="container">
-                <div class="hero-content">
-                    <div class="hero-text">
-                        <h1 class="hero-title">
-                            <span class="gradient-text">Linux Hardware</span>
-                            <span class="gradient-text">Compatibility Database</span>
-                        </h1>
-                        <p class="hero-subtitle">
-                            Discover hardware compatibility for your Linux system with
-                            privacy-preserving, community-driven data.
-                        </p>
-                        <div class="hero-features">
-                            <div class="feature">
-                                <span class="feature-icon">🔒</span>
-                                <span>Privacy First</span>
-                            </div>
-                            <div class="feature">
-                                <span class="feature-icon">👥</span>
-                                <span>Community Driven</span>
-                            </div>
-                            <div class="feature">
-                                <span class="feature-icon">🔍</span>
-                                <span>Comprehensive Search</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="hero-actions">
-                        <a href="#search" class="btn btn-primary">
-                            <span>Search Hardware</span>
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="m21 21-4.35-4.35"/>
-                            </svg>
-                        </a>
-                        <a href="#about" class="btn btn-secondary">
-                            <span>Learn More</span>
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M7 17L17 7M17 7H7M17 7V17"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Quick Stats -->
-        <section class="quick-stats">
-            <div class="container">
-                <div class="stats-row">
-                    <div class="stat-item">
-                        <div class="stat-number" data-stat="reports">0</div>
-                        <div class="stat-label">Hardware Reports</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" data-stat="systems">0</div>
-                        <div class="stat-label">Unique Systems</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" data-stat="vendors">0</div>
-                        <div class="stat-label">Hardware Vendors</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" data-stat="kernels">0</div>
-                        <div class="stat-label">Kernel Versions</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- Search Section -->
         <section id="search" class="search-section">
             <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">Search Hardware Compatibility</h2>
-                    <p class="section-subtitle">
-                        Find compatibility information for your Linux hardware across different distributions and kernel versions.
-                    </p>
+                <div class="search-intro">
+                    <h2>Search Hardware Compatibility</h2>
+                    <p>Find compatibility information for your Linux hardware across different distributions and kernel versions.</p>
                 </div>
 
-                <div class="search-container">
-                    <div class="search-form">
-                        <div class="search-input-group">
-                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="m21 21-4.35-4.35"/>
-                            </svg>
-                            <input type="text" class="search-input" placeholder="Search for hardware (e.g., RTX 3060, AMD Ryzen 5800X)" id="hardware-search">
-                            <button class="search-btn" type="button">
-                                <span>Search</span>
-                            </button>
-                        </div>
-                        <div class="search-filters">
-                            <select class="filter-select" id="vendor-filter">
-                                <option value="">All Vendors</option>
-                            </select>
-                            <select class="filter-select" id="category-filter">
-                                <option value="">All Categories</option>
-                                <option value="cpu">CPUs</option>
-                                <option value="gpu">Graphics Cards</option>
-                                <option value="network">Network</option>
-                                <option value="storage">Storage</option>
-                            </select>
-                            <select class="filter-select" id="distribution-filter">
-                                <option value="">All Distributions</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div id="search-results" class="search-results hidden">
-                        <!-- Search results will be populated here -->
-                    </div>
+                <!-- Search Interface Container -->
+                <div id="search-container" class="search-interface-wrapper">
+                    <!-- Search UI will be injected here by JavaScript -->
                 </div>
             </div>
         </section>
@@ -184,78 +70,38 @@
         <!-- Statistics Section -->
         <section id="stats" class="stats-section">
             <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">Database Statistics</h2>
-                    <p class="section-subtitle">
-                        Real-time overview of our community-contributed hardware compatibility data.
-                    </p>
+                <div class="stats-intro">
+                    <h2>Database Statistics</h2>
+                    <p>Overview of our community-contributed hardware compatibility data.</p>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div class="stat-icon">📊</div>
-                            <h3>Hardware Reports</h3>
-                        </div>
+                <div id="stats-container" class="stats-grid">
+                    <!-- Statistics will be loaded here by JavaScript -->
+                    <div class="stat-card loading">
                         <div class="stat-value" data-stat="reports">Loading...</div>
-                        <div class="stat-trend">+0 this week</div>
+                        <div class="stat-label">Hardware Reports</div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div class="stat-icon">💻</div>
-                            <h3>Unique Systems</h3>
-                        </div>
+                    <div class="stat-card loading">
                         <div class="stat-value" data-stat="systems">Loading...</div>
-                        <div class="stat-trend">+0 this week</div>
+                        <div class="stat-label">Unique Systems</div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div class="stat-icon">🏭</div>
-                            <h3>Hardware Vendors</h3>
-                        </div>
+                    <div class="stat-card loading">
                         <div class="stat-value" data-stat="vendors">Loading...</div>
-                        <div class="stat-trend">+0 this week</div>
+                        <div class="stat-label">Hardware Vendors</div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div class="stat-icon">🐧</div>
-                            <h3>Kernel Versions</h3>
-                        </div>
+                    <div class="stat-card loading">
                         <div class="stat-value" data-stat="kernels">Loading...</div>
-                        <div class="stat-trend">+0 this week</div>
+                        <div class="stat-label">Kernel Versions</div>
                     </div>
                 </div>
 
-                <div class="compatibility-dashboard">
-                    <div class="dashboard-card">
-                        <h3>Compatibility Overview</h3>
-                        <div id="compatibility-chart" class="chart-container">
-                            <div class="chart-placeholder">
-                                <div class="chart-icon">📈</div>
-                                <p>Compatibility data loading...</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="dashboard-card">
-                        <h3>Top Hardware Categories</h3>
-                        <div class="category-list">
-                            <div class="category-item">
-                                <span class="category-name">Graphics Cards</span>
-                                <span class="category-count">0 reports</span>
-                            </div>
-                            <div class="category-item">
-                                <span class="category-name">Network Adapters</span>
-                                <span class="category-count">0 reports</span>
-                            </div>
-                            <div class="category-item">
-                                <span class="category-name">Storage Devices</span>
-                                <span class="category-count">0 reports</span>
-                            </div>
-                        </div>
+                <div class="compatibility-overview">
+                    <h3>Compatibility Overview</h3>
+                    <div id="compatibility-chart" class="chart-container">
+                        <!-- Compatibility chart will be rendered here -->
                     </div>
                 </div>
             </div>
@@ -264,90 +110,55 @@
         <!-- About Section -->
         <section id="about" class="about-section">
             <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">About This Database</h2>
-                    <p class="section-subtitle">
-                        Building the future of Linux hardware compatibility through community collaboration.
-                    </p>
-                </div>
+                <div class="about-content">
+                    <h2>🤝 About This Database</h2>
 
-                <div class="about-grid">
-                    <div class="about-card">
-                        <div class="card-icon">🎯</div>
-                        <h3>Mission</h3>
-                        <p>Create a comprehensive, community-driven database of Linux hardware compatibility information to help users make informed decisions about their hardware choices.</p>
+                    <div class="about-grid">
+                        <div class="about-card">
+                            <h3>Mission</h3>
+                            <p>Create a comprehensive, community-driven database of Linux hardware compatibility information to help users make informed decisions about their hardware choices.</p>
+                        </div>
+
+                        <div class="about-card">
+                            <h3>🔒 Privacy First</h3>
+                            <p>All data is anonymized and privacy-preserving. No personally identifiable information is collected or stored in the database.</p>
+                        </div>
+
+                        <div class="about-card">
+                            <h3>Open Source</h3>
+                            <p>This project is completely open source under the AGPL-3.0 license. Data is available under CC0 - no rights reserved.</p>
+                        </div>
+
+                        <div class="about-card">
+                            <h3>Community Driven</h3>
+                            <p>Hardware compatibility reports are contributed by the Linux community. Everyone can contribute data and help improve hardware support.</p>
+                        </div>
                     </div>
 
-                    <div class="about-card">
-                        <div class="card-icon">🔒</div>
-                        <h3>Privacy First</h3>
-                        <p>All data is anonymized and privacy-preserving using advanced cryptographic techniques. No personally identifiable information is collected or stored.</p>
-                    </div>
-
-                    <div class="about-card">
-                        <div class="card-icon">📖</div>
-                        <h3>Open Source</h3>
-                        <p>This project is completely open source under the AGPL-3.0 license. Data is available under CC0 - no rights reserved.</p>
-                    </div>
-
-                    <div class="about-card">
-                        <div class="card-icon">👥</div>
-                        <h3>Community Driven</h3>
-                        <p>Hardware compatibility reports are contributed by the Linux community. Everyone can contribute data and help improve hardware support.</p>
-                    </div>
-                </div>
-
-                <div class="contribute-section">
-                    <div class="contribute-header">
-                        <h3>Contribute Your Hardware Data</h3>
+                    <div class="contribute-section">
+                        <h3>Contribute Data</h3>
                         <p>Help make Linux hardware compatibility better for everyone by contributing your hardware reports.</p>
-                    </div>
-                    
-                    <div class="steps-container">
-                        <div class="step-card">
-                            <div class="step-number">01</div>
-                            <div class="step-content">
-                                <h4>Install Detection Tool</h4>
-                                <div class="code-block">
+                        <div class="contribute-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Install the Tool</h4>
                                     <code>cargo install lx-hw-detect</code>
-                                    <button class="copy-btn" title="Copy to clipboard">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                                        </svg>
-                                    </button>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="step-card">
-                            <div class="step-number">02</div>
-                            <div class="step-content">
-                                <h4>Generate Hardware Report</h4>
-                                <div class="code-block">
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Generate Report</h4>
                                     <code>lx-hw-detect --privacy-level medium --output my-hardware.json</code>
-                                    <button class="copy-btn" title="Copy to clipboard">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                                        </svg>
-                                    </button>
                                 </div>
-                                <p class="step-note">Choose from Basic, Enhanced, or Strict privacy levels</p>
                             </div>
-                        </div>
-                        
-                        <div class="step-card">
-                            <div class="step-number">03</div>
-                            <div class="step-content">
-                                <h4>Submit via GitHub</h4>
-                                <p>Create a pull request with your report in the <code class="inline-code">hardware-reports/</code> directory.</p>
-                                <a href="https://github.com/olafkfreund/lx-hw-db/pulls" class="step-link" target="_blank">
-                                    <span>Create Pull Request</span>
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M7 17L17 7M17 7H7M17 7V17"/>
-                                    </svg>
-                                </a>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Submit via GitHub</h4>
+                                    <p>Create a pull request with your report in the <code>hardware-reports/</code> directory.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -360,71 +171,46 @@
     <footer class="site-footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-brand">
-                    <div class="footer-logo">
-                        <span class="logo-icon">🐧</span>
-                        <span class="logo-text">lx-hw-db</span>
-                    </div>
-                    <p class="footer-description">
-                        Privacy-first, community-driven Linux hardware compatibility database.
-                    </p>
-                    <div class="footer-social">
-                        <a href="https://github.com/olafkfreund/lx-hw-db" class="social-link" title="GitHub">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-                            </svg>
-                        </a>
-                    </div>
+                <div class="footer-section">
+                    <h4>Project</h4>
+                    <ul>
+                        <li><a href="https://github.com/lx-hw-db/lx-hw-db">Source Code</a></li>
+                        <li><a href="https://github.com/lx-hw-db/lx-hw-db/issues">Report Issues</a></li>
+                        <li><a href="https://github.com/lx-hw-db/lx-hw-db/discussions">Discussions</a></li>
+                    </ul>
                 </div>
-                
-                <div class="footer-links">
-                    <div class="footer-section">
-                        <h4>Project</h4>
-                        <ul>
-                            <li><a href="https://github.com/olafkfreund/lx-hw-db">Source Code</a></li>
-                            <li><a href="https://github.com/olafkfreund/lx-hw-db/issues">Report Issues</a></li>
-                            <li><a href="https://github.com/olafkfreund/lx-hw-db/discussions">Discussions</a></li>
-                        </ul>
-                    </div>
 
-                    <div class="footer-section">
-                        <h4>Data</h4>
-                        <ul>
-                            <li><a href="api/">API Access</a></li>
-                            <li><a href="indices/">Raw Indices</a></li>
-                            <li><a href="statistics/">Statistics</a></li>
-                        </ul>
-                    </div>
+                <div class="footer-section">
+                    <h4>Data</h4>
+                    <ul>
+                        <li><a href="api/">API Access</a></li>
+                        <li><a href="indices/">Raw Indices</a></li>
+                        <li><a href="statistics/">Statistics</a></li>
+                    </ul>
+                </div>
 
-                    <div class="footer-section">
-                        <h4>Community</h4>
-                        <ul>
-                            <li><a href="https://github.com/olafkfreund/lx-hw-db/wiki">Documentation</a></li>
-                            <li><a href="https://github.com/olafkfreund/lx-hw-db/blob/main/CONTRIBUTING.md">Contributing</a></li>
-                            <li><a href="https://github.com/olafkfreund/lx-hw-db/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
-                        </ul>
-                    </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://github.com/lx-hw-db/lx-hw-db/wiki">Documentation</a></li>
+                        <li><a href="https://github.com/lx-hw-db/lx-hw-db/blob/main/CONTRIBUTING.md">Contributing Guide</a></li>
+                        <li><a href="https://github.com/lx-hw-db/lx-hw-db/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+                    </ul>
+                </div>
 
-                    <div class="footer-section">
-                        <h4>Legal</h4>
-                        <ul>
-                            <li><a href="https://github.com/olafkfreund/lx-hw-db/blob/main/LICENSE">AGPL-3.0 License</a></li>
-                            <li><a href="#privacy">Privacy Policy</a></li>
-                            <li><a href="https://creativecommons.org/public-domain/cc0/">CC0 Data License</a></li>
-                        </ul>
-                    </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="https://github.com/lx-hw-db/lx-hw-db/blob/main/LICENSE">AGPL-3.0 License</a></li>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li>Data: <a href="https://creativecommons.org/public-domain/cc0/">CC0 Public Domain</a></li>
+                    </ul>
                 </div>
             </div>
 
             <div class="footer-bottom">
-                <div class="footer-meta">
-                    <p>&copy; 2025 Linux Hardware Compatibility Database Contributors.</p>
-                    <p>Software: AGPL-3.0 • Data: CC0 Public Domain • Built by the Linux community</p>
-                </div>
-                <div class="footer-status">
-                    <span class="status-indicator"></span>
-                    <span>All systems operational</span>
-                </div>
+                <p>&copy; 2025 Linux Hardware Compatibility Database Contributors. Software licensed under AGPL-3.0, data in the public domain.</p>
+                <p>Built by the Linux community</p>
             </div>
         </div>
     </footer>
