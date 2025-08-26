@@ -1,0 +1,353 @@
+[
+  {
+    "id": "2025-08-26_6.16.0_x86_64_abc123def456",
+    "system": {
+      "kernel_version": "6.16.0",
+      "distribution": "NixOS 25.11",
+      "architecture": "x86_64"
+    },
+    "cpu": {
+      "vendor": "AMD",
+      "model": "Ryzen 7 5800X",
+      "cores": 8,
+      "threads": 16
+    },
+    "memory": {
+      "total_gb": 32,
+      "type": "DDR4-3200"
+    },
+    "graphics": [
+      {
+        "vendor": "NVIDIA",
+        "model": "GeForce RTX 4080",
+        "compatibility": "excellent",
+        "driver": "nvidia-555"
+      }
+    ],
+    "network": [
+      {
+        "vendor": "Intel",
+        "model": "I225-V Gigabit Ethernet",
+        "compatibility": "excellent",
+        "driver": "igc"
+      },
+      {
+        "vendor": "Intel",
+        "model": "AX200 WiFi 6",
+        "compatibility": "excellent",
+        "driver": "iwlwifi"
+      }
+    ],
+    "storage": [
+      {
+        "vendor": "Samsung",
+        "model": "980 PRO NVMe SSD",
+        "size_gb": 1000,
+        "interface": "NVMe",
+        "compatibility": "excellent"
+      }
+    ],
+    "audio": [
+      {
+        "vendor": "AMD",
+        "model": "Family 17h/19h HD Audio Controller",
+        "compatibility": "excellent",
+        "driver": "snd_hda_intel"
+      }
+    ],
+    "compatibility": {
+      "overall_status": "excellent",
+      "issues": [],
+      "notes": "All hardware detected and working perfectly"
+    },
+    "metadata": {
+      "generated_at": "2025-08-26T14:30:00Z",
+      "privacy_level": "enhanced"
+    }
+  },
+  {
+    "id": "2025-08-25_6.15.8_x86_64_def456abc123",
+    "system": {
+      "kernel_version": "6.15.8",
+      "distribution": "Ubuntu 24.04 LTS",
+      "architecture": "x86_64"
+    },
+    "cpu": {
+      "vendor": "Intel",
+      "model": "Core i7-13700K",
+      "cores": 16,
+      "threads": 24
+    },
+    "memory": {
+      "total_gb": 64,
+      "type": "DDR5-5600"
+    },
+    "graphics": [
+      {
+        "vendor": "NVIDIA",
+        "model": "GeForce RTX 4090",
+        "compatibility": "excellent",
+        "driver": "nvidia-560"
+      },
+      {
+        "vendor": "Intel",
+        "model": "UHD Graphics 770",
+        "compatibility": "excellent",
+        "driver": "i915"
+      }
+    ],
+    "network": [
+      {
+        "vendor": "Realtek",
+        "model": "RTL8125 2.5GbE Controller",
+        "compatibility": "excellent",
+        "driver": "r8169"
+      },
+      {
+        "vendor": "Intel",
+        "model": "AX211 WiFi 6E",
+        "compatibility": "excellent",
+        "driver": "iwlwifi"
+      }
+    ],
+    "storage": [
+      {
+        "vendor": "Western Digital",
+        "model": "SN850X NVMe SSD",
+        "size_gb": 2000,
+        "interface": "NVMe",
+        "compatibility": "excellent"
+      },
+      {
+        "vendor": "Seagate",
+        "model": "BarraCuda 4TB HDD",
+        "size_gb": 4000,
+        "interface": "SATA",
+        "compatibility": "excellent"
+      }
+    ],
+    "audio": [
+      {
+        "vendor": "Intel",
+        "model": "Raptor Lake High Definition Audio Controller",
+        "compatibility": "excellent",
+        "driver": "snd_hda_intel"
+      },
+      {
+        "vendor": "Focusrite",
+        "model": "Scarlett Solo 3rd Gen",
+        "compatibility": "excellent",
+        "driver": "snd_usb_audio"
+      }
+    ],
+    "compatibility": {
+      "overall_status": "excellent",
+      "issues": [],
+      "notes": "Professional workstation setup, all components working flawlessly"
+    },
+    "metadata": {
+      "generated_at": "2025-08-25T09:15:00Z",
+      "privacy_level": "enhanced"
+    }
+  },
+  {
+    "id": "2025-08-24_6.14.12_aarch64_ghi789jkl012",
+    "system": {
+      "kernel_version": "6.14.12",
+      "distribution": "Fedora 40",
+      "architecture": "aarch64"
+    },
+    "cpu": {
+      "vendor": "Apple",
+      "model": "M2 Pro",
+      "cores": 12,
+      "threads": 12
+    },
+    "memory": {
+      "total_gb": 16,
+      "type": "LPDDR5"
+    },
+    "graphics": [
+      {
+        "vendor": "Apple",
+        "model": "M2 Pro GPU",
+        "compatibility": "good",
+        "driver": "asahi",
+        "notes": "Hardware acceleration available but still improving"
+      }
+    ],
+    "network": [
+      {
+        "vendor": "Broadcom",
+        "model": "BCM4387 WiFi 6E",
+        "compatibility": "good",
+        "driver": "brcmfmac",
+        "notes": "Requires firmware from linux-firmware package"
+      }
+    ],
+    "storage": [
+      {
+        "vendor": "Apple",
+        "model": "SSD Controller",
+        "size_gb": 512,
+        "interface": "NVMe",
+        "compatibility": "excellent"
+      }
+    ],
+    "audio": [
+      {
+        "vendor": "Apple",
+        "model": "Audio Controller",
+        "compatibility": "partial",
+        "driver": "asahi-audio",
+        "notes": "Basic functionality working, advanced features in development"
+      }
+    ],
+    "compatibility": {
+      "overall_status": "good",
+      "issues": [
+        "GPU acceleration still being optimized",
+        "Some audio features not yet implemented",
+        "WiFi requires manual firmware installation"
+      ],
+      "notes": "Apple Silicon support via Asahi Linux - excellent progress but still some features in development"
+    },
+    "metadata": {
+      "generated_at": "2025-08-24T16:45:00Z",
+      "privacy_level": "enhanced"
+    }
+  },
+  {
+    "id": "2025-08-23_6.16.0_x86_64_mno345pqr678",
+    "system": {
+      "kernel_version": "6.16.0",
+      "distribution": "Arch Linux",
+      "architecture": "x86_64"
+    },
+    "cpu": {
+      "vendor": "AMD",
+      "model": "Ryzen 9 7900X",
+      "cores": 12,
+      "threads": 24
+    },
+    "memory": {
+      "total_gb": 32,
+      "type": "DDR5-6000"
+    },
+    "graphics": [
+      {
+        "vendor": "AMD",
+        "model": "Radeon RX 7900 XTX",
+        "compatibility": "excellent",
+        "driver": "amdgpu"
+      }
+    ],
+    "network": [
+      {
+        "vendor": "Intel",
+        "model": "I226-V 2.5GbE Controller",
+        "compatibility": "excellent",
+        "driver": "igc"
+      },
+      {
+        "vendor": "MediaTek",
+        "model": "MT7922 WiFi 6E",
+        "compatibility": "good",
+        "driver": "mt7921e",
+        "notes": "Requires linux-firmware package"
+      }
+    ],
+    "storage": [
+      {
+        "vendor": "Samsung",
+        "model": "990 PRO NVMe SSD",
+        "size_gb": 2000,
+        "interface": "NVMe",
+        "compatibility": "excellent"
+      }
+    ],
+    "audio": [
+      {
+        "vendor": "AMD",
+        "model": "Family 19h HD Audio Controller",
+        "compatibility": "excellent",
+        "driver": "snd_hda_intel"
+      }
+    ],
+    "compatibility": {
+      "overall_status": "excellent",
+      "issues": [],
+      "notes": "High-end gaming setup with latest AMD hardware, everything working perfectly"
+    },
+    "metadata": {
+      "generated_at": "2025-08-23T11:20:00Z",
+      "privacy_level": "basic"
+    }
+  },
+  {
+    "id": "2025-08-22_6.13.15_x86_64_stu901vwx234",
+    "system": {
+      "kernel_version": "6.13.15",
+      "distribution": "Debian 12",
+      "architecture": "x86_64"
+    },
+    "cpu": {
+      "vendor": "Intel",
+      "model": "Core i5-12400F",
+      "cores": 6,
+      "threads": 12
+    },
+    "memory": {
+      "total_gb": 16,
+      "type": "DDR4-3200"
+    },
+    "graphics": [
+      {
+        "vendor": "AMD",
+        "model": "Radeon RX 6600",
+        "compatibility": "excellent",
+        "driver": "amdgpu"
+      }
+    ],
+    "network": [
+      {
+        "vendor": "Realtek",
+        "model": "RTL8111H Gigabit Ethernet",
+        "compatibility": "excellent",
+        "driver": "r8169"
+      },
+      {
+        "vendor": "Intel",
+        "model": "AX200 WiFi 6",
+        "compatibility": "excellent",
+        "driver": "iwlwifi"
+      }
+    ],
+    "storage": [
+      {
+        "vendor": "Crucial",
+        "model": "MX4 SATA SSD",
+        "size_gb": 1000,
+        "interface": "SATA",
+        "compatibility": "excellent"
+      }
+    ],
+    "audio": [
+      {
+        "vendor": "Intel",
+        "model": "Alder Lake PCH-P High Definition Audio Controller",
+        "compatibility": "excellent",
+        "driver": "snd_hda_intel"
+      }
+    ],
+    "compatibility": {
+      "overall_status": "excellent",
+      "issues": [],
+      "notes": "Budget-friendly gaming build with great Linux compatibility"
+    },
+    "metadata": {
+      "generated_at": "2025-08-22T13:55:00Z",
+      "privacy_level": "enhanced"
+    }
+  }
+]

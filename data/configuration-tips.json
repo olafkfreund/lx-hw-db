@@ -1,0 +1,482 @@
+{
+  "tips": [
+    {
+      "id": "nvidia_gaming_performance",
+      "title": "NVIDIA Gaming Performance Optimization",
+      "category": "performance",
+      "component": "gpu",
+      "hardware_ids": ["nvidia_rtx_3080", "nvidia_rtx_3070", "nvidia_rtx_3060"],
+      "distributions": ["debian", "arch", "fedora", "nixos"],
+      "description": "Optimize NVIDIA GPU settings for maximum gaming performance with proper power management and cooling curves.",
+      "configuration": {
+        "debian": {
+          "packages": ["nvidia-driver", "nvidia-settings", "nvidia-prime"],
+          "commands": [
+            "sudo nvidia-xconfig",
+            "nvidia-settings --assign CurrentMetaMode=\"nvidia-auto-select +0+0 { ForceFullCompositionPipeline = On }\"",
+            "echo 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' | sudo tee -a /etc/modprobe.d/nvidia.conf"
+          ],
+          "files": {
+            "/etc/X11/xorg.conf.d/20-nvidia.conf": "Section \"Device\"\n    Identifier \"NVIDIA Card\"\n    Driver \"nvidia\"\n    VendorName \"NVIDIA Corporation\"\n    Option \"NoLogo\" \"true\"\n    Option \"UseEDID\" \"false\"\n    Option \"ConnectedMonitor\" \"DFP\"\nEndSection"
+          }
+        },
+        "arch": {
+          "packages": ["nvidia", "nvidia-utils", "nvidia-settings"],
+          "commands": [
+            "sudo nvidia-xconfig",
+            "systemctl enable nvidia-persistenced",
+            "echo 'options nvidia-drm modeset=1' | sudo tee -a /etc/modprobe.d/nvidia.conf"
+          ]
+        },
+        "fedora": {
+          "packages": ["akmod-nvidia", "xorg-x11-drv-nvidia-cuda"],
+          "commands": [
+            "sudo akmods --force",
+            "sudo dracut --force",
+            "nvidia-settings --assign GPUPowerMizerMode=1"
+          ]
+        },
+        "nixos": {
+          "configuration": "services.xserver.videoDrivers = [ \"nvidia\" ];\nhardware.nvidia = {\n  modesetting.enable = true;\n  powerManagement.enable = true;\n  powerManagement.finegrained = false;\n  open = false;\n  nvidiaSettings = true;\n  package = config.boot.kernelPackages.nvidiaPackages.stable;\n};"
+        }
+      },
+      "performance_impact": "High",
+      "difficulty": "Medium",
+      "estimated_time": "15-30 minutes", 
+      "author": {
+        "username": "gaming_guru_42",
+        "github_url": "https://github.com/gaming-guru-42",
+        "reputation": 4.8
+      },
+      "rating": 4.9,
+      "votes": 156,
+      "verified": true,
+      "created": "2023-11-15",
+      "updated": "2024-01-10",
+      "tags": ["nvidia", "gaming", "performance", "gpu"]
+    },
+    {
+      "id": "amd_gpu_optimization",
+      "title": "AMD GPU Open Source Driver Optimization", 
+      "category": "performance",
+      "component": "gpu",
+      "hardware_ids": ["amd_rx_6800_xt", "amd_rx_6700_xt", "amd_rx_6600_xt"],
+      "distributions": ["debian", "arch", "fedora", "nixos"],
+      "description": "Optimize AMD GPU performance using open source AMDGPU and Mesa drivers with proper power management and overclocking.",
+      "configuration": {
+        "debian": {
+          "packages": ["mesa-vulkan-drivers", "libdrm-amdgpu1", "radeontop"],
+          "commands": [
+            "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"$GRUB_CMDLINE_LINUX_DEFAULT amdgpu.ppfeaturemask=0xffffffff\"' | sudo tee -a /etc/default/grub",
+            "sudo update-grub",
+            "echo 'manual' | sudo tee /sys/class/drm/card0/device/power_dpm_force_performance_level"
+          ],
+          "files": {
+            "/etc/modprobe.d/amdgpu.conf": "options amdgpu si_support=1 cik_support=1\noptions radeon si_support=0 cik_support=0"
+          }
+        },
+        "arch": {
+          "packages": ["mesa", "vulkan-radeon", "radeontop", "corectrl"],
+          "commands": [
+            "sudo grub-mkconfig -o /boot/grub/grub.cfg",
+            "echo 'manual' | sudo tee /sys/class/drm/card0/device/power_dpm_force_performance_level",
+            "systemctl --user enable corectrl"
+          ]
+        },
+        "fedora": {
+          "packages": ["mesa-vulkan-drivers", "mesa-dri-drivers", "radeontop"],
+          "commands": [
+            "sudo grubby --update-kernel=ALL --args='amdgpu.ppfeaturemask=0xffffffff'",
+            "echo 'manual' | sudo tee /sys/class/drm/card0/device/power_dpm_force_performance_level"
+          ]
+        },
+        "nixos": {
+          "configuration": "boot.kernelParams = [ \"amdgpu.ppfeaturemask=0xffffffff\" ];\nhardware.opengl = {\n  enable = true;\n  driSupport = true;\n  driSupport32Bit = true;\n  extraPackages = with pkgs; [\n    rocm-opencl-icd\n    rocm-opencl-runtime\n    amdvlk\n  ];\n};"
+        }
+      },
+      "performance_impact": "High",
+      "difficulty": "Medium",
+      "estimated_time": "20-40 minutes",
+      "author": {
+        "username": "amd_optimizer",
+        "github_url": "https://github.com/amd-optimizer", 
+        "reputation": 4.7
+      },
+      "rating": 4.8,
+      "votes": 134,
+      "verified": true,
+      "created": "2023-10-20",
+      "updated": "2024-01-05",
+      "tags": ["amd", "gpu", "mesa", "performance", "vulkan"]
+    },
+    {
+      "id": "intel_ethernet_stability",
+      "title": "Intel I225-V Ethernet Stability Fix",
+      "category": "stability", 
+      "component": "network",
+      "hardware_ids": ["intel_i225_v_ethernet"],
+      "distributions": ["debian", "arch", "fedora", "nixos"],
+      "description": "Fix intermittent connection issues and packet loss on Intel I225-V Ethernet controllers through driver tweaks and firmware updates.",
+      "configuration": {
+        "debian": {
+          "packages": ["ethtool", "intel-microcode"],
+          "commands": [
+            "sudo ethtool -s eth0 speed 1000 duplex full autoneg off",
+            "echo 'options igc InterruptThrottleRate=0' | sudo tee -a /etc/modprobe.d/igc.conf",
+            "sudo systemctl restart networking"
+          ],
+          "files": {
+            "/etc/systemd/system/intel-ethernet-fix.service": "[Unit]\nDescription=Intel I225-V Ethernet Fix\nAfter=network.target\n\n[Service]\nType=oneshot\nExecStart=/usr/sbin/ethtool -K eth0 tso off gso off\nRemainAfterExit=yes\n\n[Install]\nWantedBy=multi-user.target"
+          }
+        },
+        "arch": {
+          "packages": ["ethtool", "intel-ucode"],
+          "commands": [
+            "sudo ethtool -K eth0 tso off gso off",
+            "echo 'options igc InterruptThrottleRate=0' | sudo tee -a /etc/modprobe.d/igc.conf",
+            "sudo mkinitcpio -p"
+          ]
+        },
+        "fedora": {
+          "packages": ["ethtool", "microcode_ctl"],
+          "commands": [
+            "sudo ethtool -K eth0 tso off gso off", 
+            "echo 'options igc InterruptThrottleRate=0' | sudo tee -a /etc/modprobe.d/igc.conf",
+            "sudo dracut --force"
+          ]
+        },
+        "nixos": {
+          "configuration": "boot.extraModprobeConfig = \"options igc InterruptThrottleRate=0\";\nnetworking.interfaces.eth0 = {\n  useDHCP = true;\n};\nsystemd.services.intel-ethernet-fix = {\n  description = \"Intel I225-V Ethernet Fix\";\n  after = [ \"network.target\" ];\n  wantedBy = [ \"multi-user.target\" ];\n  serviceConfig = {\n    Type = \"oneshot\";\n    ExecStart = \"${pkgs.ethtool}/bin/ethtool -K eth0 tso off gso off\";\n    RemainAfterExit = true;\n  };\n};"
+        }
+      },
+      "performance_impact": "Medium",
+      "difficulty": "Easy",
+      "estimated_time": "10-15 minutes",
+      "author": {
+        "username": "network_ninja",
+        "github_url": "https://github.com/network-ninja",
+        "reputation": 4.5
+      },
+      "rating": 4.6,
+      "votes": 89,
+      "verified": true,
+      "created": "2023-09-12",
+      "updated": "2023-12-20",
+      "tags": ["intel", "network", "ethernet", "stability", "driver"]
+    },
+    {
+      "id": "realtek_2_5gbe_driver",
+      "title": "Realtek RTL8125B 2.5GbE Driver Installation",
+      "category": "drivers",
+      "component": "network", 
+      "hardware_ids": ["realtek_rtl8125b"],
+      "distributions": ["debian", "arch", "fedora"],
+      "description": "Install proper drivers for Realtek RTL8125B 2.5 Gigabit Ethernet to achieve full speed and stability.",
+      "configuration": {
+        "debian": {
+          "packages": ["dkms", "build-essential", "linux-headers-$(uname -r)"],
+          "commands": [
+            "wget https://github.com/awesometic/realtek-r8125-dkms/archive/master.zip",
+            "unzip master.zip && cd realtek-r8125-dkms-master",
+            "sudo ./dkms-install.sh",
+            "sudo modprobe -r r8169 && sudo modprobe r8125"
+          ]
+        },
+        "arch": {
+          "packages": ["r8125-dkms"],
+          "commands": [
+            "yay -S r8125-dkms",
+            "sudo modprobe -r r8169",
+            "echo 'blacklist r8169' | sudo tee -a /etc/modprobe.d/blacklist.conf",
+            "sudo modprobe r8125"
+          ]
+        },
+        "fedora": {
+          "packages": ["dkms", "kernel-devel", "kernel-headers"],
+          "commands": [
+            "wget https://github.com/awesometic/realtek-r8125-dkms/archive/master.zip",
+            "unzip master.zip && cd realtek-r8125-dkms-master", 
+            "sudo ./dkms-install.sh",
+            "sudo modprobe -r r8169 && sudo modprobe r8125"
+          ]
+        }
+      },
+      "performance_impact": "High",
+      "difficulty": "Medium", 
+      "estimated_time": "20-30 minutes",
+      "author": {
+        "username": "ethernet_expert",
+        "github_url": "https://github.com/ethernet-expert",
+        "reputation": 4.2
+      },
+      "rating": 4.4,
+      "votes": 67,
+      "verified": false,
+      "created": "2023-08-15",
+      "updated": "2023-11-30",
+      "tags": ["realtek", "network", "2.5gbe", "dkms", "driver"],
+      "warnings": [
+        "Requires compilation on each kernel update",
+        "May break with major kernel updates"
+      ]
+    },
+    {
+      "id": "amd_5800x_performance",
+      "title": "AMD Ryzen 7 5800X Performance Tuning",
+      "category": "performance",
+      "component": "cpu",
+      "hardware_ids": ["amd_ryzen_7_5800x"],
+      "distributions": ["debian", "arch", "fedora", "nixos"],
+      "description": "Optimize AMD Ryzen 7 5800X performance with proper governor settings, PBO configuration, and thermal management.",
+      "configuration": {
+        "debian": {
+          "packages": ["cpufrequtils", "ryzenadj"],
+          "commands": [
+            "echo 'performance' | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor",
+            "echo 'GOVERNOR=\"performance\"' | sudo tee -a /etc/default/cpufrequtils",
+            "sudo systemctl enable cpufrequtils"
+          ],
+          "files": {
+            "/etc/systemd/system/ryzen-performance.service": "[Unit]\nDescription=AMD Ryzen Performance Optimization\nAfter=multi-user.target\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c 'echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor'\nRemainAfterExit=yes\n\n[Install]\nWantedBy=multi-user.target"
+          }
+        },
+        "arch": {
+          "packages": ["cpupower", "ryzenadj"],
+          "commands": [
+            "sudo cpupower frequency-set -g performance", 
+            "sudo systemctl enable cpupower",
+            "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"$GRUB_CMDLINE_LINUX_DEFAULT amd_pstate=active\"' | sudo tee -a /etc/default/grub",
+            "sudo grub-mkconfig -o /boot/grub/grub.cfg"
+          ]
+        },
+        "fedora": {
+          "packages": ["kernel-tools"],
+          "commands": [
+            "sudo cpupower frequency-set -g performance",
+            "sudo systemctl enable cpupower",
+            "sudo grubby --update-kernel=ALL --args='amd_pstate=active'"
+          ]
+        },
+        "nixos": {
+          "configuration": "powerManagement.cpuFreqGovernor = \"performance\";\nboot.kernelParams = [ \"amd_pstate=active\" ];\nservices.auto-cpufreq = {\n  enable = true;\n  settings = {\n    charger = {\n      governor = \"performance\";\n      turbo = \"auto\";\n    };\n  };\n};"
+        }
+      },
+      "performance_impact": "High",
+      "difficulty": "Easy",
+      "estimated_time": "10-15 minutes",
+      "author": {
+        "username": "ryzen_master", 
+        "github_url": "https://github.com/ryzen-master",
+        "reputation": 4.9
+      },
+      "rating": 4.9,
+      "votes": 298,
+      "verified": true,
+      "created": "2023-07-10",
+      "updated": "2024-01-08",
+      "tags": ["amd", "ryzen", "cpu", "performance", "pbo"]
+    },
+    {
+      "id": "intel_12th_gen_scheduler",
+      "title": "Intel 12th Gen P/E Core Scheduler Optimization",
+      "category": "performance",
+      "component": "cpu",
+      "hardware_ids": ["intel_i7_12700k", "intel_i9_12900k"],
+      "distributions": ["debian", "arch", "fedora", "nixos"],
+      "description": "Configure Linux kernel scheduler for optimal Intel 12th generation P-core and E-core performance with proper thread affinity.",
+      "configuration": {
+        "debian": {
+          "packages": ["linux-image-5.16+", "intel-microcode"],
+          "commands": [
+            "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"$GRUB_CMDLINE_LINUX_DEFAULT intel_pstate=active\"' | sudo tee -a /etc/default/grub",
+            "sudo update-grub",
+            "echo 2 | sudo tee /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost"
+          ]
+        },
+        "arch": {
+          "packages": ["linux", "intel-ucode"],
+          "commands": [
+            "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"$GRUB_CMDLINE_LINUX_DEFAULT intel_pstate=active\"' | sudo tee -a /etc/default/grub", 
+            "sudo grub-mkconfig -o /boot/grub/grub.cfg",
+            "echo powersave | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
+          ]
+        },
+        "fedora": {
+          "packages": ["kernel", "microcode_ctl"],
+          "commands": [
+            "sudo grubby --update-kernel=ALL --args='intel_pstate=active'",
+            "sudo cpupower frequency-set -g powersave",
+            "echo 2 | sudo tee /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost"
+          ]
+        },
+        "nixos": {
+          "configuration": "boot.kernelParams = [ \"intel_pstate=active\" ];\npowerManagement = {\n  enable = true;\n  cpuFreqGovernor = \"powersave\";\n};\nhardware.cpu.intel.updateMicrocode = true;\nservices.thermald.enable = true;"
+        }
+      },
+      "performance_impact": "High",
+      "difficulty": "Medium", 
+      "estimated_time": "15-25 minutes",
+      "author": {
+        "username": "intel_optimizer",
+        "github_url": "https://github.com/intel-optimizer",
+        "reputation": 4.7
+      },
+      "rating": 4.7,
+      "votes": 187,
+      "verified": true,
+      "created": "2023-06-20",
+      "updated": "2024-01-12",
+      "tags": ["intel", "12th-gen", "p-core", "e-core", "scheduler"]
+    },
+    {
+      "id": "samsung_980_pro_optimization",
+      "title": "Samsung 980 PRO NVMe SSD Optimization",
+      "category": "performance",
+      "component": "storage",
+      "hardware_ids": ["samsung_980_pro_nvme"],
+      "distributions": ["debian", "arch", "fedora", "nixos"],
+      "description": "Optimize Samsung 980 PRO NVMe SSD for maximum performance with proper alignment, file system tuning, and power management.",
+      "configuration": {
+        "debian": {
+          "packages": ["nvme-cli", "fio"],
+          "commands": [
+            "sudo nvme format /dev/nvme0n1 --lbaf=1",
+            "echo 'ACTION==\"add|change\", KERNEL==\"nvme[0-9]n[0-9]\", ATTR{queue/scheduler}=\"none\"' | sudo tee -a /etc/udev/rules.d/60-nvme-scheduler.rules",
+            "echo 'vm.dirty_ratio = 5' | sudo tee -a /etc/sysctl.conf"
+          ],
+          "files": {
+            "/etc/fstab": "# Add noatime,discard options to NVMe mounts\n/dev/nvme0n1p1 / ext4 defaults,noatime,discard 0 1"
+          }
+        },
+        "arch": {
+          "packages": ["nvme-cli", "fio"],
+          "commands": [
+            "echo 'ACTION==\"add|change\", KERNEL==\"nvme[0-9]n[0-9]\", ATTR{queue/scheduler}=\"none\"' | sudo tee -a /etc/udev/rules.d/60-nvme-scheduler.rules",
+            "echo 'vm.dirty_ratio = 5' | sudo tee -a /etc/sysctl.d/99-nvme.conf",
+            "sudo udevadm control --reload && sudo udevadm trigger"
+          ]
+        },
+        "fedora": {
+          "packages": ["nvme-cli", "fio"],
+          "commands": [
+            "echo 'ACTION==\"add|change\", KERNEL==\"nvme[0-9]n[0-9]\", ATTR{queue/scheduler}=\"none\"' | sudo tee -a /etc/udev/rules.d/60-nvme-scheduler.rules", 
+            "echo 'vm.dirty_ratio = 5' | sudo tee -a /etc/sysctl.d/99-nvme.conf"
+          ]
+        },
+        "nixos": {
+          "configuration": "services.udev.extraRules = ''\n  ACTION==\"add|change\", KERNEL==\"nvme[0-9]n[0-9]\", ATTR{queue/scheduler}=\"none\"\n'';\nboot.kernel.sysctl = {\n  \"vm.dirty_ratio\" = 5;\n  \"vm.dirty_background_ratio\" = 2;\n};\nfileSystems.\"/\".options = [ \"noatime\" \"discard\" ];"
+        }
+      },
+      "performance_impact": "Medium",
+      "difficulty": "Easy",
+      "estimated_time": "10-15 minutes",
+      "author": {
+        "username": "storage_specialist",
+        "github_url": "https://github.com/storage-specialist",
+        "reputation": 4.8
+      },
+      "rating": 4.9,
+      "votes": 245,
+      "verified": true,
+      "created": "2023-05-15",
+      "updated": "2024-01-05", 
+      "tags": ["samsung", "nvme", "ssd", "performance", "storage"]
+    },
+    {
+      "id": "focusrite_scarlett_audio",
+      "title": "Focusrite Scarlett 2i2 Audio Production Setup",
+      "category": "audio",
+      "component": "audio",
+      "hardware_ids": ["focusrite_scarlett_2i2"],
+      "distributions": ["debian", "arch", "fedora", "nixos"],
+      "description": "Configure Focusrite Scarlett 2i2 for professional audio production with JACK, low latency, and proper buffer settings.",
+      "configuration": {
+        "debian": {
+          "packages": ["jackd2", "qjackctl", "pulseaudio-module-jack", "a2jmidid"],
+          "commands": [
+            "sudo usermod -a -G audio $USER",
+            "echo '@audio - rtprio 95' | sudo tee -a /etc/security/limits.conf",
+            "echo '@audio - memlock unlimited' | sudo tee -a /etc/security/limits.conf",
+            "jack_control start"
+          ],
+          "files": {
+            "~/.jackdrc": "jackd -dalsa -dhw:Scarlett2i2USB -r48000 -p64 -n3"
+          }
+        },
+        "arch": {
+          "packages": ["jack2", "qjackctl", "pulseaudio-jack", "a2jmidid"],
+          "commands": [
+            "sudo usermod -a -G audio $USER",
+            "echo '@audio - rtprio 95' | sudo tee -a /etc/security/limits.conf",
+            "echo '@audio - memlock unlimited' | sudo tee -a /etc/security/limits.conf"
+          ]
+        },
+        "fedora": {
+          "packages": ["jack-audio-connection-kit", "qjackctl", "pulseaudio-module-jack"],
+          "commands": [
+            "sudo usermod -a -G audio $USER",
+            "echo '@audio - rtprio 95' | sudo tee -a /etc/security/limits.conf",
+            "echo '@audio - memlock unlimited' | sudo tee -a /etc/security/limits.conf"
+          ]
+        },
+        "nixos": {
+          "configuration": "services.jack = {\n  jackd.enable = true;\n  alsa.enable = false;\n  loopback = {\n    enable = true;\n  };\n};\nusers.users.username.extraGroups = [ \"audio\" ];\nsecurity.rtkit.enable = true;\nsound.enable = true;\nhardware.pulseaudio.enable = false;\nservices.pipewire = {\n  enable = true;\n  jack.enable = true;\n};"
+        }
+      },
+      "performance_impact": "Medium",
+      "difficulty": "Medium", 
+      "estimated_time": "20-30 minutes",
+      "author": {
+        "username": "audio_engineer_pro",
+        "github_url": "https://github.com/audio-engineer-pro",
+        "reputation": 4.6
+      },
+      "rating": 4.6,
+      "votes": 123,
+      "verified": true,
+      "created": "2023-04-10",
+      "updated": "2023-12-28",
+      "tags": ["focusrite", "scarlett", "audio", "jack", "production"]
+    }
+  ],
+  "categories": [
+    {
+      "id": "performance",
+      "name": "Performance Optimization",
+      "description": "Tips focused on improving system and hardware performance",
+      "icon": "⚡",
+      "color": "#ff6b6b"
+    },
+    {
+      "id": "stability", 
+      "name": "Stability & Reliability",
+      "description": "Fixes for hardware stability and reliability issues",
+      "icon": "🛠️",
+      "color": "#4ecdc4"
+    },
+    {
+      "id": "drivers",
+      "name": "Driver Installation",
+      "description": "Guides for installing and configuring hardware drivers",
+      "icon": "💾",
+      "color": "#45b7d1"
+    },
+    {
+      "id": "audio",
+      "name": "Audio Configuration", 
+      "description": "Audio hardware setup and optimization tips",
+      "icon": "🎵",
+      "color": "#96ceb4"
+    }
+  ],
+  "statistics": {
+    "total_tips": 8,
+    "verified_tips": 7,
+    "average_rating": 4.7,
+    "total_votes": 1299,
+    "distributions_covered": 4,
+    "components_covered": ["gpu", "cpu", "network", "storage", "audio"],
+    "categories_covered": ["performance", "stability", "drivers", "audio"],
+    "last_updated": "2024-01-15"
+  }
+}
