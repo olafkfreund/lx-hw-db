@@ -3,10 +3,13 @@
 //! This module combines hardware detection tools with kernel support verification
 //! to provide comprehensive compatibility reports.
 
-use crate::detectors::{DetectorRegistry, DetectionResult, DetectionData};
 use crate::detectors::kernel::{KernelSupportVerifier, SupportLevel};
-use crate::hardware::{HardwareReport, KernelCompatibilityInfo, DeviceCompatibility, ReportMetadata, SystemInfo, PrivacyLevel};
+use crate::detectors::{DetectionData, DetectionResult, DetectorRegistry};
 use crate::errors::Result;
+use crate::hardware::{
+    DeviceCompatibility, HardwareReport, KernelCompatibilityInfo, PrivacyLevel, ReportMetadata,
+    SystemInfo,
+};
 use crate::privacy::PrivacyManager;
 use chrono::Utc;
 
@@ -41,7 +44,8 @@ impl HardwareAnalyzer {
         let kernel_support = self.kernel_verifier.get_support_data(device_ids)?;
 
         // Step 4: Build comprehensive compatibility information
-        let kernel_compatibility = self.build_kernel_compatibility(&kernel_support, &detection_results)?;
+        let kernel_compatibility =
+            self.build_kernel_compatibility(&kernel_support, &detection_results)?;
 
         // Step 5: Generate anonymized hardware report
         let report = self.build_hardware_report(detection_results, kernel_compatibility).await?;
@@ -54,14 +58,18 @@ impl HardwareAnalyzer {
         let mut device_ids = Vec::new();
 
         for result in results {
-            if let DetectionData::Lshw(data) = &result.data {
-                // Extract PCI IDs from lshw businfo field
-                for component in &data.components {
-                    if let Some(ref businfo) = component.businfo {
-                        if let Some(pci_id) = self.extract_pci_id_from_businfo(businfo) {
-                            device_ids.push(pci_id);
-                        }
-                    }
+            let DetectionData::Lshw(data) = &result.data else {
+                continue;
+            };
+
+            // Extract PCI IDs from lshw businfo field
+            for component in &data.components {
+                let Some(ref businfo) = component.businfo else {
+                    continue;
+                };
+
+                if let Some(pci_id) = self.extract_pci_id_from_businfo(businfo) {
+                    device_ids.push(pci_id);
                 }
             }
         }
@@ -92,35 +100,38 @@ impl HardwareAnalyzer {
 
         for device_support in &kernel_support.supported_devices {
             let device_name = self.get_device_name(&device_support.device_id, detection_results);
-            
+
             let (support_status, _count_target) = match device_support.support_level {
                 SupportLevel::Supported => {
                     supported_count += 1;
                     ("supported", &mut supported_count)
-                },
+                }
                 SupportLevel::Experimental => {
                     experimental_count += 1;
                     ("experimental", &mut experimental_count)
-                },
+                }
                 SupportLevel::Generic => {
                     supported_count += 1;
                     ("supported_generic", &mut supported_count)
-                },
+                }
                 SupportLevel::Similar => {
                     experimental_count += 1;
                     ("similar_device_supported", &mut experimental_count)
-                },
+                }
                 SupportLevel::Unsupported => {
                     unsupported_count += 1;
                     missing_modules.push(format!("No driver for {}", device_support.device_id));
                     ("unsupported", &mut unsupported_count)
-                },
+                }
             };
 
             // Generate configuration recommendations
             for dep in &device_support.config_dependencies {
-                let config_recommendation = format!("Enable CONFIG_{} for module {}", 
-                    dep.to_uppercase().replace('-', "_"), device_support.driver_module);
+                let config_recommendation = format!(
+                    "Enable CONFIG_{} for module {}",
+                    dep.to_uppercase().replace('-', "_"),
+                    device_support.driver_module
+                );
                 if !config_recommendations.contains(&config_recommendation) {
                     config_recommendations.push(config_recommendation);
                 }
@@ -156,10 +167,10 @@ impl HardwareAnalyzer {
         if businfo.starts_with("pci@") {
             let pci_addr = businfo.strip_prefix("pci@")?;
             let sysfs_path = format!("/sys/bus/pci/devices/{}", pci_addr);
-            
+
             if let (Ok(vendor), Ok(device)) = (
                 std::fs::read_to_string(format!("{}/vendor", sysfs_path)),
-                std::fs::read_to_string(format!("{}/device", sysfs_path))
+                std::fs::read_to_string(format!("{}/device", sysfs_path)),
             ) {
                 let vendor = vendor.trim().strip_prefix("0x")?.trim();
                 let device = device.trim().strip_prefix("0x")?.trim();
@@ -172,22 +183,29 @@ impl HardwareAnalyzer {
     /// Get human-readable device name from detection results
     fn get_device_name(&self, device_id: &str, detection_results: &[DetectionResult]) -> String {
         for result in detection_results {
-            if let DetectionData::Lshw(data) = &result.data {
-                for component in &data.components {
-                    if let Some(ref businfo) = component.businfo {
-                        if let Some((vendor, device)) = self.extract_pci_id_from_businfo(businfo) {
-                            let component_id = format!("{}:{}", vendor.to_lowercase(), device.to_lowercase());
-                            if component_id == device_id {
-                                return component.description.clone().unwrap_or_else(|| {
-                                    format!("Device {}", device_id)
-                                });
-                            }
-                        }
-                    }
+            let DetectionData::Lshw(data) = &result.data else {
+                continue;
+            };
+
+            for component in &data.components {
+                let Some(ref businfo) = component.businfo else {
+                    continue;
+                };
+
+                let Some((vendor, device)) = self.extract_pci_id_from_businfo(businfo) else {
+                    continue;
+                };
+
+                let component_id = format!("{}:{}", vendor.to_lowercase(), device.to_lowercase());
+                if component_id == device_id {
+                    return component
+                        .description
+                        .clone()
+                        .unwrap_or_else(|| format!("Device {}", device_id));
                 }
             }
         }
-        
+
         format!("Unknown Device {}", device_id)
     }
 
@@ -215,7 +233,8 @@ impl HardwareAnalyzer {
             version: env!("CARGO_PKG_VERSION").to_string(),
             generated_at: Utc::now(),
             privacy_level: self.privacy_manager.privacy_level(),
-            tools_used: detection_results.iter()
+            tools_used: detection_results
+                .iter()
                 .filter(|r| r.success)
                 .map(|r| r.tool_name.clone())
                 .collect(),
@@ -231,19 +250,22 @@ impl HardwareAnalyzer {
         Ok(HardwareReport {
             metadata,
             system,
-            cpu: None, // TODO: implement
-            memory: None, // TODO: implement
-            storage: Vec::new(), // TODO: implement
+            cpu: None,            // TODO: implement
+            memory: None,         // TODO: implement
+            storage: Vec::new(),  // TODO: implement
             graphics: Vec::new(), // TODO: implement
-            network: Vec::new(), // TODO: implement
-            usb: Vec::new(), // TODO: implement
-            audio: Vec::new(), // TODO: implement
+            network: Vec::new(),  // TODO: implement
+            usb: Vec::new(),      // TODO: implement
+            audio: Vec::new(),    // TODO: implement
             kernel_support: Some(kernel_compatibility),
         })
     }
 
     /// Extract system information with privacy protection
-    async fn extract_system_info(&mut self, _detection_results: &[DetectionResult]) -> Result<SystemInfo> {
+    async fn extract_system_info(
+        &mut self,
+        _detection_results: &[DetectionResult],
+    ) -> Result<SystemInfo> {
         // Get system information from uname and /proc files
         let kernel_version = std::process::Command::new("uname")
             .arg("-r")
@@ -262,7 +284,7 @@ impl HardwareAnalyzer {
             .output()
             .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
             .unwrap_or_else(|_| "localhost".to_string());
-        
+
         let anonymized_hostname = self.privacy_manager.anonymize_identifier(&hostname)?;
 
         // Try to detect distribution
@@ -282,10 +304,12 @@ impl HardwareAnalyzer {
         // Try /etc/os-release first
         if let Ok(content) = std::fs::read_to_string("/etc/os-release") {
             for line in content.lines() {
-                if let Some(name) = line.strip_prefix("PRETTY_NAME=\"") {
-                    if let Some(end) = name.find('"') {
-                        return Some(name[..end].to_string());
-                    }
+                let Some(name) = line.strip_prefix("PRETTY_NAME=\"") else {
+                    continue;
+                };
+
+                if let Some(end) = name.find('"') {
+                    return Some(name[..end].to_string());
                 }
             }
         }

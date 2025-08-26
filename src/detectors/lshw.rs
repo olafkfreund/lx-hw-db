@@ -1,14 +1,14 @@
 //! lshw hardware detection implementation
 
-use super::{HardwareDetector, DetectionResult, DetectionData};
-use crate::errors::{Result, LxHwError};
+use super::{DetectionData, DetectionResult, HardwareDetector};
+use crate::errors::{LxHwError, Result};
 use async_trait::async_trait;
-use std::process::{Output, Command};
-use std::collections::HashMap;
-use std::time::Duration;
+use log::{debug, error, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use log::{debug, warn, error};
+use std::collections::HashMap;
+use std::process::{Command, Output};
+use std::time::Duration;
 
 /// Complete hardware information from lshw
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -90,24 +90,24 @@ impl HardwareDetector for LshwDetector {
             .output()
             .map(|output| output.status.success())
             .unwrap_or(false);
-            
+
         if which_result {
             return true;
         }
-        
+
         // Also check common installation paths
         for path in &["/usr/bin/lshw", "/usr/sbin/lshw", "/sbin/lshw"] {
             if std::path::Path::new(path).exists() {
                 return true;
             }
         }
-        
+
         false
     }
 
     async fn execute(&self) -> Result<Output> {
         debug!("Executing lshw hardware detection");
-        
+
         let output = tokio::process::Command::new("lshw")
             .arg("-json") // Request JSON output
             .arg("-quiet") // Suppress header information
@@ -119,24 +119,24 @@ impl HardwareDetector for LshwDetector {
             .map_err(|e| LxHwError::SystemCommandError {
                 command: format!("lshw: {}", e)
             })?;
-            
+
         debug!("lshw execution completed with status: {}", output.status);
-        
+
         // lshw may return non-zero exit status with warnings but still provide useful data
         if !output.status.success() && output.stdout.is_empty() {
-            return Err(LxHwError::DetectionError(
-                format!("lshw failed with exit code: {} and stderr: {}", 
-                       output.status.code().unwrap_or(-1),
-                       String::from_utf8_lossy(&output.stderr))
-            ));
+            return Err(LxHwError::DetectionError(format!(
+                "lshw failed with exit code: {} and stderr: {}",
+                output.status.code().unwrap_or(-1),
+                String::from_utf8_lossy(&output.stderr)
+            )));
         }
-        
+
         Ok(output)
     }
 
     fn parse_output(&self, output: &Output) -> Result<DetectionResult> {
         let mut errors = Vec::new();
-        
+
         // Handle stderr warnings (lshw often warns about privileges)
         if !output.stderr.is_empty() {
             let stderr_str = String::from_utf8_lossy(&output.stderr);
@@ -147,7 +147,7 @@ impl HardwareDetector for LshwDetector {
                 }
             }
         }
-        
+
         // Parse stdout JSON
         if output.stdout.is_empty() {
             return Ok(DetectionResult {
@@ -157,10 +157,10 @@ impl HardwareDetector for LshwDetector {
                 errors: vec!["Empty output from lshw".to_string()],
             });
         }
-        
+
         let stdout_str = String::from_utf8_lossy(&output.stdout);
         debug!("Parsing lshw JSON output ({} bytes)", stdout_str.len());
-        
+
         match self.parse_json(&stdout_str) {
             Ok(lshw_data) => {
                 debug!("Successfully parsed {} components from lshw", lshw_data.components.len());
@@ -183,7 +183,7 @@ impl HardwareDetector for LshwDetector {
             }
         }
     }
-    
+
     fn timeout(&self) -> Duration {
         Duration::from_secs(30)
     }
@@ -193,37 +193,35 @@ impl LshwDetector {
     /// Parse lshw JSON output into structured data
     fn parse_json(&self, json_str: &str) -> Result<LshwData> {
         // Parse the JSON array of components
-        let components: Vec<LshwComponent> = serde_json::from_str(json_str)
-            .map_err(|e| LxHwError::SerializationError(format!("lshw JSON parsing failed: {}", e)))?;
-            
+        let components: Vec<LshwComponent> = serde_json::from_str(json_str).map_err(|e| {
+            LxHwError::SerializationError(format!("lshw JSON parsing failed: {}", e))
+        })?;
+
         // Generate summary statistics
         let summary = self.generate_summary(&components);
-        
-        Ok(LshwData {
-            components,
-            summary: Some(summary),
-        })
+
+        Ok(LshwData { components, summary: Some(summary) })
     }
-    
+
     /// Generate summary statistics from components
     fn generate_summary(&self, components: &[LshwComponent]) -> LshwSummary {
         let mut components_by_class = HashMap::new();
         let mut warnings = Vec::new();
         let mut privileged_execution = true;
-        
+
         for component in components {
             *components_by_class.entry(component.class.clone()).or_insert(0) += 1;
         }
-        
+
         // Check for common indicators of unprivileged execution
         let has_memory = components_by_class.contains_key("memory");
         let has_system = components_by_class.contains_key("system");
-        
+
         if !has_memory || !has_system {
             privileged_execution = false;
             warnings.push("Some hardware information may be missing due to insufficient privileges. Run as root for complete detection.".to_string());
         }
-        
+
         LshwSummary {
             total_components: components.len(),
             components_by_class,

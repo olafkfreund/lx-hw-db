@@ -1,12 +1,12 @@
 //! Command-line interface for the hardware detection tool
 
-use crate::errors::{Result, LxHwError};
+use crate::errors::{LxHwError, Result};
 use crate::hardware::PrivacyLevel;
 use crate::output::OutputFormat;
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
-/// Linux Hardware Detection CLI Tool  
+/// Linux Hardware Detection CLI Tool
 #[derive(Parser, Debug)]
 #[command(
     name = "lx-hw-detect",
@@ -153,22 +153,9 @@ impl CliHandler {
 
         // Execute the command
         match cli.command {
-            Commands::Detect {
-                format,
-                output,
-                tools,
-                timeout,
-                no_anonymize,
-            } => {
-                self.handle_detect(
-                    cli.global.privacy,
-                    format,
-                    output,
-                    tools,
-                    timeout,
-                    no_anonymize,
-                )
-                .await
+            Commands::Detect { format, output, tools, timeout, no_anonymize } => {
+                self.handle_detect(cli.global.privacy, format, output, tools, timeout, no_anonymize)
+                    .await
             }
             Commands::Check { detailed } => self.handle_check(detailed).await,
             Commands::Validate(validate_args) => {
@@ -211,21 +198,21 @@ impl CliHandler {
         format: OutputFormat,
         output: Option<PathBuf>,
         _tools: Option<Vec<String>>, // TODO: Use to filter specific tools
-        _timeout: u64, // TODO: Apply timeout to individual detectors
+        _timeout: u64,               // TODO: Apply timeout to individual detectors
         no_anonymize: bool,
     ) -> Result<()> {
         use crate::detectors::integration::HardwareAnalyzer;
         use crate::output::OutputRenderer;
-        
+
         log::info!("Starting hardware detection and analysis...");
         println!("Detecting hardware and analyzing kernel compatibility...\n");
-        
+
         // Create hardware analyzer with privacy settings
         let mut analyzer = HardwareAnalyzer::new(privacy)?;
-        
+
         // Run complete analysis
         let report = analyzer.analyze_system().await?;
-        
+
         // Render output
         let renderer = OutputRenderer::new(format);
         let output_content = if no_anonymize {
@@ -234,74 +221,72 @@ impl CliHandler {
         } else {
             renderer.render(&report)?
         };
-        
+
         // Write to file or stdout
         match output {
             Some(path) => {
-                std::fs::write(&path, output_content)
-                    .map_err(LxHwError::IoError)?;
+                std::fs::write(&path, output_content).map_err(LxHwError::IoError)?;
                 println!("Hardware report saved to: {:?}", path);
             }
             None => {
                 println!("{}", output_content);
             }
         }
-        
+
         Ok(())
     }
 
     /// Handle the check command
     async fn handle_check(&self, detailed: bool) -> Result<()> {
         use crate::detectors::DetectorRegistry;
-        
+
         log::info!("Checking hardware detection tool availability...");
         println!("Checking availability of hardware detection tools...\n");
-        
+
         let registry = DetectorRegistry::new();
         let detectors = registry.list_detectors();
-        
+
         let mut available_count = 0;
         let total_count = detectors.len();
-        
+
         for detector in detectors {
             let is_available = detector.is_available().await;
             let status = if is_available { "✓ Available" } else { "✗ Not found" };
-            
+
             println!("{:<12} {}", detector.name(), status);
-            
+
             if detailed && is_available {
                 println!("    Timeout: {:?}", detector.timeout());
                 println!();
             }
-            
+
             if is_available {
                 available_count += 1;
             }
         }
-        
+
         println!("\nSummary: {}/{} detection tools available", available_count, total_count);
-        
+
         if available_count == 0 {
             println!("Warning: No hardware detection tools found. Install lshw, dmidecode, lspci, lsusb, or inxi for hardware detection.");
         } else if available_count < total_count {
             println!("Note: Install missing tools for more comprehensive hardware detection.");
         }
-        
+
         Ok(())
     }
 
-
     /// Handle the analyze command
     async fn handle_analyze(
-        &self, 
-        device: Option<String>, 
-        kernel_source: bool, 
+        &self,
+        device: Option<String>,
+        kernel_source: bool,
         kernel_repo: Option<PathBuf>,
-        recommendations: bool
+        recommendations: bool,
     ) -> Result<()> {
         use crate::detectors::kernel::KernelSupportVerifier;
         use crate::detectors::kernel_source::KernelSourceAnalyzer;
-        
+
         println!("Analyzing kernel hardware support...\n");
 
         // Initialize kernel support verifier
@@ -354,28 +339,22 @@ impl CliHandler {
             };
 
             for device_support in &support_data.supported_devices {
-                if device_support.support_level == crate::detectors::kernel::SupportLevel::Unsupported {
-                    println!("Searching kernel source for device {}...", device_support.device_id);
-                    match source_analyzer.search_device_support(&device_support.device_id).await {
-                        Ok(source_info) => {
-                            if !source_info.is_empty() {
-                                for info in source_info {
-                                    println!("  Found in: {}", info.driver_path);
-                                    println!("  Driver: {}", info.driver_name);
-                                    if info.experimental {
-                                        println!("  Status: EXPERIMENTAL");
-                                    }
-                                }
-                            } else {
-                                println!("  No kernel source support found");
-                            }
-                        }
-                        Err(e) => {
-                            println!("  Error searching source: {}", e);
-                        }
-                    }
-                    println!();
+                if device_support.support_level
+                    != crate::detectors::kernel::SupportLevel::Unsupported
+                {
+                    continue;
                 }
+
+                println!("Searching kernel source for device {}...", device_support.device_id);
+                match source_analyzer.search_device_support(&device_support.device_id).await {
+                    Ok(source_info) => {
+                        self.display_kernel_source_info(source_info);
+                    }
+                    Err(e) => {
+                        println!("  Error searching source: {}", e);
+                    }
+                }
+                println!();
             }
         }
 
@@ -389,16 +368,16 @@ impl CliHandler {
 
     /// Display kernel analysis results
     fn display_kernel_analysis(
-        &self, 
-        support_data: &crate::detectors::kernel::KernelSupportData, 
-        recommendations: &crate::detectors::kernel::UserRecommendations
+        &self,
+        support_data: &crate::detectors::kernel::KernelSupportData,
+        recommendations: &crate::detectors::kernel::UserRecommendations,
     ) {
         println!("=== KERNEL SUPPORT ANALYSIS ===");
         println!("Kernel Version: {}", support_data.kernel_version);
         println!("Total Devices: {}", support_data.supported_devices.len());
         println!("Supported: {}", recommendations.supported_devices);
         println!("Unsupported: {}", recommendations.unsupported_devices);
-        
+
         if recommendations.unsupported_devices > 0 {
             println!("\nUnsupported Devices:");
             for device in &support_data.supported_devices {
@@ -426,11 +405,33 @@ impl CliHandler {
         }
     }
 
+    /// Display kernel source information
+    fn display_kernel_source_info(
+        &self,
+        source_info: Vec<crate::detectors::kernel_source::HardwareSupportInfo>,
+    ) {
+        if source_info.is_empty() {
+            println!("  No kernel source support found");
+            return;
+        }
+
+        for info in source_info {
+            println!("  Found in: {}", info.driver_path);
+            println!("  Driver: {}", info.driver_name);
+            if info.experimental {
+                println!("  Status: EXPERIMENTAL");
+            }
+        }
+    }
+
     /// Display upgrade recommendations
-    fn display_upgrade_recommendations(&self, recommendations: &crate::detectors::kernel::UserRecommendations) {
+    fn display_upgrade_recommendations(
+        &self,
+        recommendations: &crate::detectors::kernel::UserRecommendations,
+    ) {
         if recommendations.needs_kernel_upgrade {
             println!("\n=== UPGRADE RECOMMENDATIONS ===");
-            
+
             for upgrade in &recommendations.kernel_upgrades {
                 println!("Device: {}", upgrade.device_id);
                 println!("Current Kernel: {}", upgrade.current_kernel);
@@ -464,8 +465,7 @@ impl CliHandler {
                 let config_toml = toml::to_string_pretty(&config)
                     .map_err(|e| LxHwError::SerializationError(e.to_string()))?;
 
-                std::fs::write(&output, config_toml)
-                    .map_err(LxHwError::IoError)?;
+                std::fs::write(&output, config_toml).map_err(LxHwError::IoError)?;
 
                 println!("Configuration file generated: {:?}", output);
                 Ok(())
@@ -485,7 +485,7 @@ impl CliHandler {
 pub struct AppConfig {
     /// Default privacy level
     pub privacy_level: PrivacyLevel,
-    /// Default output format  
+    /// Default output format
     pub output_format: String,
     /// Tool-specific settings
     pub tools: ToolConfig,
@@ -515,7 +515,7 @@ pub struct ToolSettings {
     pub extra_args: Vec<String>,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]  
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PrivacyConfig {
     /// Custom salt rotation period in hours
     pub salt_rotation_hours: Option<u64>,
@@ -551,21 +551,13 @@ impl Default for ToolConfig {
 
 impl Default for ToolSettings {
     fn default() -> Self {
-        Self {
-            enabled: true,
-            timeout: None,
-            extra_args: Vec::new(),
-        }
+        Self { enabled: true, timeout: None, extra_args: Vec::new() }
     }
 }
 
 impl Default for PrivacyConfig {
     fn default() -> Self {
-        Self {
-            salt_rotation_hours: None,
-            preserve_vendor: true,
-            preserve_model: true,
-        }
+        Self { salt_rotation_hours: None, preserve_vendor: true, preserve_model: true }
     }
 }
 
@@ -579,7 +571,7 @@ impl ValueEnum for PrivacyLevel {
         Some(match self {
             Self::Basic => clap::builder::PossibleValue::new("basic")
                 .help("Basic privacy with 24-hour salt rotation"),
-            Self::Enhanced => clap::builder::PossibleValue::new("enhanced") 
+            Self::Enhanced => clap::builder::PossibleValue::new("enhanced")
                 .help("Enhanced privacy with 12-hour salt rotation"),
             Self::Strict => clap::builder::PossibleValue::new("strict")
                 .help("Strict privacy with 1-hour salt rotation"),
@@ -587,7 +579,7 @@ impl ValueEnum for PrivacyLevel {
     }
 }
 
-// Implement ValueEnum for OutputFormat to work with clap  
+// Implement ValueEnum for OutputFormat to work with clap
 impl ValueEnum for OutputFormat {
     fn value_variants<'a>() -> &'a [Self] {
         &[Self::Yaml, Self::Json, Self::Markdown]
@@ -595,12 +587,11 @@ impl ValueEnum for OutputFormat {
 
     fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
         Some(match self {
-            Self::Yaml => clap::builder::PossibleValue::new("yaml")
-                .help("YAML format output"),
-            Self::Json => clap::builder::PossibleValue::new("json")
-                .help("JSON format output"),
-            Self::Markdown => clap::builder::PossibleValue::new("markdown")
-                .help("Markdown with YAML frontmatter"),
+            Self::Yaml => clap::builder::PossibleValue::new("yaml").help("YAML format output"),
+            Self::Json => clap::builder::PossibleValue::new("json").help("JSON format output"),
+            Self::Markdown => {
+                clap::builder::PossibleValue::new("markdown").help("Markdown with YAML frontmatter")
+            }
         })
     }
 }

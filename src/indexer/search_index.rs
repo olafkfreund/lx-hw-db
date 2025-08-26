@@ -42,15 +42,15 @@ impl<'a> ApiBuilder<'a> {
                 })
             }).collect::<Vec<_>>()
         });
-        
+
         std::fs::write(
             search_dir.join("vendors.json"),
-            serde_json::to_string_pretty(&vendors_data)?
+            serde_json::to_string_pretty(&vendors_data)?,
         )?;
 
         // /api/v1/search/components.json - List all component types
         let components_data = json!({
-            "version": "1.0", 
+            "version": "1.0",
             "generated": Utc::now().to_rfc3339(),
             "data": self.indices.by_component.iter().map(|(comp_type, entry)| {
                 json!({
@@ -66,7 +66,7 @@ impl<'a> ApiBuilder<'a> {
 
         std::fs::write(
             search_dir.join("components.json"),
-            serde_json::to_string_pretty(&components_data)?
+            serde_json::to_string_pretty(&components_data)?,
         )?;
 
         // /api/v1/search/kernels.json - List kernel versions with stats
@@ -85,7 +85,7 @@ impl<'a> ApiBuilder<'a> {
 
         std::fs::write(
             search_dir.join("kernels.json"),
-            serde_json::to_string_pretty(&kernels_data)?
+            serde_json::to_string_pretty(&kernels_data)?,
         )?;
 
         // /api/v1/search/distributions.json - List distributions
@@ -106,7 +106,7 @@ impl<'a> ApiBuilder<'a> {
 
         std::fs::write(
             search_dir.join("distributions.json"),
-            serde_json::to_string_pretty(&distributions_data)?
+            serde_json::to_string_pretty(&distributions_data)?,
         )?;
 
         Ok(())
@@ -135,7 +135,7 @@ impl<'a> ApiBuilder<'a> {
 
         std::fs::write(
             stats_dir.join("overview.json"),
-            serde_json::to_string_pretty(&overview_data)?
+            serde_json::to_string_pretty(&overview_data)?,
         )?;
 
         // /api/v1/stats/top-hardware.json - Most reported hardware
@@ -156,7 +156,7 @@ impl<'a> ApiBuilder<'a> {
 
         std::fs::write(
             stats_dir.join("top-hardware.json"),
-            serde_json::to_string_pretty(&top_hardware_data)?
+            serde_json::to_string_pretty(&top_hardware_data)?,
         )?;
 
         // /api/v1/stats/trends.json - Growth and trend data
@@ -170,10 +170,7 @@ impl<'a> ApiBuilder<'a> {
             }
         });
 
-        std::fs::write(
-            stats_dir.join("trends.json"),
-            serde_json::to_string_pretty(&trends_data)?
-        )?;
+        std::fs::write(stats_dir.join("trends.json"), serde_json::to_string_pretty(&trends_data)?)?;
 
         Ok(())
     }
@@ -190,7 +187,7 @@ impl<'a> ApiBuilder<'a> {
 
         // Generate vendor-specific recommendations
         self.write_vendor_recommendations(&rec_dir)?;
-        
+
         // Generate component-specific recommendations
         self.write_component_recommendations(&rec_dir)?;
 
@@ -203,7 +200,7 @@ impl<'a> ApiBuilder<'a> {
     /// Write metadata API endpoints
     fn write_metadata_endpoints(&self, api_dir: &Path) -> Result<()> {
         let meta_dir = api_dir.join("v1");
-        
+
         // /api/v1/index.json - API directory and version info
         let api_index = json!({
             "name": "Linux Hardware Compatibility Database API",
@@ -212,7 +209,7 @@ impl<'a> ApiBuilder<'a> {
             "endpoints": {
                 "search": {
                     "vendors": "/api/v1/search/vendors.json",
-                    "components": "/api/v1/search/components.json", 
+                    "components": "/api/v1/search/components.json",
                     "kernels": "/api/v1/search/kernels.json",
                     "distributions": "/api/v1/search/distributions.json"
                 },
@@ -235,10 +232,7 @@ impl<'a> ApiBuilder<'a> {
             "documentation": "/web/api-docs/"
         });
 
-        std::fs::write(
-            meta_dir.join("index.json"),
-            serde_json::to_string_pretty(&api_index)?
-        )?;
+        std::fs::write(meta_dir.join("index.json"), serde_json::to_string_pretty(&api_index)?)?;
 
         Ok(())
     }
@@ -247,7 +241,7 @@ impl<'a> ApiBuilder<'a> {
     fn write_vendor_recommendations(&self, rec_dir: &Path) -> Result<()> {
         for (vendor, entry) in &self.indices.by_vendor {
             let recommendations = self.generate_vendor_recommendations(vendor, entry);
-            
+
             let vendor_filename = vendor.to_lowercase().replace(' ', "-") + ".json";
             let vendor_data = json!({
                 "version": "1.0",
@@ -258,7 +252,7 @@ impl<'a> ApiBuilder<'a> {
 
             std::fs::write(
                 rec_dir.join("by-vendor").join(vendor_filename),
-                serde_json::to_string_pretty(&vendor_data)?
+                serde_json::to_string_pretty(&vendor_data)?,
             )?;
         }
         Ok(())
@@ -268,7 +262,7 @@ impl<'a> ApiBuilder<'a> {
     fn write_component_recommendations(&self, rec_dir: &Path) -> Result<()> {
         for (component_type, entry) in &self.indices.by_component {
             let recommendations = self.generate_component_recommendations(component_type, entry);
-            
+
             let component_filename = component_type.to_lowercase().replace(' ', "-") + ".json";
             let component_data = json!({
                 "version": "1.0",
@@ -279,7 +273,7 @@ impl<'a> ApiBuilder<'a> {
 
             std::fs::write(
                 rec_dir.join("by-component").join(component_filename),
-                serde_json::to_string_pretty(&component_data)?
+                serde_json::to_string_pretty(&component_data)?,
             )?;
         }
         Ok(())
@@ -288,10 +282,10 @@ impl<'a> ApiBuilder<'a> {
     /// Generate use-case specific recommendation files
     fn write_use_case_recommendations(&self, rec_dir: &Path) -> Result<()> {
         let use_cases = vec!["gaming", "development", "server", "general"];
-        
+
         for use_case in use_cases {
             let recommendations = self.generate_use_case_recommendations(use_case);
-            
+
             let use_case_data = json!({
                 "version": "1.0",
                 "generated": Utc::now().to_rfc3339(),
@@ -301,7 +295,7 @@ impl<'a> ApiBuilder<'a> {
 
             std::fs::write(
                 rec_dir.join("by-use-case").join(format!("{}.json", use_case)),
-                serde_json::to_string_pretty(&use_case_data)?
+                serde_json::to_string_pretty(&use_case_data)?,
             )?;
         }
         Ok(())
@@ -310,7 +304,7 @@ impl<'a> ApiBuilder<'a> {
     /// Build vendor trend data
     fn build_vendor_trends(&self) -> serde_json::Value {
         let mut trends = Vec::new();
-        
+
         for (vendor, entry) in &self.indices.by_vendor {
             trends.push(json!({
                 "vendor": vendor,
@@ -322,8 +316,7 @@ impl<'a> ApiBuilder<'a> {
 
         // Sort by report count
         trends.sort_by(|a, b| {
-            b["total_reports"].as_u64().unwrap_or(0)
-                .cmp(&a["total_reports"].as_u64().unwrap_or(0))
+            b["total_reports"].as_u64().unwrap_or(0).cmp(&a["total_reports"].as_u64().unwrap_or(0))
         });
 
         json!(trends.into_iter().take(20).collect::<Vec<_>>())
@@ -332,17 +325,14 @@ impl<'a> ApiBuilder<'a> {
     /// Build kernel adoption trends
     fn build_kernel_trends(&self) -> serde_json::Value {
         let mut trends = Vec::new();
-        
+
         for (kernel, entry) in &self.indices.by_kernel {
             let excellent_count = entry.compatibility_stats.get("excellent").unwrap_or(&0);
             let good_count = entry.compatibility_stats.get("good").unwrap_or(&0);
             let total_good = excellent_count + good_count;
-            
-            let compatibility_percentage = if entry.total_reports > 0 {
-                (total_good * 100) / entry.total_reports
-            } else {
-                0
-            };
+
+            let compatibility_percentage =
+                if entry.total_reports > 0 { (total_good * 100) / entry.total_reports } else { 0 };
 
             trends.push(json!({
                 "kernel_version": kernel,
@@ -354,7 +344,9 @@ impl<'a> ApiBuilder<'a> {
 
         // Sort by kernel version (reverse order for latest first)
         trends.sort_by(|a, b| {
-            b["kernel_version"].as_str().unwrap_or("")
+            b["kernel_version"]
+                .as_str()
+                .unwrap_or("")
                 .cmp(a["kernel_version"].as_str().unwrap_or(""))
         });
 
@@ -362,7 +354,11 @@ impl<'a> ApiBuilder<'a> {
     }
 
     /// Generate recommendations for a specific vendor
-    fn generate_vendor_recommendations(&self, vendor: &str, entry: &VendorEntry) -> serde_json::Value {
+    fn generate_vendor_recommendations(
+        &self,
+        vendor: &str,
+        entry: &VendorEntry,
+    ) -> serde_json::Value {
         json!({
             "vendor_overview": {
                 "compatibility_score": entry.compatibility_score,
@@ -377,7 +373,11 @@ impl<'a> ApiBuilder<'a> {
     }
 
     /// Generate recommendations for a component type
-    fn generate_component_recommendations(&self, component_type: &str, entry: &ComponentEntry) -> serde_json::Value {
+    fn generate_component_recommendations(
+        &self,
+        component_type: &str,
+        entry: &ComponentEntry,
+    ) -> serde_json::Value {
         json!({
             "component_overview": {
                 "total_reports": entry.total_reports,
@@ -395,7 +395,7 @@ impl<'a> ApiBuilder<'a> {
         })
     }
 
-    /// Generate use-case specific recommendations  
+    /// Generate use-case specific recommendations
     fn generate_use_case_recommendations(&self, use_case: &str) -> serde_json::Value {
         match use_case {
             "gaming" => json!({
@@ -428,7 +428,7 @@ impl<'a> ApiBuilder<'a> {
                     .filter(|hw| hw.avg_compatibility > 85.0)
                     .take(20)
                     .collect::<Vec<_>>()
-            })
+            }),
         }
     }
 
@@ -436,9 +436,9 @@ impl<'a> ApiBuilder<'a> {
     fn get_recommendation_level(&self, score: f64) -> &'static str {
         match score {
             s if s >= 90.0 => "Excellent",
-            s if s >= 80.0 => "Good", 
+            s if s >= 80.0 => "Good",
             s if s >= 70.0 => "Fair",
-            _ => "Caution"
+            _ => "Caution",
         }
     }
 
@@ -462,7 +462,10 @@ impl<'a> ApiBuilder<'a> {
         vec![]
     }
 
-    fn get_performance_leaders_for_component(&self, _component_type: &str) -> Vec<serde_json::Value> {
+    fn get_performance_leaders_for_component(
+        &self,
+        _component_type: &str,
+    ) -> Vec<serde_json::Value> {
         // Placeholder - would identify top performers
         vec![]
     }

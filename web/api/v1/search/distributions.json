@@ -1,9 +1,7 @@
 {
   "data": [
     {
-      "common_kernels": [
-        "6.16.0"
-      ],
+      "common_kernels": ["6.16.0"],
       "distribution": "Unknown",
       "top_vendors": [],
       "total_reports": 1

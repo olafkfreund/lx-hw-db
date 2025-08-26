@@ -9,7 +9,7 @@ use std::fmt;
 #[derive(Debug, Clone, Copy)]
 pub enum OutputFormat {
     Yaml,
-    Json,  
+    Json,
     Markdown,
 }
 
@@ -49,8 +49,10 @@ impl ReportGenerator {
     fn generate_markdown(&self, report: &HardwareReport) -> Result<String> {
         // Generate YAML frontmatter + markdown body
         let frontmatter = serde_yaml::to_string(report)?;
-        Ok(format!("---\n{}---\n\n# Hardware Compatibility Report\n\nGenerated on: {}\n", 
-                   frontmatter, report.metadata.generated_at))
+        Ok(format!(
+            "---\n{}---\n\n# Hardware Compatibility Report\n\nGenerated on: {}\n",
+            frontmatter, report.metadata.generated_at
+        ))
     }
 }
 
@@ -91,18 +93,18 @@ impl OutputRenderer {
 
     fn render_markdown(&self, report: &HardwareReport) -> Result<String> {
         let mut output = String::new();
-        
+
         // YAML frontmatter
         output.push_str("---\n");
         output.push_str(&serde_yaml::to_string(&report.metadata)?);
         output.push_str("---\n\n");
-        
+
         // Markdown content
         output.push_str("# Hardware Compatibility Report\n\n");
         output.push_str(&format!("Generated: {}\n", report.metadata.generated_at));
         output.push_str(&format!("Privacy Level: {:?}\n", report.metadata.privacy_level));
         output.push_str(&format!("Tools Used: {}\n\n", report.metadata.tools_used.join(", ")));
-        
+
         // System information
         output.push_str("## System Information\n\n");
         output.push_str(&format!("- **Hostname:** {}\n", report.system.anonymized_hostname));
@@ -111,35 +113,59 @@ impl OutputRenderer {
         if let Some(ref distro) = report.system.distribution {
             output.push_str(&format!("- **Distribution:** {}\n", distro));
         }
-        
+
         // Kernel compatibility
         if let Some(ref kernel_support) = report.kernel_support {
-            output.push_str("\n## Kernel Compatibility\n\n");
-            output.push_str(&format!("- **Total Devices:** {}\n", kernel_support.total_devices_detected));
-            output.push_str(&format!("- **Supported:** {}\n", kernel_support.supported_devices));
-            output.push_str(&format!("- **Unsupported:** {}\n", kernel_support.unsupported_devices));
-            output.push_str(&format!("- **Experimental:** {}\n", kernel_support.experimental_devices));
-            
-            if !kernel_support.device_support_details.is_empty() {
-                output.push_str("\n### Device Details\n\n");
-                for device in &kernel_support.device_support_details {
-                    output.push_str(&format!("#### {}\n\n", device.device_name));
-                    output.push_str(&format!("- **Device ID:** {}\n", device.device_id));
-                    output.push_str(&format!("- **Status:** {}\n", device.support_status));
-                    output.push_str(&format!("- **Driver:** {}\n", device.driver_module));
-                    if let Some(ref since) = device.since_kernel_version {
-                        output.push_str(&format!("- **Since Kernel:** {}\n", since));
-                    }
-                    if let Some(ref notes) = device.notes {
-                        output.push_str(&format!("- **Notes:** {}\n", notes));
-                    }
-                    output.push('\n');
-                }
-            }
+            write_kernel_compatibility_section(&mut output, kernel_support);
         }
-        
+
         Ok(output)
     }
+}
+
+/// Write kernel compatibility section to output
+fn write_kernel_compatibility_section(
+    output: &mut String,
+    kernel_support: &crate::hardware::KernelCompatibilityInfo,
+) {
+    output.push_str("\n## Kernel Compatibility\n\n");
+    output.push_str(&format!("- **Total Devices:** {}\n", kernel_support.total_devices_detected));
+    output.push_str(&format!("- **Supported:** {}\n", kernel_support.supported_devices));
+    output.push_str(&format!("- **Unsupported:** {}\n", kernel_support.unsupported_devices));
+    output.push_str(&format!("- **Experimental:** {}\n", kernel_support.experimental_devices));
+
+    if !kernel_support.device_support_details.is_empty() {
+        write_device_details_section(output, &kernel_support.device_support_details);
+    }
+}
+
+/// Write device details section to output
+fn write_device_details_section(
+    output: &mut String,
+    devices: &[crate::hardware::DeviceCompatibility],
+) {
+    output.push_str("\n### Device Details\n\n");
+    for device in devices {
+        write_device_detail(output, device);
+    }
+}
+
+/// Write a single device detail to output
+fn write_device_detail(output: &mut String, device: &crate::hardware::DeviceCompatibility) {
+    output.push_str(&format!("#### {}\n\n", device.device_name));
+    output.push_str(&format!("- **Device ID:** {}\n", device.device_id));
+    output.push_str(&format!("- **Status:** {}\n", device.support_status));
+    output.push_str(&format!("- **Driver:** {}\n", device.driver_module));
+
+    if let Some(ref since) = device.since_kernel_version {
+        output.push_str(&format!("- **Since Kernel:** {}\n", since));
+    }
+
+    if let Some(ref notes) = device.notes {
+        output.push_str(&format!("- **Notes:** {}\n", notes));
+    }
+
+    output.push('\n');
 }
 
 impl fmt::Display for OutputFormat {

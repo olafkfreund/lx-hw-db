@@ -1,23 +1,23 @@
 //! Hardware compatibility indexer for GitHub-native database
-//! 
+//!
 //! This module processes hardware report JSON files and generates
-//! search indices, compatibility matrices, and statistics for 
+//! search indices, compatibility matrices, and statistics for
 //! client-side search and analysis.
 
-pub mod models;
-pub mod builder;
-pub mod search_index;
-pub mod compatibility;
-pub mod statistics;
 pub mod analysis;
+pub mod builder;
+pub mod compatibility;
+pub mod models;
+pub mod search_index;
+pub mod statistics;
 
-use crate::errors::{Result, LxHwError};
+use crate::errors::{LxHwError, Result};
 use crate::hardware::HardwareReport;
+use chrono::{DateTime, Utc};
+use glob::glob;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use chrono::{DateTime, Utc};
-use glob::glob;
 
 // Re-export utility functions from models
 pub use models::normalize_vendor_name;
@@ -267,9 +267,9 @@ pub struct CompatibilityScore {
 /// Confidence level in compatibility scoring
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ConfidenceLevel {
-    High,    // 10+ reports
-    Medium,  // 3-9 reports  
-    Low,     // 1-2 reports
+    High,   // 10+ reports
+    Medium, // 3-9 reports
+    Low,    // 1-2 reports
 }
 
 /// Aggregated database statistics
@@ -311,11 +311,7 @@ pub struct GrowthDataPoint {
 impl HardwareIndexer {
     /// Create new indexer with configuration
     pub fn new(config: IndexerConfig) -> Self {
-        Self {
-            reports: Vec::new(),
-            indices: IndexCollection::default(),
-            config,
-        }
+        Self { reports: Vec::new(), indices: IndexCollection::default(), config }
     }
 
     /// Scan and load all hardware reports from directory
@@ -355,8 +351,7 @@ impl HardwareIndexer {
 
     /// Load and parse a single hardware report
     fn load_report(&self, file_path: &Path) -> Result<IndexedReport> {
-        let content = std::fs::read_to_string(file_path)
-            .map_err(LxHwError::IoError)?;
+        let content = std::fs::read_to_string(file_path).map_err(LxHwError::IoError)?;
 
         let report: HardwareReport = serde_json::from_str(&content)
             .map_err(|e| LxHwError::SerializationError(format!("Failed to parse JSON: {}", e)))?;
@@ -369,10 +364,8 @@ impl HardwareIndexer {
             .to_string();
 
         // Extract relative path
-        let relative_path = file_path
-            .strip_prefix(&self.config.reports_dir)
-            .unwrap_or(file_path)
-            .to_path_buf();
+        let relative_path =
+            file_path.strip_prefix(&self.config.reports_dir).unwrap_or(file_path).to_path_buf();
 
         // Extract metadata and components
         let metadata = self.extract_metadata(&report)?;

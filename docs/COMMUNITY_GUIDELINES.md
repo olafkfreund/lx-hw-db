@@ -56,16 +56,19 @@ Open development builds trust:
 #### Quality Standards
 
 **Accurate Information**
+
 - Submit reports only from systems you own or have permission to profile
 - Ensure reports represent the actual hardware configuration
 - Include relevant context about any hardware issues or workarounds
 
 **Privacy Compliance**
+
 - Choose appropriate privacy levels for your environment
 - Verify no personally identifiable information is included
 - Report any privacy concerns immediately
 
 **Complete Documentation**
+
 - Fill out all required fields in submission templates
 - Provide clear descriptions of hardware and compatibility status
 - Include relevant troubleshooting information for known issues
@@ -73,16 +76,19 @@ Open development builds trust:
 #### Submission Process
 
 **Before Submitting**
+
 - Test your hardware report generation locally
 - Validate your report with the verification tools
 - Review submission guidelines and naming conventions
 
 **During Submission**
+
 - Use descriptive commit messages and PR descriptions
 - Respond promptly to automated validation feedback
 - Be patient during the review process
 
 **After Submission**
+
 - Monitor your PR for reviewer feedback
 - Address any requested changes promptly
 - Help improve the submission process based on your experience
@@ -92,18 +98,21 @@ Open development builds trust:
 #### Development Standards
 
 **Code Quality**
+
 - Follow established coding standards and style guides
 - Write comprehensive tests for new functionality
 - Document your code clearly and maintain existing documentation
 - Ensure all tests pass before submitting PRs
 
 **Security Practices**
+
 - Never commit sensitive information (keys, passwords, personal data)
 - Follow secure coding practices to prevent vulnerabilities
 - Report security issues through appropriate channels
 - Use dependency scanning and keep dependencies updated
 
 **Collaboration**
+
 - Create focused PRs that address specific issues or features
 - Provide clear descriptions of changes and their motivation
 - Respond constructively to code review feedback
@@ -112,12 +121,14 @@ Open development builds trust:
 #### Review Process
 
 **For Authors**
+
 - Be open to feedback and suggestions
 - Explain your design decisions when helpful
 - Update your PR based on reviewer feedback
 - Thank reviewers for their time and input
 
 **For Reviewers**
+
 - Focus on code quality, security, and maintainability
 - Provide specific, actionable feedback
 - Acknowledge good practices and clever solutions
@@ -128,18 +139,21 @@ Open development builds trust:
 #### Writing Guidelines
 
 **Clarity and Accessibility**
+
 - Use clear, concise language
 - Define technical terms when first introduced
 - Provide examples and step-by-step instructions
 - Consider the audience's experience level
 
 **Organization and Structure**
+
 - Follow established documentation patterns
 - Use consistent formatting and style
 - Create logical information hierarchies
 - Link related content appropriately
 
 **Maintenance**
+
 - Keep documentation up-to-date with code changes
 - Fix broken links and outdated information
 - Improve clarity based on user feedback
@@ -152,12 +166,14 @@ Open development builds trust:
 #### GitHub Issues and Discussions
 
 **Creating Issues**
+
 - Use appropriate templates and labels
 - Provide clear, reproducible problem descriptions
 - Include relevant system information and debug output
 - Search existing issues before creating duplicates
 
 **Participating in Discussions**
+
 - Stay on topic and be constructive
 - Share knowledge and experience generously
 - Ask questions when you need clarification
@@ -166,12 +182,14 @@ Open development builds trust:
 #### Pull Request Interactions
 
 **Productive Collaboration**
+
 - Review PRs promptly when possible
 - Provide helpful and specific feedback
 - Acknowledge good work and clever solutions
 - Resolve conflicts respectfully and constructively
 
 **Conflict Resolution**
+
 - Assume positive intent in all interactions
 - Focus on technical merits rather than personal preferences
 - Seek to understand different perspectives
@@ -182,18 +200,21 @@ Open development builds trust:
 #### Helping Others
 
 **New Contributors**
+
 - Welcome newcomers and help them get started
 - Point to relevant documentation and resources
 - Offer to mentor or pair program when appropriate
 - Be patient with questions that may seem basic
 
 **Troubleshooting Assistance**
+
 - Ask clarifying questions to understand problems
 - Share your experience with similar issues
 - Point to relevant documentation or existing solutions
 - Follow up to ensure problems are resolved
 
 **Knowledge Sharing**
+
 - Document solutions to common problems
 - Share interesting hardware discoveries or workarounds
 - Contribute to FAQs and troubleshooting guides
@@ -238,16 +259,19 @@ We do not tolerate:
 If you experience or witness unacceptable behavior:
 
 **Immediate Safety Concerns**
+
 - Contact maintainers immediately via private communication
 - Block or report problematic users using platform tools
 - Document the incident with screenshots or logs if safe to do so
 
 **General Community Issues**
+
 - Report through GitHub's abuse reporting mechanisms
 - Email community moderators with details about the incident
 - Reach out to trusted community members for support and guidance
 
 **Privacy and Security Issues**
+
 - Use encrypted communication when reporting sensitive issues
 - Provide detailed information while protecting victim privacy
 - Follow responsible disclosure practices for security vulnerabilities
@@ -255,12 +279,14 @@ If you experience or witness unacceptable behavior:
 ### Response Process
 
 **Investigation**
+
 1. All reports are taken seriously and investigated promptly
 2. Involved parties may be contacted for additional information
 3. Community moderators review evidence and determine appropriate action
 4. Decisions are documented and communicated to relevant parties
 
 **Possible Actions**
+
 - Private warning and education about community standards
 - Public warning about inappropriate behavior
 - Temporary suspension from community participation
@@ -268,6 +294,7 @@ If you experience or witness unacceptable behavior:
 - Escalation to platform abuse teams or legal authorities if necessary
 
 **Appeals Process**
+
 - Decisions can be appealed by contacting community moderators
 - Appeals are reviewed by different moderators when possible
 - Additional evidence or context may result in modified decisions
@@ -303,12 +330,14 @@ We celebrate valuable contributions:
 ### Feedback Mechanisms
 
 **Community Guidelines**
+
 - Regular review and updates based on community needs
 - Feedback collection through surveys and open discussions
 - Adaptation to changing community size and dynamics
 - Learning from other successful open source communities
 
 **Process Improvement**
+
 - Streamlining contribution processes based on user feedback
 - Improving automation and tooling to reduce friction
 - Better documentation based on common questions and issues
@@ -317,12 +346,14 @@ We celebrate valuable contributions:
 ### Community Growth
 
 **Sustainable Scaling**
+
 - Training new community moderators and maintainers
 - Developing self-service resources and automation
 - Creating clear pathways for increased community involvement
 - Balancing growth with maintaining community culture
 
 **Diversity and Inclusion**
+
 - Actively working to remove barriers to participation
 - Seeking diverse perspectives in community leadership
 - Supporting underrepresented groups in technical communities
@@ -365,10 +396,10 @@ We celebrate valuable contributions:
 
 ## Contact Information
 
-**Community Moderators**: community@lx-hw-db.example.com
-**Security Issues**: security@lx-hw-db.example.com  
+**Community Moderators**: <community@lx-hw-db.example.com>
+**Security Issues**: <security@lx-hw-db.example.com>  
 **General Questions**: GitHub Discussions or GitHub Issues
-**Code of Conduct Violations**: conduct@lx-hw-db.example.com
+**Code of Conduct Violations**: <conduct@lx-hw-db.example.com>
 
 ---
 

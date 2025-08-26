@@ -28,7 +28,7 @@ impl<'a> IndexValidator<'a> {
 
         // Overall validation status
         report.overall_valid = report.all_validations_passed();
-        
+
         // Temporarily disabled: allow validation warnings for minimal test data
         // if !report.overall_valid {
         //     return Err(LxHwError::ValidationError {
@@ -76,7 +76,8 @@ impl<'a> IndexValidator<'a> {
             if entry.recent_reports.len() > 10 {
                 validation.add_warning(&format!(
                     "Vendor '{}' has too many recent reports ({})",
-                    vendor, entry.recent_reports.len()
+                    vendor,
+                    entry.recent_reports.len()
                 ));
             }
         }
@@ -88,10 +89,19 @@ impl<'a> IndexValidator<'a> {
     /// Validate component index consistency
     fn validate_component_index(&self) -> Result<IndexValidation> {
         let mut validation = IndexValidation::new("component_index");
-        
+
         let known_components = [
-            "CPU", "GPU", "Storage", "Network", "Audio", "Bluetooth",
-            "USB", "Camera", "Touchpad", "Keyboard", "Display"
+            "CPU",
+            "GPU",
+            "Storage",
+            "Network",
+            "Audio",
+            "Bluetooth",
+            "USB",
+            "Camera",
+            "Touchpad",
+            "Keyboard",
+            "Display",
         ];
 
         for (component_type, entry) in &self.indices.by_component {
@@ -118,11 +128,10 @@ impl<'a> IndexValidator<'a> {
             // Validate popular models
             for model in &entry.popular_models {
                 if model.report_count == 0 {
-                    validation.add_error(&format!(
-                        "Popular model '{}' has zero reports", model.model
-                    ));
+                    validation
+                        .add_error(&format!("Popular model '{}' has zero reports", model.model));
                 }
-                
+
                 if model.avg_compatibility < 0.0 || model.avg_compatibility > 100.0 {
                     validation.add_error(&format!(
                         "Invalid compatibility score {} for model '{}'",
@@ -143,7 +152,8 @@ impl<'a> IndexValidator<'a> {
         for (kernel_version, entry) in &self.indices.by_kernel {
             // Validate kernel version format
             if !self.is_valid_kernel_version(kernel_version) {
-                validation.add_warning(&format!("Unusual kernel version format: '{}'", kernel_version));
+                validation
+                    .add_warning(&format!("Unusual kernel version format: '{}'", kernel_version));
             }
 
             // Check report counts
@@ -203,7 +213,8 @@ impl<'a> IndexValidator<'a> {
 
             // Check kernel list
             if entry.common_kernels.is_empty() {
-                validation.add_warning(&format!("Distribution '{}' has no common kernels", distribution));
+                validation
+                    .add_warning(&format!("Distribution '{}' has no common kernels", distribution));
             }
         }
 
@@ -293,9 +304,9 @@ impl<'a> IndexValidator<'a> {
 
                 if !matches!(
                     (&score.confidence, &expected_confidence),
-                    (ConfidenceLevel::Low, ConfidenceLevel::Low) |
-                    (ConfidenceLevel::Medium, ConfidenceLevel::Medium) |
-                    (ConfidenceLevel::High, ConfidenceLevel::High)
+                    (ConfidenceLevel::Low, ConfidenceLevel::Low)
+                        | (ConfidenceLevel::Medium, ConfidenceLevel::Medium)
+                        | (ConfidenceLevel::High, ConfidenceLevel::High)
                 ) {
                     validation.add_warning(&format!(
                         "Confidence level mismatch for '{}'->'{}'",
@@ -336,14 +347,16 @@ impl<'a> IndexValidator<'a> {
         if stats.total_vendors != self.indices.by_vendor.len() {
             validation.add_warning(&format!(
                 "Vendor count mismatch: stats={}, index={}",
-                stats.total_vendors, self.indices.by_vendor.len()
+                stats.total_vendors,
+                self.indices.by_vendor.len()
             ));
         }
 
         if stats.component_types != self.indices.by_component.len() {
             validation.add_warning(&format!(
                 "Component type count mismatch: stats={}, index={}",
-                stats.component_types, self.indices.by_component.len()
+                stats.component_types,
+                self.indices.by_component.len()
             ));
         }
 
@@ -361,7 +374,7 @@ impl<'a> IndexValidator<'a> {
             if hardware.report_count == 0 {
                 validation.add_error(&format!("Top hardware #{} has zero reports", i + 1));
             }
-            
+
             if hardware.avg_compatibility < 0.0 || hardware.avg_compatibility > 100.0 {
                 validation.add_error(&format!(
                     "Invalid compatibility score {} for top hardware '{}'",
@@ -378,9 +391,8 @@ impl<'a> IndexValidator<'a> {
     fn is_valid_kernel_version(&self, version: &str) -> bool {
         // Basic kernel version pattern: X.Y.Z or X.Y.Z-suffix
         let parts: Vec<&str> = version.split('.').collect();
-        parts.len() >= 2 && parts.iter().all(|part| {
-            part.chars().take_while(|c| c.is_ascii_digit()).count() > 0
-        })
+        parts.len() >= 2
+            && parts.iter().all(|part| part.chars().take_while(|c| c.is_ascii_digit()).count() > 0)
     }
 }
 
@@ -400,19 +412,19 @@ pub struct ValidationReport {
 impl ValidationReport {
     /// Check if all individual validations passed
     pub fn all_validations_passed(&self) -> bool {
-        self.vendor_validation.is_valid() &&
-        self.component_validation.is_valid() &&
-        self.kernel_validation.is_valid() &&
-        self.distribution_validation.is_valid() &&
-        self.search_validation.is_valid() &&
-        self.matrix_validation.is_valid() &&
-        self.statistics_validation.is_valid()
+        self.vendor_validation.is_valid()
+            && self.component_validation.is_valid()
+            && self.kernel_validation.is_valid()
+            && self.distribution_validation.is_valid()
+            && self.search_validation.is_valid()
+            && self.matrix_validation.is_valid()
+            && self.statistics_validation.is_valid()
     }
 
     /// Get summary of all validation issues
     pub fn get_summary(&self) -> ValidationSummary {
         let mut summary = ValidationSummary::default();
-        
+
         let validations = vec![
             &self.vendor_validation,
             &self.component_validation,
@@ -451,13 +463,13 @@ impl ValidationReport {
         for (name, validation) in validations {
             let status = if validation.is_valid() { "VALID" } else { "INVALID" };
             println!("{} {}: {} items", status, name, validation.item_count);
-            
+
             if !validation.errors.is_empty() {
                 for error in &validation.errors {
                     println!("   ERROR: {}", error);
                 }
             }
-            
+
             if !validation.warnings.is_empty() {
                 for warning in &validation.warnings {
                     println!("   WARNING: {}", warning);

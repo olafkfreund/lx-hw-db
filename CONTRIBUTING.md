@@ -74,6 +74,7 @@ hardware-reports/YYYY/MM/your-report-file.json
 #### Option A: Pull Request (Recommended)
 
 1. **Fork the Repository**
+
    ```bash
    # Fork via GitHub UI, then clone your fork
    git clone https://github.com/YOUR-USERNAME/lx-hw-db.git
@@ -81,29 +82,32 @@ hardware-reports/YYYY/MM/your-report-file.json
    ```
 
 2. **Create a Feature Branch**
+
    ```bash
    git checkout -b hardware-report-$(date +%Y%m%d)
    ```
 
 3. **Add Your Report**
+
    ```bash
    # Create the directory if it doesn't exist
    mkdir -p hardware-reports/$(date +%Y)/$(date +%m)
-   
+
    # Copy your report file to the correct location
    cp my-system-report.json hardware-reports/$(date +%Y)/$(date +%m)/$(date +%Y-%m-%d)_6.16.0_x86_64_abc123def456.json
    ```
 
 4. **Commit and Push**
+
    ```bash
    git add hardware-reports/
    git commit -m "Add hardware report for [System Description]
-   
+
    - CPU: [Your CPU Model]
    - GPU: [Your GPU Model]  
    - Kernel: [Your Kernel Version]
    - Distribution: [Your Distribution]"
-   
+
    git push origin hardware-report-$(date +%Y%m%d)
    ```
 
@@ -156,6 +160,7 @@ Approved reports are:
 ### Common Validation Errors
 
 #### File Naming Issues
+
 ```
 ❌ ERROR: File naming convention violation: my-report.json
 Expected format: YYYY-MM-DD_KERNEL-VERSION_ARCH_SYSTEM-ID.json
@@ -164,6 +169,7 @@ Expected format: YYYY-MM-DD_KERNEL-VERSION_ARCH_SYSTEM-ID.json
 **Solution**: Rename your file following the exact pattern. Extract the system ID from your report's `metadata.anonymized_system_id` field.
 
 #### Directory Placement
+
 ```  
 ❌ ERROR: File in wrong directory: hardware-reports/2025/09/2025-08-26_...
 Expected path: hardware-reports/2025/08/2025-08-26_...
@@ -172,26 +178,31 @@ Expected path: hardware-reports/2025/08/2025-08-26_...
 **Solution**: Move the file to match the date in the filename (YYYY-MM-DD determines the directory).
 
 #### Schema Validation Failures
+
 ```
 ❌ ERROR: my-report.json failed lx-hw-detect validation
 ```
 
-**Solution**: 
+**Solution**:
+
 1. Run validation locally: `./target/release/lx-hw-detect validate my-report.json --verbose`
 2. Check the detailed error output
 3. Regenerate the report if needed
 
 #### Duplicate Detection
+
 ```
 ❌ ERROR: Duplicate system ID found!
 Existing file: hardware-reports/2025/07/2025-07-15_6.15.0_x86_64_abc123def456.json
 ```
 
 **Solutions**:
+
 - If this is an updated report: Remove or update the existing file and explain changes in PR description
 - If this is a genuine duplicate: You may already have a report in the database
 
 #### PII Detection Warnings
+
 ```
 ⚠️  Warning: Potential email address found in my-report.json
 ```
@@ -322,6 +333,7 @@ Source code contributions are licensed under the project's main license. See [LI
 ## Quick Reference
 
 ### Commands
+
 ```bash
 # Generate report
 ./target/release/lx-hw-detect detect --format json --privacy enhanced --output report.json
@@ -337,12 +349,14 @@ cargo test
 ```
 
 ### File Naming
+
 ```
 YYYY-MM-DD_KERNEL-VERSION_ARCH_SYSTEM-ID.json
 2025-08-26_6.16.0_x86_64_abc123def456.json
 ```
 
 ### Directory Structure
+
 ```
 hardware-reports/YYYY/MM/filename.json
 hardware-reports/2025/08/2025-08-26_6.16.0_x86_64_abc123def456.json

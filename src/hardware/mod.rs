@@ -1,14 +1,14 @@
 //! Hardware data structures and system information types
 
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 /// Privacy levels for hardware data collection
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PrivacyLevel {
     /// Basic privacy with 24-hour salt rotation
     Basic,
-    /// Enhanced privacy with 12-hour salt rotation  
+    /// Enhanced privacy with 12-hour salt rotation
     Enhanced,
     /// Strict privacy with 1-hour salt rotation and maximum anonymization
     Strict,

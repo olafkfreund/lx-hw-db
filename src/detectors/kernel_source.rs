@@ -3,11 +3,11 @@
 //! This module queries the official Linux kernel Git repository to extract
 //! real hardware support information directly from kernel source code.
 
-use crate::errors::{Result, LxHwError};
+use crate::errors::{LxHwError, Result};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::process::Command;
-use regex::Regex;
 
 /// Linux kernel source analyzer
 pub struct KernelSourceAnalyzer {
@@ -68,7 +68,10 @@ impl KernelSourceAnalyzer {
     }
 
     /// Search for hardware support in kernel source
-    pub async fn search_device_support(&mut self, device_id: &str) -> Result<Vec<HardwareSupportInfo>> {
+    pub async fn search_device_support(
+        &mut self,
+        device_id: &str,
+    ) -> Result<Vec<HardwareSupportInfo>> {
         // Check cache first
         if let Some(cached) = self.cached_support_data.get(device_id) {
             return Ok(vec![cached.clone()]);
@@ -100,14 +103,18 @@ impl KernelSourceAnalyzer {
     }
 
     /// Search local kernel repository
-    async fn search_local_repo(&self, device_id: &str, repo_path: &str) -> Result<Vec<HardwareSupportInfo>> {
+    async fn search_local_repo(
+        &self,
+        device_id: &str,
+        repo_path: &str,
+    ) -> Result<Vec<HardwareSupportInfo>> {
         let mut results = Vec::new();
 
         // Search for PCI device ID patterns in driver files
         let search_patterns = vec![
             format!("0x{}", device_id.replace(':', ", 0x")), // PCI ID format
-            format!("{{{}}}", device_id.replace(':', ", ")),  // Alternative format
-            device_id.to_uppercase(),                          // Direct search
+            format!("{{{}}}", device_id.replace(':', ", ")), // Alternative format
+            device_id.to_uppercase(),                        // Direct search
         ];
 
         for pattern in search_patterns {
@@ -136,7 +143,7 @@ impl KernelSourceAnalyzer {
     /// Search GitHub API for device support
     async fn search_github_api(&self, device_id: &str) -> Result<Vec<HardwareSupportInfo>> {
         let mut results = Vec::new();
-        
+
         // Format device ID for different search patterns
         let search_queries = vec![
             format!("0x{} path:drivers", device_id.replace(':', " 0x")),
@@ -164,8 +171,7 @@ impl KernelSourceAnalyzer {
     /// Perform GitHub code search
     async fn github_code_search(&self, query: &str) -> Result<Vec<HardwareSupportInfo>> {
         // Note: GitHub API has rate limits, so this should be used sparingly
-        let _url = format!("{}/search/code?q={}", self.github_api_base, 
-                         urlencoding::encode(query));
+        let _url = format!("{}/search/code?q={}", self.github_api_base, urlencoding::encode(query));
 
         log::info!("Searching GitHub for: {}", query);
 
@@ -175,7 +181,11 @@ impl KernelSourceAnalyzer {
     }
 
     /// Parse git grep output to extract hardware support information
-    fn parse_git_grep_output(&self, output: &str, device_id: &str) -> Result<Vec<HardwareSupportInfo>> {
+    fn parse_git_grep_output(
+        &self,
+        output: &str,
+        device_id: &str,
+    ) -> Result<Vec<HardwareSupportInfo>> {
         let mut results = Vec::new();
         let line_regex = Regex::new(r"^([^:]+):(\d+):(.*)$")
             .map_err(|e| LxHwError::ValidationError { message: format!("Regex error: {}", e) })?;
@@ -196,7 +206,8 @@ impl KernelSourceAnalyzer {
                         maintainer: None,              // TODO: extract from MAINTAINERS file
                         device_table_entries: self.parse_device_table_entry(content),
                         config_dependencies: self.extract_config_dependencies(file_path),
-                        experimental: file_path.contains("/staging/") || content.contains("EXPERIMENTAL"),
+                        experimental: file_path.contains("/staging/")
+                            || content.contains("EXPERIMENTAL"),
                     };
 
                     results.push(support_info);
@@ -223,8 +234,8 @@ impl KernelSourceAnalyzer {
         // Look for PCI device table entries like:
         // { PCI_DEVICE(0x1234, 0x5678) },
         // { PCI_VDEVICE(VENDOR, 0x1234) },
-        let pci_device_regex = Regex::new(r"PCI_DEVICE\(0x([0-9a-fA-F]+),\s*0x([0-9a-fA-F]+)\)")
-            .unwrap();
+        let pci_device_regex =
+            Regex::new(r"PCI_DEVICE\(0x([0-9a-fA-F]+),\s*0x([0-9a-fA-F]+)\)").unwrap();
 
         if let Some(captures) = pci_device_regex.captures(content) {
             let vendor_id = captures.get(1).map_or("", |m| m.as_str());
@@ -269,7 +280,10 @@ impl KernelSourceAnalyzer {
     }
 
     /// Get kernel version history for a specific device
-    pub async fn get_device_version_history(&self, device_id: &str) -> Result<Vec<KernelVersionInfo>> {
+    pub async fn get_device_version_history(
+        &self,
+        device_id: &str,
+    ) -> Result<Vec<KernelVersionInfo>> {
         if let Some(ref repo_path) = self.kernel_repo_path {
             self.get_version_history_from_repo(device_id, repo_path).await
         } else {
@@ -279,7 +293,11 @@ impl KernelSourceAnalyzer {
     }
 
     /// Get version history from local repository
-    async fn get_version_history_from_repo(&self, device_id: &str, repo_path: &str) -> Result<Vec<KernelVersionInfo>> {
+    async fn get_version_history_from_repo(
+        &self,
+        device_id: &str,
+        repo_path: &str,
+    ) -> Result<Vec<KernelVersionInfo>> {
         let mut versions = Vec::new();
 
         // Use git log to find when this device ID was first added
@@ -318,28 +336,27 @@ impl KernelSourceAnalyzer {
     fn get_estimated_version_history(&self, device_id: &str) -> Vec<KernelVersionInfo> {
         // Provide estimates based on device vendor and type
         // This is a fallback when git analysis isn't available
-        vec![
-            KernelVersionInfo {
-                version: "5.15".to_string(),
-                release_date: "2021-10-31".to_string(),
-                is_lts: true,
-                is_stable: true,
-                hardware_additions: vec![device_id.to_string()],
-            }
-        ]
+        vec![KernelVersionInfo {
+            version: "5.15".to_string(),
+            release_date: "2021-10-31".to_string(),
+            is_lts: true,
+            is_stable: true,
+            hardware_additions: vec![device_id.to_string()],
+        }]
     }
 
     /// Generate upgrade recommendations based on kernel source analysis
-    pub fn generate_upgrade_recommendations(&self, 
-        current_kernel: &str, 
-        unsupported_devices: &[String]
+    pub fn generate_upgrade_recommendations(
+        &self,
+        current_kernel: &str,
+        unsupported_devices: &[String],
     ) -> Vec<crate::detectors::kernel::KernelUpgradeRecommendation> {
         let mut recommendations = Vec::new();
 
         for device_id in unsupported_devices {
             // Analyze when support was likely added
             let estimated_version = self.estimate_support_version(device_id, current_kernel);
-            
+
             if let Some(rec_version) = estimated_version {
                 recommendations.push(crate::detectors::kernel::KernelUpgradeRecommendation {
                     device_id: device_id.clone(),
@@ -359,22 +376,20 @@ impl KernelSourceAnalyzer {
     fn estimate_support_version(&self, _device_id: &str, current_kernel: &str) -> Option<String> {
         // This would use the cached support data or heuristics
         // Based on device vendor, age, and complexity
-        
+
         let current_major = self.parse_kernel_major_version(current_kernel);
         if current_major < 5 {
             Some("5.15".to_string()) // LTS recommendation
         } else if current_major < 6 {
-            Some("6.1".to_string())  // Latest LTS
+            Some("6.1".to_string()) // Latest LTS
         } else {
-            Some("6.8".to_string())  // Latest stable
+            Some("6.8".to_string()) // Latest stable
         }
     }
 
     /// Parse major version number from kernel version string
     fn parse_kernel_major_version(&self, version: &str) -> u32 {
-        version.split('.').next()
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(0)
+        version.split('.').next().and_then(|s| s.parse().ok()).unwrap_or(0)
     }
 
     /// Suggest upgrade method for a specific kernel version
@@ -401,7 +416,7 @@ mod tests {
     fn test_device_table_parsing() {
         let analyzer = KernelSourceAnalyzer::new();
         let content = "{ PCI_DEVICE(0x1234, 0x5678) },";
-        
+
         let entries = analyzer.parse_device_table_entry(content);
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].vendor_id, "1234");
@@ -411,7 +426,7 @@ mod tests {
     #[test]
     fn test_driver_name_extraction() {
         let analyzer = KernelSourceAnalyzer::new();
-        
+
         assert_eq!(analyzer.extract_driver_name("drivers/net/wireless/rtl818x.c"), "rtl818x");
         assert_eq!(analyzer.extract_driver_name("drivers/gpu/drm/amd/amdgpu.c"), "amdgpu");
     }
@@ -419,7 +434,7 @@ mod tests {
     #[test]
     fn test_kernel_version_parsing() {
         let analyzer = KernelSourceAnalyzer::new();
-        
+
         assert_eq!(analyzer.parse_kernel_major_version("5.15.0"), 5);
         assert_eq!(analyzer.parse_kernel_major_version("6.1.0-rc1"), 6);
         assert_eq!(analyzer.parse_kernel_major_version("4.19.0"), 4);

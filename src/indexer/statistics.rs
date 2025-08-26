@@ -2,8 +2,8 @@
 
 use super::*;
 use crate::errors::Result;
-use std::collections::{HashMap, BTreeMap};
-use chrono::{Utc, Datelike, TimeZone};
+use chrono::{Datelike, TimeZone, Utc};
+use std::collections::{BTreeMap, HashMap};
 
 /// Advanced statistics generator for hardware compatibility analysis
 pub struct StatisticsGenerator<'a> {
@@ -41,9 +41,9 @@ impl<'a> StatisticsGenerator<'a> {
             for component in &report.components {
                 if let Some(vendor) = &component.vendor {
                     let normalized_vendor = normalize_vendor_name(vendor);
-                    let stats = vendor_stats.entry(normalized_vendor.clone()).or_insert_with(|| {
-                        VendorStatistics::new(&normalized_vendor)
-                    });
+                    let stats = vendor_stats
+                        .entry(normalized_vendor.clone())
+                        .or_insert_with(|| VendorStatistics::new(&normalized_vendor));
 
                     stats.add_report(report, component);
                 }
@@ -64,9 +64,9 @@ impl<'a> StatisticsGenerator<'a> {
 
         for report in self.reports {
             let kernel = &report.metadata.kernel_version;
-            let analysis = kernel_analysis.entry(kernel.clone()).or_insert_with(|| {
-                KernelAnalysis::new(kernel)
-            });
+            let analysis = kernel_analysis
+                .entry(kernel.clone())
+                .or_insert_with(|| KernelAnalysis::new(kernel));
 
             analysis.add_report(report);
         }
@@ -85,9 +85,9 @@ impl<'a> StatisticsGenerator<'a> {
 
         for report in self.reports {
             let distribution = &report.metadata.distribution;
-            let matrix = dist_matrix.entry(distribution.clone()).or_insert_with(|| {
-                DistributionMatrix::new(distribution)
-            });
+            let matrix = dist_matrix
+                .entry(distribution.clone())
+                .or_insert_with(|| DistributionMatrix::new(distribution));
 
             matrix.add_report(report);
         }
@@ -105,10 +105,10 @@ impl<'a> StatisticsGenerator<'a> {
         for report in self.reports {
             let date = report.metadata.submission_date;
             let key = (date.year(), date.month());
-            
-            let monthly = monthly_data.entry(key).or_insert_with(|| {
-                MonthlyData::new(date.year(), date.month())
-            });
+
+            let monthly = monthly_data
+                .entry(key)
+                .or_insert_with(|| MonthlyData::new(date.year(), date.month()));
 
             monthly.add_report(report);
         }
@@ -187,7 +187,7 @@ impl<'a> StatisticsGenerator<'a> {
                 if let (Some(vendor), Some(model)) = (&component.vendor, &component.model) {
                     let key = (normalize_vendor_name(vendor), model.clone());
                     let compat_score = report.compatibility.status.to_score() as f64;
-                    
+
                     let (count, avg_score) = hardware_counts.entry(key).or_insert((0, 0.0));
                     *count += 1;
                     *avg_score = (*avg_score * (*count - 1) as f64 + compat_score) / *count as f64;
@@ -225,9 +225,10 @@ impl<'a> StatisticsGenerator<'a> {
 
         for ((year, month), new_reports) in monthly_counts {
             cumulative_total += new_reports;
-            
+
             // Create first day of month for the date
-            let date = chrono::Utc.with_ymd_and_hms(year, month, 1, 0, 0, 0)
+            let date = chrono::Utc
+                .with_ymd_and_hms(year, month, 1, 0, 0, 0)
                 .single()
                 .unwrap_or_else(Utc::now);
 
@@ -248,18 +249,19 @@ impl<'a> StatisticsGenerator<'a> {
 
         let first = &monthly_trends[0];
         let last = &monthly_trends[monthly_trends.len() - 1];
-        
+
         if first.total_reports == 0 {
             return 0.0;
         }
 
-        ((last.total_reports as f64 - first.total_reports as f64) / first.total_reports as f64) * 100.0
+        ((last.total_reports as f64 - first.total_reports as f64) / first.total_reports as f64)
+            * 100.0
     }
 
     fn calculate_vendor_trends(&self) -> Vec<VendorTrend> {
         // Simplified vendor trend calculation
         let mut vendor_counts: HashMap<String, usize> = HashMap::new();
-        
+
         for report in self.reports {
             for component in &report.components {
                 if let Some(vendor) = &component.vendor {
@@ -274,7 +276,7 @@ impl<'a> StatisticsGenerator<'a> {
             .map(|(vendor, count)| VendorTrend {
                 vendor,
                 report_count: count,
-                growth_rate: 0.0, // Would calculate from historical data
+                growth_rate: 0.0,  // Would calculate from historical data
                 market_share: 0.0, // Would calculate from total reports
             })
             .collect();
@@ -302,9 +304,7 @@ impl<'a> StatisticsGenerator<'a> {
             CompatibilityStatus::Poor,
             CompatibilityStatus::Unknown,
         ] {
-            let count = self.reports.iter()
-                .filter(|r| r.compatibility.status == *status)
-                .count();
+            let count = self.reports.iter().filter(|r| r.compatibility.status == *status).count();
 
             trends.push(CompatibilityTrend {
                 status: status.clone(),
@@ -347,18 +347,19 @@ impl VendorStatistics {
 
     fn add_report(&mut self, report: &IndexedReport, component: &HardwareComponent) {
         self.total_reports += 1;
-        
+
         if let Some(model) = &component.model {
             self.unique_models.insert(model.clone());
         }
-        
+
         self.component_types.insert(component.component_type.clone());
         self.compatibility_scores.push(report.compatibility.status.to_score() as f64);
     }
 
     fn finalize_calculations(&mut self) {
         if !self.compatibility_scores.is_empty() {
-            self.avg_compatibility = self.compatibility_scores.iter().sum::<f64>() / self.compatibility_scores.len() as f64;
+            self.avg_compatibility = self.compatibility_scores.iter().sum::<f64>()
+                / self.compatibility_scores.len() as f64;
         }
     }
 }
@@ -393,7 +394,8 @@ impl KernelAnalysis {
 
     fn finalize_calculations(&mut self) {
         if self.total_reports > 0 {
-            let excellent = self.compatibility_breakdown.get(&CompatibilityStatus::Excellent).unwrap_or(&0);
+            let excellent =
+                self.compatibility_breakdown.get(&CompatibilityStatus::Excellent).unwrap_or(&0);
             let good = self.compatibility_breakdown.get(&CompatibilityStatus::Good).unwrap_or(&0);
             self.success_rate = ((*excellent + *good) as f64 / self.total_reports as f64) * 100.0;
         }
@@ -423,22 +425,20 @@ impl DistributionMatrix {
 
     fn add_report(&mut self, report: &IndexedReport) {
         self.total_reports += 1;
-        
+
         let compat_score = report.compatibility.status.to_score() as f64;
-        
+
         // Track kernel compatibility
-        let kernel_score = self.kernel_compatibility
-            .entry(report.metadata.kernel_version.clone())
-            .or_insert(0.0);
+        let kernel_score =
+            self.kernel_compatibility.entry(report.metadata.kernel_version.clone()).or_insert(0.0);
         *kernel_score = (*kernel_score + compat_score) / 2.0;
 
         // Track vendor compatibility
         for component in &report.components {
             if let Some(vendor) = &component.vendor {
                 let normalized_vendor = normalize_vendor_name(vendor);
-                let vendor_score = self.vendor_compatibility
-                    .entry(normalized_vendor)
-                    .or_insert(0.0);
+                let vendor_score =
+                    self.vendor_compatibility.entry(normalized_vendor).or_insert(0.0);
                 *vendor_score = (*vendor_score + compat_score) / 2.0;
             }
         }

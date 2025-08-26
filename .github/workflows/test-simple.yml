@@ -2,18 +2,18 @@ name: Test Simple Workflow
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Test echo
-      run: echo "Testing if workflows can run"
-      
-    - name: List files
-      run: ls -la
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test echo
+        run: echo "Testing if workflows can run"
+
+      - name: List files
+        run: ls -la

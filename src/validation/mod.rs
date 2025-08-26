@@ -30,16 +30,16 @@
 //! let result = validator.validate(&report);
 //! ```
 
+use crate::hardware::{HardwareReport, PrivacyLevel};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use crate::hardware::{HardwareReport, PrivacyLevel};
 
-pub mod schema;
 pub mod business_logic;
-pub mod privacy;
-pub mod consistency;
 pub mod cli;
+pub mod consistency;
 pub mod constants;
+pub mod privacy;
+pub mod schema;
 
 /// Validation errors that can occur during report validation
 #[derive(Debug, Clone, Error, Serialize, Deserialize, PartialEq, Eq)]
@@ -47,16 +47,16 @@ pub mod constants;
 pub enum ValidationError {
     #[error("Schema validation failed: {message}")]
     SchemaError { message: String },
-    
+
     #[error("Business logic validation failed: {field} - {message}")]
     BusinessLogicError { field: String, message: String },
-    
+
     #[error("Privacy validation failed: {field} - {message}")]
     PrivacyError { field: String, message: String },
-    
+
     #[error("Data consistency validation failed: {field} - {message}")]
     ConsistencyError { field: String, message: String },
-    
+
     #[error("Hardware compatibility validation failed: {device} - {message}")]
     CompatibilityError { device: String, message: String },
 }
@@ -100,74 +100,81 @@ pub struct HardwareReportValidator {
 impl HardwareReportValidator {
     /// Create a new validator with default configuration
     pub fn new() -> Self {
-        Self {
-            config: ValidationConfig::default(),
-        }
+        Self { config: ValidationConfig::default() }
     }
-    
+
     /// Create a new validator with custom configuration
     pub fn with_config(config: ValidationConfig) -> Self {
         Self { config }
     }
-    
+
     /// Validate a hardware report comprehensively
     pub fn validate(&self, report: &HardwareReport) -> ValidationResult {
         let mut result = ValidationResultBuilder::new();
-        
+
         // 1. JSON Schema Validation
         self.validate_schema(report)
             .unwrap_or_else(|e| result.add_error(e, confidence_impact::SCHEMA_ERROR));
-        
+
         // 2. Business Logic Validation
         self.validate_business_logic(report)
             .map(|warnings| result.add_warnings(warnings))
             .unwrap_or_else(|e| result.add_error(e, confidence_impact::BUSINESS_LOGIC_ERROR));
-        
+
         // 3. Privacy Validation
         self.validate_privacy(report)
             .unwrap_or_else(|e| result.add_error(e, confidence_impact::PRIVACY_ERROR));
-        
+
         // 4. Data Consistency Validation
         self.validate_consistency(report)
             .map(|warnings| result.add_warnings(warnings))
             .unwrap_or_else(|e| result.add_error(e, confidence_impact::CONSISTENCY_ERROR));
-        
+
         // 5. Hardware Compatibility Validation
         if self.config.validate_hardware_compatibility {
             self.validate_hardware_compatibility(report)
                 .map(|suggestions| result.add_suggestions(suggestions))
                 .unwrap_or_else(|e| result.add_error(e, confidence_impact::COMPATIBILITY_ERROR));
         }
-        
+
         result.build()
     }
-    
+
     /// Validate report against JSON schema
     fn validate_schema(&self, report: &HardwareReport) -> Result<(), ValidationError> {
         schema::validate_report_schema(report)
     }
-    
+
     /// Validate business logic constraints
-    fn validate_business_logic(&self, report: &HardwareReport) -> Result<Vec<String>, ValidationError> {
+    fn validate_business_logic(
+        &self,
+        report: &HardwareReport,
+    ) -> Result<Vec<String>, ValidationError> {
         business_logic::validate_business_rules(report, &self.config)
     }
-    
+
     /// Validate privacy and anonymization
     fn validate_privacy(&self, report: &HardwareReport) -> Result<(), ValidationError> {
         privacy::validate_privacy_compliance(report, &self.config)
     }
-    
+
     /// Validate data consistency
-    fn validate_consistency(&self, report: &HardwareReport) -> Result<Vec<String>, ValidationError> {
+    fn validate_consistency(
+        &self,
+        report: &HardwareReport,
+    ) -> Result<Vec<String>, ValidationError> {
         consistency::validate_data_consistency(report)
     }
-    
+
     /// Validate hardware compatibility information
-    fn validate_hardware_compatibility(&self, report: &HardwareReport) -> Result<Vec<String>, ValidationError> {
+    fn validate_hardware_compatibility(
+        &self,
+        report: &HardwareReport,
+    ) -> Result<Vec<String>, ValidationError> {
         // This would validate against known hardware compatibility database
         // For now, return basic suggestions
         let mut suggestions = Vec::new();
-        
+
         if let Some(kernel_support) = &report.kernel_support {
             if kernel_support.unsupported_devices > 0 {
                 suggestions.push(format!(
@@ -175,7 +182,7 @@ impl HardwareReportValidator {
                     kernel_support.unsupported_devices
                 ));
             }
-            
+
             if kernel_support.experimental_devices > 0 {
                 suggestions.push(format!(
                     "{} devices have experimental support - monitor for stability issues",
@@ -183,7 +190,7 @@ impl HardwareReportValidator {
                 ));
             }
         }
-        
+
         Ok(suggestions)
     }
 }
@@ -224,29 +231,30 @@ impl ValidationResultBuilder {
             confidence_score: 1.0,
         }
     }
-    
+
     fn add_error(&mut self, error: ValidationError, impact: f64) {
         self.errors.push(error);
         self.confidence_score *= impact;
     }
-    
+
     fn add_warnings<I>(&mut self, warnings: I)
     where
         I: IntoIterator<Item = String>,
     {
         let new_warnings: Vec<_> = warnings.into_iter().collect();
-        let warning_impact = 1.0 - (new_warnings.len() as f64 * confidence_impact::WARNING_PENALTY_PER_WARNING);
+        let warning_impact =
+            1.0 - (new_warnings.len() as f64 * confidence_impact::WARNING_PENALTY_PER_WARNING);
         self.confidence_score *= warning_impact;
         self.warnings.extend(new_warnings);
     }
-    
+
     fn add_suggestions<I>(&mut self, suggestions: I)
     where
         I: IntoIterator<Item = String>,
     {
         self.suggestions.extend(suggestions);
     }
-    
+
     fn build(self) -> ValidationResult {
         ValidationResult {
             valid: self.errors.is_empty(),
@@ -260,17 +268,12 @@ impl ValidationResultBuilder {
 
 /// Utility function to validate multiple reports
 pub fn validate_reports(
-    reports: &[HardwareReport], 
-    config: Option<ValidationConfig>
+    reports: &[HardwareReport],
+    config: Option<ValidationConfig>,
 ) -> Vec<ValidationResult> {
-    let validator = config
-        .map(HardwareReportValidator::with_config)
-        .unwrap_or_default();
-    
-    reports
-        .iter()
-        .map(|report| validator.validate(report))
-        .collect()
+    let validator = config.map(HardwareReportValidator::with_config).unwrap_or_default();
+
+    reports.iter().map(|report| validator.validate(report)).collect()
 }
 
 /// Quick validation function for single reports
@@ -284,7 +287,7 @@ mod tests {
     use super::*;
     use crate::hardware::{ReportMetadata, SystemInfo};
     use chrono::Utc;
-    
+
     fn create_minimal_report() -> HardwareReport {
         HardwareReport {
             metadata: ReportMetadata {
@@ -311,22 +314,22 @@ mod tests {
             kernel_support: None,
         }
     }
-    
+
     #[test]
     fn test_minimal_report_validation() {
         let report = create_minimal_report();
         let result = validate_report(&report);
-        
+
         // Debug what's failing
         if !result.valid {
             eprintln!("Validation failed with errors: {:?}", result.errors);
             eprintln!("Warnings: {:?}", result.warnings);
         }
-        
+
         assert!(result.valid, "Validation failed: {:?}", result.errors);
         assert!(result.confidence_score > 0.0);
     }
-    
+
     #[test]
     fn test_validator_configuration() {
         let config = ValidationConfig {
@@ -336,11 +339,11 @@ mod tests {
             minimum_device_count: Some(5),
             validate_hardware_compatibility: true,
         };
-        
+
         let validator = HardwareReportValidator::with_config(config);
         let report = create_minimal_report();
         let result = validator.validate(&report);
-        
+
         // Should have validation errors due to strict requirements
         assert!(!result.errors.is_empty());
     }

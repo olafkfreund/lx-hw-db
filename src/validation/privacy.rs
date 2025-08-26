@@ -1,9 +1,9 @@
 //! Privacy validation for hardware reports
 
 use crate::hardware::{HardwareReport, PrivacyLevel};
-use crate::validation::{ValidationError, ValidationConfig};
+use crate::validation::{ValidationConfig, ValidationError};
 use regex::Regex;
-use std::sync::LazyLock;
+use std::sync::OnceLock;
 
 /// Validate privacy compliance and anonymization
 pub fn validate_privacy_compliance(
@@ -12,16 +12,16 @@ pub fn validate_privacy_compliance(
 ) -> Result<(), ValidationError> {
     // Check privacy level requirements
     validate_privacy_level_requirements(report, config)?;
-    
+
     // Validate anonymization of sensitive fields
     validate_anonymized_fields(report)?;
-    
+
     // Check for potential PII leaks
     validate_no_pii_leaks(report)?;
-    
+
     // Validate anonymization strength
     validate_anonymization_strength(report)?;
-    
+
     Ok(())
 }
 
@@ -32,7 +32,7 @@ fn validate_privacy_level_requirements(
 ) -> Result<(), ValidationError> {
     if let Some(required_level) = config.privacy_level_required {
         let current_level = report.metadata.privacy_level;
-        
+
         // Check if current privacy level is sufficient
         let level_hierarchy = |level: PrivacyLevel| -> u8 {
             match level {
@@ -41,7 +41,7 @@ fn validate_privacy_level_requirements(
                 PrivacyLevel::Strict => 3,
             }
         };
-        
+
         if level_hierarchy(current_level) < level_hierarchy(required_level) {
             return Err(ValidationError::PrivacyError {
                 field: "metadata.privacy_level".to_string(),
@@ -52,7 +52,7 @@ fn validate_privacy_level_requirements(
             });
         }
     }
-    
+
     Ok(())
 }
 
@@ -64,14 +64,10 @@ fn validate_anonymized_fields(report: &HardwareReport) -> Result<(), ValidationE
         "metadata.anonymized_system_id",
         8, // Minimum length for anonymized IDs
     )?;
-    
+
     // Check hostname anonymization
-    validate_anonymized_id(
-        &report.system.anonymized_hostname,
-        "system.anonymized_hostname",
-        8,
-    )?;
-    
+    validate_anonymized_id(&report.system.anonymized_hostname, "system.anonymized_hostname", 8)?;
+
     // Check storage serial numbers
     for (index, storage) in report.storage.iter().enumerate() {
         validate_anonymized_id(
@@ -80,7 +76,7 @@ fn validate_anonymized_fields(report: &HardwareReport) -> Result<(), ValidationE
             8,
         )?;
     }
-    
+
     // Check network MAC addresses
     for (index, network) in report.network.iter().enumerate() {
         validate_mac_address_anonymization(
@@ -88,7 +84,7 @@ fn validate_anonymized_fields(report: &HardwareReport) -> Result<(), ValidationE
             &format!("network[{}].anonymized_mac", index),
         )?;
     }
-    
+
     Ok(())
 }
 
@@ -104,76 +100,69 @@ fn validate_anonymized_id(
             field: field_name.to_string(),
             message: format!(
                 "Anonymized ID too short: {} characters (minimum: {})",
-                id.len(), min_length
+                id.len(),
+                min_length
             ),
         });
     }
-    
+
     // Check for obvious non-anonymized patterns
     let suspicious_patterns = [
         r"^localhost",
         r"^user[0-9]*$",
         r"^admin[0-9]*$",
         r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", // IP address
-        r"^[0-9]{12,}$", // Sequential numbers
+        r"^[0-9]{12,}$",                         // Sequential numbers
     ];
-    
+
     for pattern in &suspicious_patterns {
         if let Ok(regex) = Regex::new(pattern) {
             if regex.is_match(id) {
                 return Err(ValidationError::PrivacyError {
                     field: field_name.to_string(),
-                    message: format!(
-                        "ID '{}' appears to contain non-anonymized data",
-                        id
-                    ),
+                    message: format!("ID '{}' appears to contain non-anonymized data", id),
                 });
             }
         }
     }
-    
+
     // Check for sufficient entropy (not all same character)
     let unique_chars: std::collections::HashSet<char> = id.chars().collect();
     if unique_chars.len() < 3 {
         return Err(ValidationError::PrivacyError {
             field: field_name.to_string(),
-            message: format!(
-                "Anonymized ID '{}' has insufficient entropy",
-                id
-            ),
+            message: format!("Anonymized ID '{}' has insufficient entropy", id),
         });
     }
-    
+
     Ok(())
 }
 
 /// Compiled MAC address regex for performance
-static MAC_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$")
-        .expect("MAC address regex should be valid")
-});
+static MAC_REGEX: OnceLock<Regex> = OnceLock::new();
+
+fn get_mac_regex() -> &'static Regex {
+    MAC_REGEX.get_or_init(|| {
+        Regex::new(r"^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$")
+            .expect("MAC address regex should be valid")
+    })
+}
 
 /// Validate MAC address anonymization
-fn validate_mac_address_anonymization(
-    mac: &str,
-    field_name: &str,
-) -> Result<(), ValidationError> {
+fn validate_mac_address_anonymization(mac: &str, field_name: &str) -> Result<(), ValidationError> {
     // Check MAC address format using cached regex
-    if !MAC_REGEX.is_match(mac) {
+    if !get_mac_regex().is_match(mac) {
         return Err(ValidationError::PrivacyError {
             field: field_name.to_string(),
-            message: format!(
-                "Invalid MAC address format: '{}'",
-                mac
-            ),
+            message: format!("Invalid MAC address format: '{}'", mac),
         });
     }
-    
+
     // Check for known vendor prefixes that shouldn't appear in anonymized MACs
     let mac_parts: Vec<&str> = mac.split(':').collect();
     if mac_parts.len() == 6 {
         let oui = format!("{}:{}", mac_parts[0], mac_parts[1]);
-        
+
         // List of common vendor OUIs that should be anonymized
         let known_ouis = [
             "00:16", // Intel
@@ -183,7 +172,7 @@ fn validate_mac_address_anonymization(
             "AA:AA", // Obviously fake
             "FF:FF", // Obviously fake
         ];
-        
+
         for known_oui in &known_ouis {
             if oui.eq_ignore_ascii_case(known_oui) {
                 return Err(ValidationError::PrivacyError {
@@ -196,52 +185,55 @@ fn validate_mac_address_anonymization(
             }
         }
     }
-    
+
     Ok(())
 }
 
 /// Compiled PII detection patterns for performance
-static PII_PATTERNS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
-    [
-        (r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "email address"),
-        (r"\b(?:\d{1,3}\.){3}\d{1,3}\b", "IP address"),
-        (r"\b\d{3}-\d{2}-\d{4}\b", "SSN pattern"),
-        (r"\b(username|password|secret|key|token)[\s:=]+\S+", "credential"),
-    ]
-    .into_iter()
-    .map(|(pattern, desc)| (Regex::new(pattern).expect("Valid regex"), desc))
-    .collect()
-});
+static PII_PATTERNS: OnceLock<Vec<(Regex, &'static str)>> = OnceLock::new();
+
+fn get_pii_patterns() -> &'static Vec<(Regex, &'static str)> {
+    PII_PATTERNS.get_or_init(|| {
+        [
+            (r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "email address"),
+            (r"\b(?:\d{1,3}\.){3}\d{1,3}\b", "IP address"),
+            (r"\b\d{3}-\d{2}-\d{4}\b", "SSN pattern"),
+            (r"\b(username|password|secret|key|token)[\s:=]+\S+", "credential"),
+        ]
+        .into_iter()
+        .map(|(pattern, desc)| (Regex::new(pattern).expect("Valid regex"), desc))
+        .collect()
+    })
+}
 
 /// Check for potential PII (Personally Identifiable Information) leaks
 fn validate_no_pii_leaks(report: &HardwareReport) -> Result<(), ValidationError> {
-    
     use crate::validation::constants::HARDWARE_VENDORS;
-    
+
     // Check all string fields in the report for PII
     let all_strings = collect_all_strings(report);
-    
+
     for text in &all_strings {
         // Skip known hardware vendors
         if HARDWARE_VENDORS.iter().any(|vendor| text.contains(vendor)) {
             continue;
         }
-        
+
         // Check against compiled regex patterns
-        for (regex, description) in PII_PATTERNS.iter() {
+        for (regex, description) in get_pii_patterns().iter() {
             if regex.is_match(text) {
                 return Err(ValidationError::PrivacyError {
                     field: "various".to_string(),
                     message: format!(
                         "Potential PII detected ({}): '{}'",
-                        description, 
+                        description,
                         text.chars().take(50).collect::<String>()
                     ),
                 });
             }
         }
     }
-    
+
     Ok(())
 }
 
@@ -261,7 +253,7 @@ fn validate_anonymization_strength(report: &HardwareReport) -> Result<(), Valida
             validate_strict_anonymization(report)?;
         }
     }
-    
+
     Ok(())
 }
 
@@ -274,7 +266,7 @@ fn validate_basic_anonymization(report: &HardwareReport) -> Result<(), Validatio
             message: "Basic privacy requires at least 8-character system ID".to_string(),
         });
     }
-    
+
     // Hostname should be anonymized
     if report.system.anonymized_hostname.len() < 8 {
         return Err(ValidationError::PrivacyError {
@@ -282,7 +274,7 @@ fn validate_basic_anonymization(report: &HardwareReport) -> Result<(), Validatio
             message: "Basic privacy requires at least 8-character hostname".to_string(),
         });
     }
-    
+
     Ok(())
 }
 
@@ -295,7 +287,7 @@ fn validate_enhanced_anonymization(report: &HardwareReport) -> Result<(), Valida
             message: "Enhanced privacy requires at least 12-character system ID".to_string(),
         });
     }
-    
+
     // Check that hardware details are sufficiently generic
     if let Some(cpu) = &report.cpu {
         // CPU model should not contain specific stepping or revision info
@@ -311,7 +303,7 @@ fn validate_enhanced_anonymization(report: &HardwareReport) -> Result<(), Valida
             }
         }
     }
-    
+
     Ok(())
 }
 
@@ -324,18 +316,19 @@ fn validate_strict_anonymization(report: &HardwareReport) -> Result<(), Validati
             message: "Strict privacy requires at least 16-character system ID".to_string(),
         });
     }
-    
+
     // In strict mode, even generic hardware info should be limited
     if let Some(cpu) = &report.cpu {
         // CPU model should be generalized
         if cpu.model.len() > 50 {
             return Err(ValidationError::PrivacyError {
                 field: "cpu.model".to_string(),
-                message: "Strict privacy requires shorter, more generic CPU model names".to_string(),
+                message: "Strict privacy requires shorter, more generic CPU model names"
+                    .to_string(),
             });
         }
     }
-    
+
     // Check that no serial numbers or specific identifiers remain
     for (index, storage) in report.storage.iter().enumerate() {
         if storage.anonymized_serial.len() < 16 {
@@ -345,14 +338,14 @@ fn validate_strict_anonymization(report: &HardwareReport) -> Result<(), Validati
             });
         }
     }
-    
+
     Ok(())
 }
 
 /// Collect all string values from the report for PII scanning
 fn collect_all_strings(report: &HardwareReport) -> Vec<String> {
     let mut strings = Vec::new();
-    
+
     // System info
     strings.push(report.system.anonymized_hostname.clone());
     strings.push(report.system.kernel_version.clone());
@@ -360,14 +353,14 @@ fn collect_all_strings(report: &HardwareReport) -> Vec<String> {
     if let Some(ref distro) = report.system.distribution {
         strings.push(distro.clone());
     }
-    
+
     // CPU info
     if let Some(ref cpu) = report.cpu {
         strings.push(cpu.model.clone());
         strings.push(cpu.vendor.clone());
         strings.extend(cpu.flags.clone());
     }
-    
+
     // Memory info
     if let Some(ref memory) = report.memory {
         for dimm in &memory.dimms {
@@ -379,7 +372,7 @@ fn collect_all_strings(report: &HardwareReport) -> Vec<String> {
             }
         }
     }
-    
+
     // Storage info
     for storage in &report.storage {
         strings.push(storage.model.clone());
@@ -387,7 +380,7 @@ fn collect_all_strings(report: &HardwareReport) -> Vec<String> {
             strings.push(vendor.clone());
         }
     }
-    
+
     // Graphics info
     for graphics in &report.graphics {
         strings.push(graphics.vendor.clone());
@@ -396,7 +389,7 @@ fn collect_all_strings(report: &HardwareReport) -> Vec<String> {
             strings.push(driver.clone());
         }
     }
-    
+
     // Network info
     for network in &report.network {
         strings.push(network.vendor.clone());
@@ -405,16 +398,16 @@ fn collect_all_strings(report: &HardwareReport) -> Vec<String> {
             strings.push(driver.clone());
         }
     }
-    
+
     strings
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::hardware::{ReportMetadata, SystemInfo, NetworkDevice};
+    use crate::hardware::{NetworkDevice, ReportMetadata, SystemInfo};
     use chrono::Utc;
-    
+
     fn create_test_report_with_privacy(privacy_level: PrivacyLevel) -> HardwareReport {
         HardwareReport {
             metadata: ReportMetadata {
@@ -425,7 +418,7 @@ mod tests {
                 anonymized_system_id: "abcd1234efgh5678".to_string(), // 16 chars
             },
             system: SystemInfo {
-                anonymized_hostname: "host_abcd1234efgh".to_string(), // 16 chars  
+                anonymized_hostname: "host_abcd1234efgh".to_string(), // 16 chars
                 kernel_version: "6.16.0".to_string(),
                 distribution: Some("NixOS 25.11".to_string()),
                 architecture: "x86_64".to_string(),
@@ -435,43 +428,41 @@ mod tests {
             memory: None,
             storage: Vec::new(),
             graphics: Vec::new(),
-            network: vec![
-                NetworkDevice {
-                    device_type: "ethernet".to_string(),
-                    vendor: "Intel Corporation".to_string(),
-                    model: "I225-V Gigabit Network Connection".to_string(),
-                    driver: Some("igc".to_string()),
-                    anonymized_mac: "12:34:56:78:9a:bc".to_string(),
-                }
-            ],
+            network: vec![NetworkDevice {
+                device_type: "ethernet".to_string(),
+                vendor: "Intel Corporation".to_string(),
+                model: "I225-V Gigabit Network Connection".to_string(),
+                driver: Some("igc".to_string()),
+                anonymized_mac: "12:34:56:78:9a:bc".to_string(),
+            }],
             usb: Vec::new(),
             audio: Vec::new(),
             kernel_support: None,
         }
     }
-    
+
     #[test]
     fn test_valid_basic_privacy() {
         let report = create_test_report_with_privacy(PrivacyLevel::Basic);
         let config = ValidationConfig::default();
-        
+
         assert!(validate_privacy_compliance(&report, &config).is_ok());
     }
-    
+
     #[test]
     fn test_invalid_short_system_id() {
         let mut report = create_test_report_with_privacy(PrivacyLevel::Basic);
         report.metadata.anonymized_system_id = "short".to_string(); // Too short
-        
+
         let config = ValidationConfig::default();
         let result = validate_privacy_compliance(&report, &config);
-        
+
         assert!(result.is_err());
         if let Err(ValidationError::PrivacyError { field, .. }) = result {
             assert_eq!(field, "metadata.anonymized_system_id");
         }
     }
-    
+
     #[test]
     fn test_privacy_level_requirement() {
         let report = create_test_report_with_privacy(PrivacyLevel::Basic);
@@ -479,27 +470,27 @@ mod tests {
             privacy_level_required: Some(PrivacyLevel::Enhanced),
             ..ValidationConfig::default()
         };
-        
+
         let result = validate_privacy_compliance(&report, &config);
         assert!(result.is_err());
     }
-    
+
     #[test]
     fn test_invalid_mac_address() {
         let mut report = create_test_report_with_privacy(PrivacyLevel::Basic);
         report.network[0].anonymized_mac = "invalid_mac".to_string();
-        
+
         let config = ValidationConfig::default();
         let result = validate_privacy_compliance(&report, &config);
-        
+
         assert!(result.is_err());
     }
-    
+
     #[test]
     fn test_strict_privacy_requirements() {
         let report = create_test_report_with_privacy(PrivacyLevel::Strict);
         let config = ValidationConfig::default();
-        
+
         assert!(validate_privacy_compliance(&report, &config).is_ok());
     }
 }

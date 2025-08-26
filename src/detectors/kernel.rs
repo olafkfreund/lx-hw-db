@@ -1,9 +1,9 @@
 //! Kernel-based hardware support verification
-//! 
+//!
 //! This module leverages Linux kernel information to verify hardware support
 //! by checking modules.alias files, sysfs information, and kernel device tables.
 
-use crate::errors::{Result, LxHwError};
+use crate::errors::{LxHwError, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -35,7 +35,7 @@ pub enum SupportLevel {
     /// Officially supported with dedicated driver
     Supported,
     /// Experimental or staging driver
-    Experimental, 
+    Experimental,
     /// Generic driver support (e.g., USB HID)
     Generic,
     /// Similar device supported, might work
@@ -58,11 +58,7 @@ impl KernelSupportVerifier {
         let modules_alias_path = format!("/lib/modules/{}/modules.alias", kernel_version);
         let config_path = Self::find_kernel_config(&kernel_version);
 
-        Ok(Self {
-            kernel_version,
-            modules_alias_path,
-            config_path,
-        })
+        Ok(Self { kernel_version, modules_alias_path, config_path })
     }
 
     /// Get current kernel version
@@ -70,14 +66,10 @@ impl KernelSupportVerifier {
         let output = Command::new("uname")
             .arg("-r")
             .output()
-            .map_err(|e| LxHwError::SystemCommandError { 
-                command: format!("uname -r: {}", e) 
-            })?;
+            .map_err(|e| LxHwError::SystemCommandError { command: format!("uname -r: {}", e) })?;
 
         if !output.status.success() {
-            return Err(LxHwError::SystemCommandError {
-                command: "uname -r".to_string(),
-            });
+            return Err(LxHwError::SystemCommandError { command: "uname -r".to_string() });
         }
 
         Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
@@ -97,7 +89,7 @@ impl KernelSupportVerifier {
     /// Verify support for a specific PCI device
     pub fn verify_pci_support(&self, vendor_id: &str, device_id: &str) -> Result<DeviceSupport> {
         let pci_id = format!("{vendor_id}:{device_id}").to_lowercase();
-        
+
         // Check modules.alias for exact match
         if let Some(module) = self.check_modules_alias(&pci_id)? {
             let config_deps = self.get_config_dependencies(&module)?;
@@ -136,19 +128,33 @@ impl KernelSupportVerifier {
 
         // Parse modules.alias format: alias pci:v00001B21d00000612sv*sd*bc*sc*i* ahci
         for line in alias_content.lines() {
-            if line.starts_with("alias pci:") {
-                if let Some((alias, _module)) = line.split_once(' ') {
-                    if let Some(module) = alias.split(' ').nth(1) {
-                        // Extract vendor and device IDs from alias
-                        if self.matches_pci_alias(device_id, alias) {
-                            return Ok(Some(module.trim().to_string()));
-                        }
-                    }
-                }
+            if let Some(module) = self.parse_pci_alias_line(line, device_id) {
+                return Ok(Some(module));
             }
         }
 
         Ok(None)
+    }
+
+    /// Parse a PCI alias line and return module name if it matches the device_id
+    fn parse_pci_alias_line(&self, line: &str, device_id: &str) -> Option<String> {
+        if !line.starts_with("alias pci:") {
+            return None;
+        }
+
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.len() < 3 {
+            return None;
+        }
+
+        let alias = parts[1]; // The PCI alias pattern
+        let module = parts[2]; // The module name
+
+        if self.matches_pci_alias(device_id, alias) {
+            Some(module.trim().to_string())
+        } else {
+            None
+        }
     }
 
     /// Check if PCI device ID matches alias pattern
@@ -157,7 +163,7 @@ impl KernelSupportVerifier {
         if let Some((vendor, device)) = device_id.split_once(':') {
             let vendor_pattern = format!("v0000{:0>4}", vendor.to_uppercase());
             let device_pattern = format!("d0000{:0>4}", device.to_uppercase());
-            
+
             alias.contains(&vendor_pattern) && alias.contains(&device_pattern)
         } else {
             false
@@ -165,11 +171,15 @@ impl KernelSupportVerifier {
     }
 
     /// Check for generic driver support (USB HID, mass storage, etc.)
-    fn check_generic_support(&self, _vendor_id: &str, _device_id: &str) -> Result<Option<DeviceSupport>> {
+    fn check_generic_support(
+        &self,
+        _vendor_id: &str,
+        _device_id: &str,
+    ) -> Result<Option<DeviceSupport>> {
         // USB mass storage: class 08
         // USB HID: class 03
         // This would need to be expanded with actual class checking from sysfs
-        
+
         // Placeholder implementation - in real version we'd check device class
         Ok(None)
     }
@@ -177,29 +187,34 @@ impl KernelSupportVerifier {
     /// Get kernel configuration dependencies for a module
     fn get_config_dependencies(&self, module: &str) -> Result<Vec<String>> {
         // This would parse modinfo output for dependencies and map to CONFIG_ options
-        let output = Command::new("modinfo")
-            .arg(module)
-            .output();
+        let output = Command::new("modinfo").arg(module).output();
 
-        if let Ok(output) = output {
-            if output.status.success() {
-                let info = String::from_utf8_lossy(&output.stdout);
-                let mut deps = Vec::new();
-                
-                for line in info.lines() {
-                    if line.starts_with("depends:") {
-                        let depends = line.strip_prefix("depends:").unwrap_or("").trim();
-                        if !depends.is_empty() {
-                            deps.extend(depends.split(',').map(|s| s.trim().to_string()));
-                        }
-                    }
+        let output = output.map_err(|e| LxHwError::SystemError {
+            message: format!("Failed to run modinfo command: {}", e),
+        })?;
+
+        if !output.status.success() {
+            return Ok(vec![]);
+        }
+
+        let info = String::from_utf8_lossy(&output.stdout);
+        Ok(self.parse_module_dependencies(&info))
+    }
+
+    /// Parse module dependencies from modinfo output
+    fn parse_module_dependencies(&self, info: &str) -> Vec<String> {
+        let mut deps = Vec::new();
+
+        for line in info.lines() {
+            if line.starts_with("depends:") {
+                let depends = line.strip_prefix("depends:").unwrap_or("").trim();
+                if !depends.is_empty() {
+                    deps.extend(depends.split(',').map(|s| s.trim().to_string()));
                 }
-                
-                return Ok(deps);
             }
         }
 
-        Ok(vec![])
+        deps
     }
 
     /// Check if a specific kernel configuration option is enabled
@@ -216,9 +231,45 @@ impl KernelSupportVerifier {
                 }
             }
         }
-        
+
         // If no config file or option not found, assume it could be enabled
         Ok(false)
+    }
+
+    /// Check for missing kernel configuration dependencies
+    fn check_missing_config_dependencies(
+        &self,
+        device: &DeviceSupport,
+        configuration_changes: &mut Vec<UserAction>,
+    ) {
+        use crate::detectors::kernel::{ActionType, RiskLevel, UserAction};
+
+        for config_dep in &device.config_dependencies {
+            if let Ok(enabled) =
+                self.check_config_option(&format!("CONFIG_{}", config_dep.to_uppercase()))
+            {
+                if !enabled {
+                    configuration_changes.push(UserAction {
+                        action_type: ActionType::ReconfigureKernel,
+                        description: format!("Enable {} in kernel configuration", config_dep),
+                        commands: vec![
+                            "# This requires kernel recompilation".to_string(),
+                            format!(
+                                "# Enable CONFIG_{} in kernel config",
+                                config_dep.to_uppercase()
+                            ),
+                            "# Or install a kernel with this option enabled".to_string(),
+                        ],
+                        risk_level: RiskLevel::High,
+                        explanation: format!(
+                            "The {} module requires CONFIG_{} to be enabled in the kernel.",
+                            device.driver_module,
+                            config_dep.to_uppercase()
+                        ),
+                    });
+                }
+            }
+        }
     }
 
     /// Get comprehensive support data for all detected devices
@@ -228,13 +279,14 @@ impl KernelSupportVerifier {
 
         for (vendor_id, device_id) in device_ids {
             let support = self.verify_pci_support(&vendor_id, &device_id)?;
-            
+
             // Group by module for aliases
             let module = support.driver_module.clone();
-            module_aliases.entry(module.clone())
+            module_aliases
+                .entry(module.clone())
                 .or_insert_with(Vec::new)
                 .push(format!("{}:{}", vendor_id, device_id));
-                
+
             supported_devices.push(support);
         }
 
@@ -247,9 +299,12 @@ impl KernelSupportVerifier {
     }
 
     /// Generate user-friendly recommendations for hardware support
-    pub fn generate_user_recommendations(&self, support_data: &KernelSupportData) -> UserRecommendations {
+    pub fn generate_user_recommendations(
+        &self,
+        support_data: &KernelSupportData,
+    ) -> UserRecommendations {
         let mut recommendations = UserRecommendations::new(self.kernel_version.clone());
-        
+
         let mut unsupported_devices = Vec::new();
         let mut kernel_upgrade_needed = false;
         let mut missing_modules = Vec::new();
@@ -259,13 +314,14 @@ impl KernelSupportVerifier {
             match device.support_level {
                 SupportLevel::Unsupported => {
                     unsupported_devices.push(device.clone());
-                    
+
                     // Check if newer kernels might support this device
-                    if let Some(upgrade_rec) = self.check_kernel_upgrade_benefit(&device.device_id) {
+                    if let Some(upgrade_rec) = self.check_kernel_upgrade_benefit(&device.device_id)
+                    {
                         kernel_upgrade_needed = true;
                         recommendations.kernel_upgrades.push(upgrade_rec);
                     }
-                },
+                }
                 SupportLevel::Experimental => {
                     configuration_changes.push(UserAction {
                         action_type: ActionType::EnableExperimental,
@@ -274,7 +330,7 @@ impl KernelSupportVerifier {
                         risk_level: RiskLevel::Medium,
                         explanation: "This device has experimental kernel support. It may work but could be unstable.".to_string(),
                     });
-                },
+                }
                 SupportLevel::Supported => {
                     // Check if module is loaded
                     if !self.is_module_loaded(&device.driver_module) {
@@ -286,28 +342,12 @@ impl KernelSupportVerifier {
                             explanation: "This device is supported but the driver module is not currently loaded.".to_string(),
                         });
                     }
-                },
+                }
                 _ => {}
             }
 
             // Check for missing kernel configuration
-            for config_dep in &device.config_dependencies {
-                if let Ok(enabled) = self.check_config_option(&format!("CONFIG_{}", config_dep.to_uppercase())) {
-                    if !enabled {
-                        configuration_changes.push(UserAction {
-                            action_type: ActionType::ReconfigureKernel,
-                            description: format!("Enable {} in kernel configuration", config_dep),
-                            commands: vec![
-                                "# This requires kernel recompilation".to_string(),
-                                format!("# Enable CONFIG_{} in kernel config", config_dep.to_uppercase()),
-                                "# Or install a kernel with this option enabled".to_string(),
-                            ],
-                            risk_level: RiskLevel::High,
-                            explanation: format!("The {} module requires CONFIG_{} to be enabled in the kernel.", device.driver_module, config_dep.to_uppercase()),
-                        });
-                    }
-                }
-            }
+            self.check_missing_config_dependencies(device, &mut configuration_changes);
         }
 
         recommendations.unsupported_devices = unsupported_devices.len();
@@ -332,9 +372,9 @@ impl KernelSupportVerifier {
     fn check_kernel_upgrade_benefit(&self, device_id: &str) -> Option<KernelUpgradeRecommendation> {
         // This is a simplified version - in a real implementation, this would
         // query a database of kernel versions and hardware support
-        
+
         let current_version = self.parse_kernel_version(&self.kernel_version);
-        
+
         // Example logic: if current kernel is older than 5.15 and device is unsupported,
         // recommend upgrade to latest LTS
         if current_version.0 < 5 || (current_version.0 == 5 && current_version.1 < 15) {
@@ -401,8 +441,9 @@ impl KernelSupportVerifier {
     fn add_general_recommendations(&self, recommendations: &mut UserRecommendations) {
         // Check system health indicators
         let kernel_age = self.estimate_kernel_age(&self.kernel_version);
-        
-        if kernel_age > 365 { // Older than 1 year
+
+        if kernel_age > 365 {
+            // Older than 1 year
             recommendations.general_advice.push(
                 "Consider upgrading to a newer kernel for better hardware support and security updates.".to_string()
             );
@@ -451,21 +492,19 @@ impl KernelSupportVerifier {
             return Ok(device_ids);
         }
 
-        let entries = fs::read_dir(pci_devices_path)
-            .map_err(LxHwError::IoError)?;
+        let entries = fs::read_dir(pci_devices_path).map_err(LxHwError::IoError)?;
 
         for entry in entries {
             let entry = entry.map_err(LxHwError::IoError)?;
             let device_path = entry.path();
-            
+
             // Read vendor and device files
             let vendor_path = device_path.join("vendor");
             let device_id_path = device_path.join("device");
-            
-            if let (Ok(vendor), Ok(device)) = (
-                fs::read_to_string(&vendor_path),
-                fs::read_to_string(&device_id_path)
-            ) {
+
+            if let (Ok(vendor), Ok(device)) =
+                (fs::read_to_string(&vendor_path), fs::read_to_string(&device_id_path))
+            {
                 let vendor = vendor.trim().strip_prefix("0x").unwrap_or(&vendor).trim();
                 let device = device.trim().strip_prefix("0x").unwrap_or(&device).trim();
                 device_ids.push((vendor.to_string(), device.to_string()));
@@ -569,15 +608,11 @@ mod tests {
         };
 
         // Test vendor:device format matching
-        assert!(verifier.matches_pci_alias(
-            "1b21:0612", 
-            "alias pci:v00001B21d00000612sv*sd*bc*sc*i* ahci"
-        ));
-        
-        assert!(!verifier.matches_pci_alias(
-            "1234:5678", 
-            "alias pci:v00001B21d00000612sv*sd*bc*sc*i* ahci"
-        ));
+        assert!(verifier
+            .matches_pci_alias("1b21:0612", "alias pci:v00001B21d00000612sv*sd*bc*sc*i* ahci"));
+
+        assert!(!verifier
+            .matches_pci_alias("1234:5678", "alias pci:v00001B21d00000612sv*sd*bc*sc*i* ahci"));
     }
 
     #[test]
@@ -592,7 +627,7 @@ mod tests {
 
         let serialized = serde_json::to_string(&support).unwrap();
         let deserialized: DeviceSupport = serde_json::from_str(&serialized).unwrap();
-        
+
         assert_eq!(support.device_id, deserialized.device_id);
         assert_eq!(support.driver_module, deserialized.driver_module);
     }

@@ -1,9 +1,9 @@
 //! Tests for lspci hardware detection
 
-use lx_hw_detect::detectors::lspci::{LspciDetector, LspciData, PciDevice};
-use lx_hw_detect::detectors::{HardwareDetector, DetectionData};
-use std::process::{Output, ExitStatus};
+use lx_hw_detect::detectors::lspci::{LspciData, LspciDetector, PciDevice};
+use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 use std::os::unix::process::ExitStatusExt;
+use std::process::{ExitStatus, Output};
 
 const SAMPLE_LSPCI_VERBOSE: &str = r#"00:00.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Starship/Matisse Root Complex
 	Subsystem: Lenovo ThinkStation P620
@@ -57,17 +57,14 @@ async fn test_lspci_availability_check() {
 #[test]
 fn test_lspci_parsing_success() {
     let detector = LspciDetector::new();
-    
+
     // Create combined output as it would come from execute()
     let mut combined_output = SAMPLE_LSPCI_VERBOSE.as_bytes().to_vec();
     combined_output.extend_from_slice(b"\n--- NUMERIC DATA ---\n");
     combined_output.extend_from_slice(SAMPLE_LSPCI_NUMERIC.as_bytes());
-    
-    let output = Output {
-        status: ExitStatus::from_raw(0),
-        stdout: combined_output,
-        stderr: Vec::new(),
-    };
+
+    let output =
+        Output { status: ExitStatus::from_raw(0), stdout: combined_output, stderr: Vec::new() };
 
     let result = detector.parse_output(&output).unwrap();
     assert!(result.success);
@@ -76,15 +73,17 @@ fn test_lspci_parsing_success() {
     match result.data {
         DetectionData::Lspci(data) => {
             assert!(!data.devices.is_empty());
-            
+
             // Check that we parsed some devices
             assert!(data.devices.len() >= 5);
-            
+
             // Check root complex device
-            let root_complex = data.devices.iter()
+            let root_complex = data
+                .devices
+                .iter()
                 .find(|d| d.address == "00:00.0")
                 .expect("Root complex should be found");
-            
+
             println!("Root complex: {:?}", root_complex);
             assert_eq!(root_complex.class_description, "Host bridge");
             assert_eq!(root_complex.vendor_id, "1022");
@@ -95,29 +94,33 @@ fn test_lspci_parsing_success() {
                 assert!(vendor.contains("AMD") || vendor.contains("Advanced Micro Devices"));
             }
             assert_eq!(root_complex.iommu_group, Some(0));
-            
+
             // Check PCIe bridge
-            let pcie_bridge = data.devices.iter()
+            let pcie_bridge = data
+                .devices
+                .iter()
                 .find(|d| d.address == "00:01.1")
                 .expect("PCIe bridge should be found");
-            
+
             assert_eq!(pcie_bridge.class_description, "PCI bridge");
             assert_eq!(pcie_bridge.kernel_driver, Some("pcieport".to_string()));
             assert_eq!(pcie_bridge.irq, Some(46));
             assert_eq!(pcie_bridge.iommu_group, Some(2));
             assert!(pcie_bridge.bus_info.is_some());
-            
+
             let bus_info = pcie_bridge.bus_info.as_ref().unwrap();
             assert_eq!(bus_info.primary, Some(0));
             assert_eq!(bus_info.secondary, Some(1));
             assert_eq!(bus_info.subordinate, Some(1));
             assert_eq!(bus_info.sec_latency, Some(0));
-            
+
             // Check NVMe device
-            let nvme_device = data.devices.iter()
+            let nvme_device = data
+                .devices
+                .iter()
                 .find(|d| d.address == "01:00.0")
                 .expect("NVMe device should be found");
-            
+
             assert_eq!(nvme_device.class_description, "Non-Volatile memory controller");
             assert_eq!(nvme_device.vendor_id, "144d");
             assert_eq!(nvme_device.device_id, "a808");
@@ -125,7 +128,7 @@ fn test_lspci_parsing_success() {
             assert_eq!(nvme_device.kernel_driver, Some("nvme".to_string()));
             assert_eq!(nvme_device.kernel_modules, vec!["nvme"]);
             assert!(!nvme_device.memory_regions.is_empty());
-            
+
             // Check summary
             assert!(data.summary.is_some());
             let summary = data.summary.as_ref().unwrap();
@@ -133,7 +136,7 @@ fn test_lspci_parsing_success() {
             assert!(summary.devices_by_class.contains_key("Host bridge"));
             assert!(summary.devices_by_class.contains_key("PCI bridge"));
             assert!(summary.devices_with_drivers >= 2); // pcieport and nvme
-        },
+        }
         _ => panic!("Expected LspciData"),
     }
 }
@@ -141,11 +144,7 @@ fn test_lspci_parsing_success() {
 #[test]
 fn test_lspci_empty_output() {
     let detector = LspciDetector::new();
-    let output = Output {
-        status: ExitStatus::from_raw(0),
-        stdout: Vec::new(),
-        stderr: Vec::new(),
-    };
+    let output = Output { status: ExitStatus::from_raw(0), stdout: Vec::new(), stderr: Vec::new() };
 
     let result = detector.parse_output(&output).unwrap();
     assert!(!result.success);
@@ -156,12 +155,13 @@ fn test_lspci_empty_output() {
 #[test]
 fn test_lspci_stderr_handling() {
     let detector = LspciDetector::new();
-    
+
     let mut combined_output = SAMPLE_LSPCI_VERBOSE.as_bytes().to_vec();
     combined_output.extend_from_slice(b"\n--- NUMERIC DATA ---\n");
     combined_output.extend_from_slice(SAMPLE_LSPCI_NUMERIC.as_bytes());
-    
-    let stderr_message = "pcilib: Cannot open /proc/bus/pci\nlspci: Cannot find any working access method.\n";
+
+    let stderr_message =
+        "pcilib: Cannot open /proc/bus/pci\nlspci: Cannot find any working access method.\n";
     let output = Output {
         status: ExitStatus::from_raw(0),
         stdout: combined_output,

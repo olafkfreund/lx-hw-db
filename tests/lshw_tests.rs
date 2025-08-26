@@ -1,9 +1,9 @@
 //! Tests for lshw hardware detection
 
-use lx_hw_detect::detectors::lshw::{LshwDetector, LshwData, LshwComponent};
-use lx_hw_detect::detectors::{HardwareDetector, DetectionData};
-use std::process::{Output, ExitStatus};
+use lx_hw_detect::detectors::lshw::{LshwComponent, LshwData, LshwDetector};
+use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 use std::os::unix::process::ExitStatusExt;
+use std::process::{ExitStatus, Output};
 
 const SAMPLE_LSHW_JSON: &str = r#"[
 {
@@ -110,30 +110,30 @@ fn test_lshw_json_parsing_success() {
     match result.data {
         DetectionData::Lshw(data) => {
             assert!(!data.components.is_empty());
-            
+
             // Check system component
-            let system_components: Vec<_> = data.components.iter()
-                .filter(|c| c.class == "system")
-                .collect();
+            let system_components: Vec<_> =
+                data.components.iter().filter(|c| c.class == "system").collect();
             assert_eq!(system_components.len(), 1);
             assert_eq!(system_components[0].product.as_ref().unwrap(), "Test System");
             assert_eq!(system_components[0].vendor.as_ref().unwrap(), "Test Vendor");
-            
+
             // Check memory component
-            let memory_components: Vec<_> = data.components.iter()
-                .filter(|c| c.class == "memory")
-                .collect();
+            let memory_components: Vec<_> =
+                data.components.iter().filter(|c| c.class == "memory").collect();
             assert_eq!(memory_components.len(), 1);
             assert_eq!(memory_components[0].size.unwrap(), 17179869184);
-            
+
             // Check CPU component
-            let cpu_components: Vec<_> = data.components.iter()
-                .filter(|c| c.class == "processor")
-                .collect();
+            let cpu_components: Vec<_> =
+                data.components.iter().filter(|c| c.class == "processor").collect();
             assert_eq!(cpu_components.len(), 1);
-            assert_eq!(cpu_components[0].product.as_ref().unwrap(), "Intel(R) Core(TM) i7-8700K CPU @ 3.70GHz");
+            assert_eq!(
+                cpu_components[0].product.as_ref().unwrap(),
+                "Intel(R) Core(TM) i7-8700K CPU @ 3.70GHz"
+            );
             assert_eq!(cpu_components[0].vendor.as_ref().unwrap(), "Intel Corp.");
-        },
+        }
         _ => panic!("Expected LshwData"),
     }
 }
@@ -156,11 +156,7 @@ fn test_lshw_json_parsing_malformed() {
 #[test]
 fn test_lshw_empty_output() {
     let detector = LshwDetector::new();
-    let output = Output {
-        status: ExitStatus::from_raw(0),
-        stdout: Vec::new(),
-        stderr: Vec::new(),
-    };
+    let output = Output { status: ExitStatus::from_raw(0), stdout: Vec::new(), stderr: Vec::new() };
 
     let result = detector.parse_output(&output).unwrap();
     assert!(!result.success);

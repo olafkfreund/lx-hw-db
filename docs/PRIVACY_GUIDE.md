@@ -34,18 +34,21 @@ let anonymized_id = hmac_sha256(system_info, salt);
 ### Privacy Levels
 
 #### Basic Privacy (24-hour salt rotation)
+
 - **Salt Rotation**: Every 24 hours
 - **Use Case**: Most home users and general systems
 - **Anonymization Period**: Systems remain unlinked across 24-hour periods
 - **Trade-off**: Allows correlation within 24 hours for debugging/validation
 
 #### Enhanced Privacy (12-hour salt rotation) ⭐ **Recommended**
+
 - **Salt Rotation**: Every 12 hours  
 - **Use Case**: Work systems, privacy-conscious users
 - **Anonymization Period**: Systems remain unlinked across 12-hour periods
 - **Trade-off**: Balance between privacy and system identification
 
 #### Strict Privacy (1-hour salt rotation)
+
 - **Salt Rotation**: Every hour
 - **Use Case**: Highly sensitive environments, maximum privacy
 - **Anonymization Period**: Systems unlinked after 1 hour
@@ -54,6 +57,7 @@ let anonymized_id = hmac_sha256(system_info, salt);
 ## What Gets Anonymized
 
 ### System Identifiers
+
 ```json
 {
   "before_anonymization": {
@@ -68,6 +72,7 @@ let anonymized_id = hmac_sha256(system_info, salt);
 ```
 
 ### Network Hardware
+
 ```json
 {
   "before_anonymization": {
@@ -82,6 +87,7 @@ let anonymized_id = hmac_sha256(system_info, salt);
 ```
 
 ### Storage Devices
+
 ```json
 {
   "before_anonymization": {
@@ -98,17 +104,20 @@ let anonymized_id = hmac_sha256(system_info, salt);
 ## What Remains Public
 
 ### Hardware Information
+
 - **Vendor Names**: Intel, AMD, NVIDIA, etc.
 - **Product Models**: Specific CPU, GPU, and hardware models
 - **Driver Information**: Kernel modules and driver versions
 - **Specifications**: Memory sizes, frequencies, capabilities
 
 ### System Information
+
 - **Kernel Version**: Linux kernel version and architecture
 - **Distribution**: Linux distribution (without personal customizations)
 - **Hardware Topology**: How components are connected (PCIe lanes, USB ports)
 
 ### Example Public Data
+
 ```json
 {
   "cpu": {
@@ -178,6 +187,7 @@ The system scans for potential privacy leaks:
 ### After Report Generation
 
 1. **Manual Review**
+
    ```bash
    # Search for potential personal information
    grep -i "username\|email\|password" my-report.json
@@ -185,6 +195,7 @@ The system scans for potential privacy leaks:
    ```
 
 2. **Test Validation**
+
    ```bash
    # Ensure report passes all privacy checks
    ./target/release/lx-hw-detect validate my-report.json --verbose
@@ -216,32 +227,40 @@ The system scans for potential privacy leaks:
 ## Common Privacy Questions
 
 ### Q: Can my hardware reports be linked back to me?
+
 **A**: No. The cryptographic anonymization with rotating salts makes it computationally infeasible to reverse-engineer the original system identifiers.
 
 ### Q: What if I submit multiple reports from the same system?
+
 **A**: Reports from the same system within a salt rotation period will have the same anonymized ID, allowing correlation for duplicate detection. After the rotation period, new reports get different anonymous IDs.
 
 ### Q: Can I verify that my personal information was removed?
+
 **A**: Yes. You can inspect the generated JSON file before submission to verify no personal information is present.
 
 ### Q: What happens if personal information is accidentally included?
+
 **A**: Our automated systems scan for PII and will reject submissions containing it. If something is missed, you can request removal and we'll address it immediately.
 
 ### Q: Is it safe to submit reports from work systems?
+
 **A**: Use Enhanced or Strict privacy levels for work systems. The anonymization protects system identity, but ensure you have permission to share hardware compatibility information from your organization.
 
 ### Q: How do I know the privacy protection is working correctly?
+
 **A**: The entire codebase is open source and can be audited. You can examine the anonymization code, run tests, and verify the process yourself.
 
 ## Privacy Compliance
 
 ### GDPR Compliance (EU)
+
 - **Lawful Basis**: Legitimate interest in hardware compatibility research
 - **Data Minimization**: Only hardware compatibility data collected
 - **Anonymization**: Personal identifiers cryptographically anonymized
 - **Right to Erasure**: Users can request removal of contributions
 
 ### CCPA Compliance (California)
+
 - **Personal Information**: Only anonymized hardware data collected
 - **Opt-Out**: Users choose what to submit and can withdraw submissions
 - **Transparency**: Clear documentation of data practices
@@ -250,7 +269,7 @@ The system scans for potential privacy leaks:
 
 If you discover a potential privacy issue:
 
-1. **Security Issues**: Email security@lx-hw-db.example.com (encrypted communication preferred)
+1. **Security Issues**: Email <security@lx-hw-db.example.com> (encrypted communication preferred)
 2. **General Privacy**: Create a GitHub issue with the `privacy` label
 3. **Submission Concerns**: Comment on your submission PR or issue
 
@@ -280,18 +299,18 @@ fn anonymize_system_id(
         mac_addresses.join(":"),
         system_uuid
     );
-    
+
     // Generate time-based salt
     let salt = generate_salt_for_time(
         Utc::now(),
         privacy_level.rotation_period()
     );
-    
+
     // Create HMAC
     let mut mac = HmacSha256::new_from_slice(&salt)?;
     mac.update(system_info.as_bytes());
     let result = mac.finalize();
-    
+
     // Return first 12 characters as hex
     Ok(hex::encode(&result.into_bytes()[..6]))
 }
@@ -308,10 +327,10 @@ fn generate_salt_for_time(
     let period_start = current_time
         .duration_trunc(rotation_period)
         .unwrap();
-    
+
     // Create deterministic salt from period
     let salt_input = format!("lx-hw-db-salt-{}", period_start.timestamp());
-    
+
     // Hash to create actual salt
     let mut hasher = Sha256::new();
     hasher.update(salt_input.as_bytes());

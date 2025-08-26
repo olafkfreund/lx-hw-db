@@ -43,7 +43,7 @@ This structure enables powerful searching through static site generators while m
 
 ## Automated processing via GitHub Actions
 
-The submission workflow employs sophisticated GitHub Actions for validation and processing. When users submit hardware data through pull requests, automated workflows validate markdown syntax using markdownlint, verify required frontmatter fields, check for duplicate entries using fuzzy matching algorithms, and run hardware ID validation scripts. 
+The submission workflow employs sophisticated GitHub Actions for validation and processing. When users submit hardware data through pull requests, automated workflows validate markdown syntax using markdownlint, verify required frontmatter fields, check for duplicate entries using fuzzy matching algorithms, and run hardware ID validation scripts.
 
 Upon successful validation, the system automatically generates search indexes using tools like mddb, updates category and manufacturer indexes, builds static search interfaces using Hugo or Jekyll, and deploys to GitHub Pages for web access. The workflow includes automatic approval mechanisms for trusted contributors and uses the GitHub API for programmatic PR management.
 
@@ -67,7 +67,7 @@ Driver recommendations utilize DKMS integration for automatic module rebuilding 
 
 ## Community contribution workflows
 
-The contribution model follows proven open-source patterns with graduated trust levels. New contributors submit hardware profiles through guided templates, experienced contributors gain direct commit access to specific hardware categories, and core maintainers oversee architecture and policy decisions. 
+The contribution model follows proven open-source patterns with graduated trust levels. New contributors submit hardware profiles through guided templates, experienced contributors gain direct commit access to specific hardware categories, and core maintainers oversee architecture and policy decisions.
 
 Quality control employs automated validation for schema compliance and data consistency, peer review requiring two community approvals, expert validation from component-specific maintainers, and final approval from core maintainers. The system includes gamification elements such as contributor badges, category-specific leaderboards, and annual recognition for top contributors.
 

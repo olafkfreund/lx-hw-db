@@ -38,6 +38,7 @@ lx-hw-detect submit laptop-report.json --message "Dell XPS 13 on Ubuntu 22.04"
 ```
 
 **Example Output**:
+
 ```json
 {
   "system_info": {
@@ -83,6 +84,7 @@ lx-hw-detect detect --focus gaming --output gaming-build.json
 ```
 
 **Gaming Report Analysis**:
+
 ```bash
 # View gaming performance metrics
 lx-hw-detect analyze gaming-build.json --metrics performance
@@ -113,6 +115,7 @@ lx-hw-detect check --category power --feature management
 ```
 
 **Server Configuration Example**:
+
 ```toml
 # ~/.config/lx-hw-detect/server-profile.toml
 [detection]
@@ -251,13 +254,13 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install lx-hw-detect
       run: cargo install --path .
-    
+
     - name: Run hardware detection
       run: lx-hw-detect detect --output hardware-report.json
-      
+
     - name: Validate compatibility
       run: lx-hw-detect check --report hardware-report.json --strict
-      
+
     - name: Upload report
       uses: actions/upload-artifact@v3
       with:
@@ -353,11 +356,11 @@ Overall Status: EXCELLENT
 Graphics: Intel Iris Xe Graphics [WORKING]
   Driver: i915 (built-in)
   Features: Hardware acceleration, external displays
-  
+
 Wireless: Intel AX211 [WORKING]  
   Driver: iwlwifi
   Features: WiFi 6E, Bluetooth 5.2
-  
+
 Audio: Realtek ALC3254 [WORKING]
   Driver: snd_hda_intel
   Features: Stereo output, microphone input
@@ -425,10 +428,10 @@ lx-hw-detect check-permissions
 
 ## Support and Community
 
-- **GitHub Repository**: https://github.com/olafkfreund/lx-hw-db
-- **Issue Tracker**: https://github.com/olafkfreund/lx-hw-db/issues
-- **Discussions**: https://github.com/olafkfreund/lx-hw-db/discussions
-- **Database**: https://olafkfreund.github.io/lx-hw-db
+- **GitHub Repository**: <https://github.com/olafkfreund/lx-hw-db>
+- **Issue Tracker**: <https://github.com/olafkfreund/lx-hw-db/issues>
+- **Discussions**: <https://github.com/olafkfreund/lx-hw-db/discussions>
+- **Database**: <https://olafkfreund.github.io/lx-hw-db>
 
 ### Contributing Hardware Reports
 

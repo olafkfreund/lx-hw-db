@@ -36,8 +36,9 @@ Index Summary:
    Unique Systems: 1
 Index generation completed
 
-Database Statistics:
+Database Statistics
 ========================
+
 Total Reports: 1
 Unique Systems: 1
 Hardware Vendors: 0

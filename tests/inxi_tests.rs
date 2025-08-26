@@ -1,9 +1,9 @@
 //! Tests for inxi hardware detection
 
-use lx_hw_detect::detectors::inxi::{InxiDetector, InxiData, InxiSystem};
-use lx_hw_detect::detectors::{HardwareDetector, DetectionData};
-use std::process::{Output, ExitStatus};
+use lx_hw_detect::detectors::inxi::{InxiData, InxiDetector, InxiSystem};
+use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 use std::os::unix::process::ExitStatusExt;
+use std::process::{ExitStatus, Output};
 
 const SAMPLE_INXI_OUTPUT: &str = r#"System:
   Kernel 6.16.0 arch x86_64 bits 64
@@ -43,7 +43,7 @@ async fn test_inxi_availability_check() {
 #[test]
 fn test_inxi_parsing_success() {
     let detector = InxiDetector::new();
-    
+
     let output = Output {
         status: ExitStatus::from_raw(0),
         stdout: SAMPLE_INXI_OUTPUT.as_bytes().to_vec(),
@@ -67,41 +67,41 @@ fn test_inxi_parsing_success() {
             assert_eq!(system.bits, Some("64".to_string()));
             assert_eq!(system.desktop, Some("Hyprland".to_string()));
             assert_eq!(system.distro, Some("NixOS 25.11 (Xantusia)".to_string()));
-            
+
             // Check machine information
             assert!(data.machine.is_some());
             let machine = data.machine.as_ref().unwrap();
             assert_eq!(machine.machine_type, Some("Desktop".to_string()));
             assert_eq!(machine.system, Some("LENOVO".to_string()));
             assert_eq!(machine.product, Some("30E1S6620H".to_string()));
-            
+
             // Check CPU information
             assert!(data.cpu.is_some());
             let cpu = data.cpu.as_ref().unwrap();
             assert_eq!(cpu.info, Some("64-core".to_string()));
             assert_eq!(cpu.model, Some("AMD Ryzen Threadripper PRO 3995WX".to_string()));
             assert_eq!(cpu.bits, Some("64".to_string()));
-            
+
             // Check memory information from Info section
             assert!(data.memory.is_some());
             let memory = data.memory.as_ref().unwrap();
             assert_eq!(memory.total, Some("224 GiB".to_string()));
             assert_eq!(memory.available, Some("219.99 GiB".to_string()));
             assert_eq!(memory.used, Some("53.94 GiB".to_string()));
-            
+
             // Check bluetooth information
             assert!(data.bluetooth.is_some());
             let bluetooth = data.bluetooth.as_ref().unwrap();
             assert_eq!(bluetooth.device, Some("TP-Link Bluetooth USB Adapter".to_string()));
             assert_eq!(bluetooth.driver, Some("btusb".to_string()));
             assert_eq!(bluetooth.device_type, Some("USB".to_string()));
-            
+
             // Check summary
             assert!(data.summary.is_some());
             let summary = data.summary.as_ref().unwrap();
             assert!(summary.sections_parsed >= 5);
             assert!(summary.privileged_execution);
-        },
+        }
         _ => panic!("Expected InxiData"),
     }
 }
@@ -109,11 +109,7 @@ fn test_inxi_parsing_success() {
 #[test]
 fn test_inxi_empty_output() {
     let detector = InxiDetector::new();
-    let output = Output {
-        status: ExitStatus::from_raw(0),
-        stdout: Vec::new(),
-        stderr: Vec::new(),
-    };
+    let output = Output { status: ExitStatus::from_raw(0), stdout: Vec::new(), stderr: Vec::new() };
 
     let result = detector.parse_output(&output).unwrap();
     assert!(!result.success);
@@ -124,7 +120,7 @@ fn test_inxi_empty_output() {
 #[test]
 fn test_inxi_stderr_handling() {
     let detector = InxiDetector::new();
-    
+
     let stderr_message = "inxi: Some warning message\n";
     let output = Output {
         status: ExitStatus::from_raw(0),
@@ -183,24 +179,24 @@ async fn test_inxi_execution_timeout() {
 #[test]
 fn test_inxi_section_parsing() {
     let detector = InxiDetector::new();
-    
+
     // Test section detection and parsing
     let test_output = r#"System:
   Kernel 6.16.0 arch x86_64
 CPU:
   Info 64-core model AMD Threadripper
 "#;
-    
+
     let result = detector.parse_inxi_output(test_output).unwrap();
-    
+
     // Should have parsed system and CPU sections
     assert!(result.system.is_some());
     assert!(result.cpu.is_some());
-    
+
     let system = result.system.as_ref().unwrap();
     assert!(system.kernel.is_some());
     println!("System parsed: {:?}", system);
-    
+
     let cpu = result.cpu.as_ref().unwrap();
     assert!(cpu.info.is_some() || cpu.model.is_some()); // At least some CPU info should be parsed
     println!("CPU parsed: {:?}", cpu);

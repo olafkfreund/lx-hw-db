@@ -1,0 +1,149 @@
+# Pre-commit hooks for Linux Hardware Compatibility Database
+# Ensures code quality, formatting, and best practices
+
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+# Install with: pre-commit install
+# Run manually: pre-commit run --all-files
+# Update hooks: pre-commit autoupdate
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # Prevent giant files from being committed
+      - id: check-added-large-files
+        args: ['--maxkb=2000']
+      # Check for files that contain merge conflict strings
+      - id: check-merge-conflict
+      # Check for debugger imports and py37+ breakpoint()
+      - id: debug-statements
+      # Ensure files end with a newline
+      - id: end-of-file-fixer
+      # Trim trailing whitespace
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      # Check yaml files for parseable syntax
+      - id: check-yaml
+      # Check json files for parseable syntax
+      - id: check-json
+      # Check toml files for parseable syntax
+      - id: check-toml
+      # Check for private keys
+      - id: detect-private-key
+      # Fix utf-8 byte order marker
+      - id: fix-byte-order-marker
+      # Prevent committing to main branch
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
+        stages: [pre-commit]
+
+  # Rust formatting
+  - repo: local
+    hooks:
+      - id: rust-formatting
+        name: Rust formatting (rustfmt)
+        entry: rustfmt
+        language: system
+        types: [rust]
+        args: ['--edition', '2021']
+        pass_filenames: true
+
+  # Rust linting
+  - repo: local
+    hooks:
+      - id: rust-linting
+        name: Rust linting (clippy)
+        entry: cargo clippy
+        language: system
+        types: [rust]
+        args: ['--all-targets', '--all-features', '--', '-D', 'warnings']
+        pass_filenames: false
+        files: '\.rs$'
+
+  # Rust security audit (requires cargo-audit installation)
+  # - repo: local
+  #   hooks:
+  #     - id: cargo-audit
+  #       name: Rust security audit
+  #       entry: cargo audit
+  #       language: system
+  #       pass_filenames: false
+  #       types: [rust]
+
+  # Check Cargo.toml formatting
+  - repo: local
+    hooks:
+      - id: cargo-toml-format
+        name: Format Cargo.toml
+        entry: cargo fmt --manifest-path Cargo.toml
+        language: system
+        pass_filenames: false
+        files: '^Cargo\.toml$'
+
+  # Markdown formatting and linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix']
+
+  # Shell script analysis
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+
+  # YAML formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        types_or: [yaml, json]
+        args: ['--tab-width', '2']
+
+  # Git commit message linting
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert]
+
+  # Check for secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        exclude: |
+          (?x)^(
+            package.lock.json|
+            web/build-info.json
+          )$
+
+  # Spell checking
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        args: ['-L', 'crate,ser,de,ba,rouge']
+        exclude: |
+          (?x)^(
+            .*\.lock|
+            .*\.json|
+            target/.*
+          )$
+
+# Configuration for specific tools
+exclude: |
+  (?x)^(
+    target/.*|
+    .*\.lock|
+    web/js/.*\.js|
+    hardware-reports/.*|
+    indices/.*|
+    api/.*|
+    statistics/.*
+  )$

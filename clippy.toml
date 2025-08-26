@@ -1,3 +1,27 @@
 # Clippy linting configuration
-too-many-arguments-threshold = 6
-type-complexity-threshold = 200
+# https://rust-lang.github.io/rust-clippy/master/index.html
+
+# Maximum cognitive complexity allowed
+cognitive-complexity-threshold = 30
+
+# Maximum number of lines allowed in a single function
+too-many-lines-threshold = 100
+
+# Maximum number of arguments allowed in a single function
+too-many-arguments-threshold = 7
+
+# Maximum nesting level for blocks
+excessive-nesting-threshold = 5
+
+# Warn on TODOs
+allow-dbg-in-tests = false
+allow-expect-in-tests = false
+allow-unwrap-in-tests = false
+allow-print-in-tests = false
+
+# Documentation requirements
+missing-docs-in-crate-items = true
+
+# Avoid common mistakes
+avoid-breaking-exported-api = true
+msrv = "1.70.0"

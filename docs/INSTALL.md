@@ -13,7 +13,7 @@
 ### Database Indexer Tool
 
 - **Operating System**: Linux, macOS, Windows
-- **Architecture**: x86_64, ARM64 
+- **Architecture**: x86_64, ARM64
 - **Rust**: 1.70+ (required for building)
 - **Memory**: 2GB RAM minimum (for large datasets)
 - **Storage**: 1GB available space
@@ -147,6 +147,7 @@ source ~/.bashrc
 ### Config File Location
 
 The configuration file is automatically created at:
+
 - **Linux**: `~/.config/lx-hw-detect/config.toml`
 - **macOS**: `~/Library/Application Support/lx-hw-detect/config.toml`
 - **Windows**: `%APPDATA%\lx-hw-detect\config.toml`
@@ -247,9 +248,9 @@ cargo build --release
 
 ### Getting Help
 
-- **GitHub Issues**: https://github.com/olafkfreund/lx-hw-db/issues
-- **Documentation**: https://olafkfreund.github.io/lx-hw-db/docs
-- **Community**: https://github.com/olafkfreund/lx-hw-db/discussions
+- **GitHub Issues**: <https://github.com/olafkfreund/lx-hw-db/issues>
+- **Documentation**: <https://olafkfreund.github.io/lx-hw-db/docs>
+- **Community**: <https://github.com/olafkfreund/lx-hw-db/discussions>
 
 ## Uninstallation
 

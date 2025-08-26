@@ -1,37 +1,39 @@
 //! Integration test for inxi with real system execution
 
 use lx_hw_detect::detectors::inxi::InxiDetector;
-use lx_hw_detect::detectors::{HardwareDetector, DetectionData};
+use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 
 #[tokio::test]
 async fn test_inxi_real_execution() {
     env_logger::try_init().ok(); // Initialize logging for debugging
-    
+
     let detector = InxiDetector::new();
-    
+
     // Check if inxi is available
     if !detector.is_available().await {
         eprintln!("inxi not available on this system, skipping real execution test");
         return;
     }
-    
+
     // Execute inxi
     match detector.execute().await {
         Ok(output) => {
             println!("inxi execution succeeded");
-            
+
             // Parse the output
             match detector.parse_output(&output) {
                 Ok(result) => {
-                    println!("Detection result: tool={}, success={}, errors={:?}", 
-                           result.tool_name, result.success, result.errors);
-                    
+                    println!(
+                        "Detection result: tool={}, success={}, errors={:?}",
+                        result.tool_name, result.success, result.errors
+                    );
+
                     match result.data {
                         DetectionData::Inxi(data) => {
                             if let Some(summary) = &data.summary {
                                 println!("Sections parsed: {}", summary.sections_parsed);
                                 println!("Privileged execution: {}", summary.privileged_execution);
-                                
+
                                 if !summary.warnings.is_empty() {
                                     println!("Warnings:");
                                     for warning in &summary.warnings {
@@ -39,7 +41,7 @@ async fn test_inxi_real_execution() {
                                     }
                                 }
                             }
-                            
+
                             // Show system information
                             if let Some(system) = &data.system {
                                 println!("\nSystem Information:");
@@ -62,7 +64,7 @@ async fn test_inxi_real_execution() {
                                     println!("  Distribution: {}", distro);
                                 }
                             }
-                            
+
                             // Show machine information
                             if let Some(machine) = &data.machine {
                                 println!("\nMachine Information:");
@@ -76,7 +78,7 @@ async fn test_inxi_real_execution() {
                                     println!("  Product: {}", product);
                                 }
                             }
-                            
+
                             // Show CPU information
                             if let Some(cpu) = &data.cpu {
                                 println!("\nCPU Information:");
@@ -93,7 +95,7 @@ async fn test_inxi_real_execution() {
                                     println!("  Cache: {}", cache);
                                 }
                             }
-                            
+
                             // Show memory information
                             if let Some(memory) = &data.memory {
                                 println!("\nMemory Information:");
@@ -107,7 +109,7 @@ async fn test_inxi_real_execution() {
                                     println!("  Used: {}", used);
                                 }
                             }
-                            
+
                             // Show bluetooth information
                             if let Some(bluetooth) = &data.bluetooth {
                                 println!("\nBluetooth Information:");

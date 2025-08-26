@@ -50,13 +50,16 @@ lx-hw-db/
 ### Sprint 1: Index Generation System
 
 #### 1.1 Directory Structure Setup
+
 ```bash
 # Create the index and API directory structure
 mkdir -p indices api/v1/{search,stats,recommendations} web/{browse,stats,api-docs}
 ```
 
 #### 1.2 Rust Index Builder
+
 **File: `src/indexer/mod.rs`**
+
 ```rust
 pub struct HardwareIndexer {
     pub reports: Vec<HardwareReport>,
@@ -72,7 +75,9 @@ impl HardwareIndexer {
 ```
 
 #### 1.3 GitHub Actions Integration
+
 **File: `.github/workflows/build-indices.yml`**
+
 ```yaml
 name: Build Hardware Compatibility Indices
 
@@ -103,7 +108,9 @@ jobs:
 ### Sprint 2: Client-Side Search Engine
 
 #### 2.1 JavaScript Search Library
+
 **File: `web/js/hardware-search.js`**
+
 ```javascript
 class HardwareSearch {
     constructor() {
@@ -134,6 +141,7 @@ class HardwareSearch {
 ```
 
 #### 2.2 Web Interface Components
+
 - **Search page** with real-time filtering
 - **Browse pages** for each hardware category
 - **Statistics dashboard** with charts
@@ -142,7 +150,9 @@ class HardwareSearch {
 ### Sprint 3: Static Site Generation
 
 #### 3.1 Site Generator
+
 **File: `src/site_generator/mod.rs`**
+
 ```rust
 pub struct SiteGenerator {
     indices: IndexCollection,
@@ -158,6 +168,7 @@ impl SiteGenerator {
 ```
 
 #### 3.2 Template System
+
 - **Handlebars templates** for consistent styling
 - **Responsive design** for mobile compatibility
 - **Accessibility features** (WCAG 2.1 AA)
@@ -166,6 +177,7 @@ impl SiteGenerator {
 ### Sprint 4: API Endpoints (Static JSON)
 
 #### 4.1 Static API Structure
+
 ```
 api/v1/
 ├── search/
@@ -184,6 +196,7 @@ api/v1/
 ```
 
 #### 4.2 API Response Format
+
 ```json
 {
   "version": "1.0",
@@ -220,6 +233,7 @@ api/v1/
 ## Index File Formats
 
 ### Vendor Index (`indices/by-vendor.json`)
+
 ```json
 {
   "AMD": {
@@ -237,6 +251,7 @@ api/v1/
 ```
 
 ### Compatibility Matrix (`indices/compatibility-matrix.json`)
+
 ```json
 {
   "GPU": {
@@ -259,6 +274,7 @@ api/v1/
 ```
 
 ### Search Terms Index (`indices/search-terms.json`)
+
 ```json
 {
   "rtx": ["nvidia_rtx_4080", "nvidia_rtx_4090", "nvidia_rtx_3080"],
@@ -271,6 +287,7 @@ api/v1/
 ## GitHub Actions Workflows
 
 ### Index Builder Workflow
+
 ```yaml
 name: Build Indices
 on:
@@ -285,13 +302,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        
+
       - name: Build indexer
         run: cargo build --release --bin lx-hw-indexer
-        
+
       - name: Generate indices
         run: |
           ./target/release/lx-hw-indexer \
@@ -299,19 +316,19 @@ jobs:
             --output indices \
             --api-output api \
             --stats-output statistics
-            
+
       - name: Generate website
         run: |
           ./target/release/lx-hw-indexer generate-site \
             --output web \
             --template-dir templates
-            
+
       - name: Validate indices
         run: |
           ./target/release/lx-hw-indexer validate \
             --indices indices \
             --reports hardware-reports
-            
+
       - name: Commit generated files
         run: |
           git config user.name "GitHub Actions"
@@ -322,6 +339,7 @@ jobs:
 ```
 
 ### GitHub Pages Deployment
+
 ```yaml
 name: Deploy GitHub Pages
 on:
@@ -350,24 +368,28 @@ jobs:
 ## Benefits of GitHub-Native Approach
 
 ### 🚀 **Performance**
+
 - **Global CDN**: GitHub Pages serves content from edge locations worldwide
 - **Client-side search**: No server round-trips, instant search results
 - **Pre-computed indices**: Search queries execute in milliseconds
 - **Caching**: Browser caches indices for offline search capability
 
 ### 📊 **Transparency**
+
 - **Open data**: All hardware compatibility data visible in repository
 - **Version history**: Complete audit trail of all changes
 - **Community review**: Index generation code is open source and reviewable
 - **Direct access**: Raw data accessible via GitHub's file API
 
 ### 🔧 **Maintenance**
+
 - **Zero infrastructure costs**: No servers to maintain or pay for
 - **Automatic scaling**: GitHub handles traffic spikes automatically
 - **Self-healing**: Indices rebuild automatically on every data change
 - **Backup included**: Git provides built-in backup and disaster recovery
 
 ### 🌍 **Community**
+
 - **Accessible**: Anyone can fork, improve, or analyze the data
 - **Collaborative**: Index improvements submitted via pull requests
 - **Distributed**: No single point of failure or control
@@ -385,18 +407,21 @@ jobs:
 ## Success Metrics
 
 ### Technical Performance
+
 - **Index generation**: < 2 minutes for 10K+ reports
 - **Search performance**: < 50ms for complex queries
 - **Site load time**: < 2 seconds on 3G connection
 - **Index size**: < 10MB total for client-side download
 
 ### User Experience
+
 - **Search accuracy**: 95%+ relevant results
 - **Mobile usability**: Full functionality on mobile devices
 - **Accessibility**: WCAG 2.1 AA compliance
 - **Offline capability**: Basic search works offline after initial load
 
 ### Community Value
+
 - **Data accessibility**: 100% of data accessible via GitHub
 - **API usage**: Clean, documented JSON API endpoints
 - **Fork-ability**: Complete system replicable via git clone

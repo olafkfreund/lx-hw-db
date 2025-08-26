@@ -3,7 +3,7 @@
 use crate::hardware::HardwareReport;
 use crate::validation::ValidationError;
 use serde_json::Value;
-use std::sync::LazyLock;
+use std::sync::OnceLock;
 
 /// Hardware report JSON schema definition
 const HARDWARE_REPORT_SCHEMA: &str = r#"
@@ -445,11 +445,11 @@ const HARDWARE_REPORT_SCHEMA: &str = r#"
         }
       },
       "required": [
-        "kernel_version", 
-        "total_devices_detected", 
-        "supported_devices", 
-        "unsupported_devices", 
-        "experimental_devices", 
+        "kernel_version",
+        "total_devices_detected",
+        "supported_devices",
+        "unsupported_devices",
+        "experimental_devices",
         "device_support_details",
         "missing_modules",
         "config_recommendations"
@@ -460,54 +460,59 @@ const HARDWARE_REPORT_SCHEMA: &str = r#"
 "#;
 
 /// Cached parsed schema for performance
-static PARSED_SCHEMA: LazyLock<Value> = LazyLock::new(|| {
-    serde_json::from_str(HARDWARE_REPORT_SCHEMA)
-        .expect("Hardware report schema should be valid JSON")
-});
+static PARSED_SCHEMA: OnceLock<Value> = OnceLock::new();
+
+/// Get the parsed schema, initializing it if necessary
+fn get_schema() -> &'static Value {
+    PARSED_SCHEMA.get_or_init(|| {
+        serde_json::from_str(HARDWARE_REPORT_SCHEMA)
+            .expect("Hardware report schema should be valid JSON")
+    })
+}
 
 /// Validate a hardware report against the JSON schema
 pub fn validate_report_schema(report: &HardwareReport) -> Result<(), ValidationError> {
     // Convert report to JSON for schema validation
-    let report_json = serde_json::to_value(report)
-        .map_err(|e| ValidationError::SchemaError {
-            message: format!("Failed to serialize report for validation: {}", e),
-        })?;
-    
+    let report_json = serde_json::to_value(report).map_err(|e| ValidationError::SchemaError {
+        message: format!("Failed to serialize report for validation: {}", e),
+    })?;
+
     // Use cached parsed schema
-    let schema = &*PARSED_SCHEMA;
-    
+    let schema = get_schema();
+
     // Basic validation - check required fields
     validate_required_fields(&report_json, schema)?;
-    
+
     // Validate field constraints
     validate_field_constraints(&report_json, schema)?;
-    
+
     Ok(())
 }
 
-/// Validate required fields are present  
+/// Validate required fields are present
 fn validate_required_fields(data: &Value, _schema: &Value) -> Result<(), ValidationError> {
     // Simplified validation - just check that top-level required fields exist
     let data_obj = data.as_object().ok_or_else(|| ValidationError::SchemaError {
         message: "Root must be an object".to_string(),
     })?;
-    
+
     // Check for essential top-level fields
     if !data_obj.contains_key("metadata") {
         return Err(ValidationError::SchemaError {
             message: "Required field 'metadata' is missing".to_string(),
         });
     }
-    
+
     if !data_obj.contains_key("system") {
         return Err(ValidationError::SchemaError {
             message: "Required field 'system' is missing".to_string(),
         });
     }
-    
+
     // Check metadata fields
     if let Some(metadata) = data_obj.get("metadata").and_then(|m| m.as_object()) {
-        let metadata_required = ["version", "generated_at", "privacy_level", "tools_used", "anonymized_system_id"];
+        let metadata_required =
+            ["version", "generated_at", "privacy_level", "tools_used", "anonymized_system_id"];
         for field in &metadata_required {
             if !metadata.contains_key(*field) {
                 return Err(ValidationError::SchemaError {
@@ -516,7 +521,7 @@ fn validate_required_fields(data: &Value, _schema: &Value) -> Result<(), Validat
             }
         }
     }
-    
+
     // Check system fields
     if let Some(system) = data_obj.get("system").and_then(|s| s.as_object()) {
         let system_required = ["anonymized_hostname", "kernel_version", "architecture"];
@@ -528,7 +533,7 @@ fn validate_required_fields(data: &Value, _schema: &Value) -> Result<(), Validat
             }
         }
     }
-    
+
     Ok(())
 }
 
@@ -543,7 +548,7 @@ fn validate_field_constraints(data: &Value, _schema: &Value) -> Result<(), Valid
                 });
             }
         }
-        
+
         if let Some(tools_used) = metadata.get("tools_used").and_then(|t| t.as_array()) {
             if tools_used.is_empty() {
                 return Err(ValidationError::SchemaError {
@@ -552,20 +557,23 @@ fn validate_field_constraints(data: &Value, _schema: &Value) -> Result<(), Valid
             }
         }
     }
-    
+
     // Validate system information
     if let Some(system) = data.get("system") {
         if let Some(arch) = system.get("architecture").and_then(|a| a.as_str()) {
             let valid_archs = ["x86_64", "aarch64", "armv7l", "i686", "riscv64"];
             if !valid_archs.contains(&arch) {
                 return Err(ValidationError::SchemaError {
-                    message: format!("Invalid architecture '{}'. Must be one of: {}", 
-                                   arch, valid_archs.join(", ")),
+                    message: format!(
+                        "Invalid architecture '{}'. Must be one of: {}",
+                        arch,
+                        valid_archs.join(", ")
+                    ),
                 });
             }
         }
     }
-    
+
     // Validate CPU constraints
     if let Some(cpu) = data.get("cpu") {
         if !cpu.is_null() {
@@ -576,7 +584,7 @@ fn validate_field_constraints(data: &Value, _schema: &Value) -> Result<(), Valid
                     });
                 }
             }
-            
+
             if let Some(threads) = cpu.get("threads").and_then(|t| t.as_u64()) {
                 if threads == 0 || threads > 512 {
                     return Err(ValidationError::SchemaError {
@@ -586,7 +594,7 @@ fn validate_field_constraints(data: &Value, _schema: &Value) -> Result<(), Valid
             }
         }
     }
-    
+
     // Validate memory constraints
     if let Some(memory) = data.get("memory") {
         if !memory.is_null() {
@@ -595,23 +603,26 @@ fn validate_field_constraints(data: &Value, _schema: &Value) -> Result<(), Valid
                 let max_memory = 17_592_186_044_416; // 16TB
                 if total_bytes < min_memory || total_bytes > max_memory {
                     return Err(ValidationError::SchemaError {
-                        message: format!("Total memory must be between {}MB and {}TB", 
-                                       min_memory / 1048576, max_memory / 1099511627776),
+                        message: format!(
+                            "Total memory must be between {}MB and {}TB",
+                            min_memory / 1048576,
+                            max_memory / 1099511627776
+                        ),
                     });
                 }
             }
         }
     }
-    
+
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::hardware::{ReportMetadata, SystemInfo, PrivacyLevel};
+    use crate::hardware::{PrivacyLevel, ReportMetadata, SystemInfo};
     use chrono::Utc;
-    
+
     fn create_test_report() -> HardwareReport {
         HardwareReport {
             metadata: ReportMetadata {
@@ -638,43 +649,43 @@ mod tests {
             kernel_support: None,
         }
     }
-    
+
     #[test]
     fn test_valid_report_schema() {
         let report = create_test_report();
         assert!(validate_report_schema(&report).is_ok());
     }
-    
+
     #[test]
     fn test_invalid_architecture() {
         let mut report = create_test_report();
         report.system.architecture = "invalid_arch".to_string();
-        
+
         let result = validate_report_schema(&report);
         assert!(result.is_err());
-        
+
         if let Err(ValidationError::SchemaError { message }) = result {
             assert!(message.contains("Invalid architecture"));
         }
     }
-    
+
     #[test]
     fn test_invalid_version_format() {
         let mut report = create_test_report();
         report.metadata.version = "1.0".to_string(); // Missing patch version
-        
+
         let result = validate_report_schema(&report);
         assert!(result.is_err());
     }
-    
+
     #[test]
     fn test_empty_tools_used() {
         let mut report = create_test_report();
         report.metadata.tools_used = Vec::new();
-        
+
         let result = validate_report_schema(&report);
         assert!(result.is_err());
-        
+
         if let Err(ValidationError::SchemaError { message }) = result {
             assert!(message.contains("At least one detection tool"));
         }

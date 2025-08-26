@@ -3,7 +3,7 @@ name: Validate Hardware Reports
 on:
   pull_request:
     paths:
-      - 'hardware-reports/**/*.json'
+      - "hardware-reports/**/*.json"
     types: [opened, synchronize, reopened]
 
 env:
@@ -14,304 +14,304 @@ jobs:
   validate-reports:
     name: Validate Hardware Report Submissions
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Install Rust toolchain
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        components: clippy, rustfmt
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
 
-    - name: Cache Cargo dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-    - name: Build lx-hw-detect
-      run: cargo build --release --bin lx-hw-detect
+      - name: Build lx-hw-detect
+        run: cargo build --release --bin lx-hw-detect
 
-    - name: Get changed files
-      id: changed-files
-      uses: tj-actions/changed-files@v44
-      with:
-        files: hardware-reports/**/*.json
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: hardware-reports/**/*.json
 
-    - name: Validate changed report files
-      if: steps.changed-files.outputs.any_changed == 'true'
-      run: |
-        echo "Validating hardware reports..."
-        echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
-        
-        VALIDATION_FAILED=false
-        
-        for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-          echo "=================================================="
-          echo "Validating: $file"
-          echo "=================================================="
-          
-          # Check if file exists (might be deleted)
-          if [[ ! -f "$file" ]]; then
-            echo "ℹ️  File $file was deleted - skipping validation"
-            continue
-          fi
-          
-          # Validate file naming convention
-          filename=$(basename "$file")
-          if [[ ! $filename =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]+\.[0-9]+(\.[0-9]+)?_[a-zA-Z0-9_]+_[a-zA-Z0-9]{12}\.json$ ]]; then
-            echo "❌ ERROR: File naming convention violation: $filename"
-            echo "Expected format: YYYY-MM-DD_KERNEL-VERSION_ARCH_SYSTEM-ID.json"
-            echo "Example: 2025-08-26_6.16.0_x86_64_abc123def456.json"
-            VALIDATION_FAILED=true
-            continue
-          fi
-          
-          # Check directory structure
-          expected_year=$(echo "$filename" | cut -d'-' -f1)
-          expected_month=$(echo "$filename" | cut -d'-' -f2)
-          expected_path="hardware-reports/$expected_year/$expected_month/$filename"
-          
-          if [[ "$file" != "$expected_path" ]]; then
-            echo "❌ ERROR: File in wrong directory: $file"
-            echo "Expected path: $expected_path"
-            VALIDATION_FAILED=true
-            continue
-          fi
-          
-          # Check file size
-          file_size=$(wc -c < "$file")
-          max_size=$((2 * 1024 * 1024))  # 2MB
-          
-          if [[ $file_size -gt $max_size ]]; then
-            echo "❌ ERROR: File too large: $file ($file_size bytes > $max_size bytes)"
-            VALIDATION_FAILED=true
-            continue
-          fi
-          
-          # Validate JSON format
-          if ! jq empty "$file" 2>/dev/null; then
-            echo "❌ ERROR: Invalid JSON format: $file"
-            VALIDATION_FAILED=true
-            continue
-          fi
-          
-          # Run lx-hw-detect validation
-          echo "Running lx-hw-detect validation..."
-          if ./target/release/lx-hw-detect validate "$file" --strict --quiet; then
-            echo "✅ SUCCESS: $file passed all validation checks"
-          else
-            echo "❌ ERROR: $file failed lx-hw-detect validation"
-            echo "Running verbose validation for details..."
-            ./target/release/lx-hw-detect validate "$file" --strict --verbose || true
-            VALIDATION_FAILED=true
-          fi
-          
-          echo ""
-        done
-        
-        if [[ $VALIDATION_FAILED == true ]]; then
-          echo "❌ One or more hardware reports failed validation"
-          exit 1
-        else
-          echo "✅ All hardware reports passed validation"
-        fi
+      - name: Validate changed report files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Validating hardware reports..."
+          echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
 
-    - name: Check for duplicates
-      if: steps.changed-files.outputs.any_changed == 'true'
-      run: |
-        echo "Checking for duplicate submissions..."
-        
-        DUPLICATES_FOUND=false
-        
-        for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-          if [[ ! -f "$file" ]]; then
-            continue
-          fi
-          
-          # Extract system ID from the report
-          system_id=$(jq -r '.metadata.anonymized_system_id // empty' "$file" 2>/dev/null)
-          
-          if [[ -z "$system_id" ]]; then
-            echo "⚠️  Warning: Could not extract system ID from $file"
-            continue
-          fi
-          
-          echo "Checking for duplicates of system ID: $system_id"
-          
-          # Search for existing reports with the same system ID
-          existing_files=$(find hardware-reports -name "*.json" -type f | grep -v "$file" | head -100)
-          
-          for existing_file in $existing_files; do
-            if [[ ! -f "$existing_file" ]]; then
+          VALIDATION_FAILED=false
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "=================================================="
+            echo "Validating: $file"
+            echo "=================================================="
+
+            # Check if file exists (might be deleted)
+            if [[ ! -f "$file" ]]; then
+              echo "ℹ️  File $file was deleted - skipping validation"
               continue
             fi
-            
-            existing_system_id=$(jq -r '.metadata.anonymized_system_id // empty' "$existing_file" 2>/dev/null)
-            
-            if [[ "$system_id" == "$existing_system_id" ]]; then
-              echo "❌ ERROR: Duplicate system ID found!"
-              echo "New file: $file"
-              echo "Existing file: $existing_file"
-              echo "System ID: $system_id"
-              echo ""
-              echo "This appears to be a duplicate submission from the same system."
-              echo "If this is an updated report, please:"
-              echo "1. Remove or update the existing report"
-              echo "2. Explain the changes in your PR description"
-              echo "3. Update the timestamp in the filename"
-              DUPLICATES_FOUND=true
+
+            # Validate file naming convention
+            filename=$(basename "$file")
+            if [[ ! $filename =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]+\.[0-9]+(\.[0-9]+)?_[a-zA-Z0-9_]+_[a-zA-Z0-9]{12}\.json$ ]]; then
+              echo "❌ ERROR: File naming convention violation: $filename"
+              echo "Expected format: YYYY-MM-DD_KERNEL-VERSION_ARCH_SYSTEM-ID.json"
+              echo "Example: 2025-08-26_6.16.0_x86_64_abc123def456.json"
+              VALIDATION_FAILED=true
+              continue
+            fi
+
+            # Check directory structure
+            expected_year=$(echo "$filename" | cut -d'-' -f1)
+            expected_month=$(echo "$filename" | cut -d'-' -f2)
+            expected_path="hardware-reports/$expected_year/$expected_month/$filename"
+
+            if [[ "$file" != "$expected_path" ]]; then
+              echo "❌ ERROR: File in wrong directory: $file"
+              echo "Expected path: $expected_path"
+              VALIDATION_FAILED=true
+              continue
+            fi
+
+            # Check file size
+            file_size=$(wc -c < "$file")
+            max_size=$((2 * 1024 * 1024))  # 2MB
+
+            if [[ $file_size -gt $max_size ]]; then
+              echo "❌ ERROR: File too large: $file ($file_size bytes > $max_size bytes)"
+              VALIDATION_FAILED=true
+              continue
+            fi
+
+            # Validate JSON format
+            if ! jq empty "$file" 2>/dev/null; then
+              echo "❌ ERROR: Invalid JSON format: $file"
+              VALIDATION_FAILED=true
+              continue
+            fi
+
+            # Run lx-hw-detect validation
+            echo "Running lx-hw-detect validation..."
+            if ./target/release/lx-hw-detect validate "$file" --strict --quiet; then
+              echo "✅ SUCCESS: $file passed all validation checks"
+            else
+              echo "❌ ERROR: $file failed lx-hw-detect validation"
+              echo "Running verbose validation for details..."
+              ./target/release/lx-hw-detect validate "$file" --strict --verbose || true
+              VALIDATION_FAILED=true
+            fi
+
+            echo ""
+          done
+
+          if [[ $VALIDATION_FAILED == true ]]; then
+            echo "❌ One or more hardware reports failed validation"
+            exit 1
+          else
+            echo "✅ All hardware reports passed validation"
+          fi
+
+      - name: Check for duplicates
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Checking for duplicate submissions..."
+
+          DUPLICATES_FOUND=false
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ ! -f "$file" ]]; then
+              continue
+            fi
+
+            # Extract system ID from the report
+            system_id=$(jq -r '.metadata.anonymized_system_id // empty' "$file" 2>/dev/null)
+
+            if [[ -z "$system_id" ]]; then
+              echo "⚠️  Warning: Could not extract system ID from $file"
+              continue
+            fi
+
+            echo "Checking for duplicates of system ID: $system_id"
+
+            # Search for existing reports with the same system ID
+            existing_files=$(find hardware-reports -name "*.json" -type f | grep -v "$file" | head -100)
+
+            for existing_file in $existing_files; do
+              if [[ ! -f "$existing_file" ]]; then
+                continue
+              fi
+
+              existing_system_id=$(jq -r '.metadata.anonymized_system_id // empty' "$existing_file" 2>/dev/null)
+
+              if [[ "$system_id" == "$existing_system_id" ]]; then
+                echo "❌ ERROR: Duplicate system ID found!"
+                echo "New file: $file"
+                echo "Existing file: $existing_file"
+                echo "System ID: $system_id"
+                echo ""
+                echo "This appears to be a duplicate submission from the same system."
+                echo "If this is an updated report, please:"
+                echo "1. Remove or update the existing report"
+                echo "2. Explain the changes in your PR description"
+                echo "3. Update the timestamp in the filename"
+                DUPLICATES_FOUND=true
+              fi
+            done
+          done
+
+          if [[ $DUPLICATES_FOUND == true ]]; then
+            echo "❌ Duplicate submissions detected"
+            exit 1
+          else
+            echo "✅ No duplicates found"
+          fi
+
+      - name: Generate validation summary
+        if: always() && steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "## Hardware Report Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          file_count=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | wc -w)
+          echo "**Files validated:** $file_count" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ -f "$file" ]]; then
+              echo "### 📄 $file" >> $GITHUB_STEP_SUMMARY
+
+              # Extract basic info from the report
+              kernel=$(jq -r '.system.kernel_version // "unknown"' "$file" 2>/dev/null)
+              distro=$(jq -r '.system.distribution // "unknown"' "$file" 2>/dev/null)
+              arch=$(jq -r '.system.architecture // "unknown"' "$file" 2>/dev/null)
+              privacy=$(jq -r '.metadata.privacy_level // "unknown"' "$file" 2>/dev/null)
+
+              echo "- **Kernel:** $kernel" >> $GITHUB_STEP_SUMMARY
+              echo "- **Distribution:** $distro" >> $GITHUB_STEP_SUMMARY
+              echo "- **Architecture:** $arch" >> $GITHUB_STEP_SUMMARY
+              echo "- **Privacy Level:** $privacy" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
             fi
           done
-        done
-        
-        if [[ $DUPLICATES_FOUND == true ]]; then
-          echo "❌ Duplicate submissions detected"
-          exit 1
-        else
-          echo "✅ No duplicates found"
-        fi
-
-    - name: Generate validation summary
-      if: always() && steps.changed-files.outputs.any_changed == 'true'
-      run: |
-        echo "## Hardware Report Validation Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        
-        file_count=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | wc -w)
-        echo "**Files validated:** $file_count" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        
-        for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-          if [[ -f "$file" ]]; then
-            echo "### 📄 $file" >> $GITHUB_STEP_SUMMARY
-            
-            # Extract basic info from the report
-            kernel=$(jq -r '.system.kernel_version // "unknown"' "$file" 2>/dev/null)
-            distro=$(jq -r '.system.distribution // "unknown"' "$file" 2>/dev/null)  
-            arch=$(jq -r '.system.architecture // "unknown"' "$file" 2>/dev/null)
-            privacy=$(jq -r '.metadata.privacy_level // "unknown"' "$file" 2>/dev/null)
-            
-            echo "- **Kernel:** $kernel" >> $GITHUB_STEP_SUMMARY
-            echo "- **Distribution:** $distro" >> $GITHUB_STEP_SUMMARY
-            echo "- **Architecture:** $arch" >> $GITHUB_STEP_SUMMARY
-            echo "- **Privacy Level:** $privacy" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-        done
 
   security-scan:
     name: Security and Privacy Scan
     runs-on: ubuntu-latest
     needs: validate-reports
     if: always()
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Get changed files
-      id: changed-files
-      uses: tj-actions/changed-files@v44
-      with:
-        files: hardware-reports/**/*.json
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: hardware-reports/**/*.json
 
-    - name: Scan for potential PII leaks
-      if: steps.changed-files.outputs.any_changed == 'true'
-      run: |
-        echo "Scanning for potential personally identifiable information..."
-        
-        SECURITY_ISSUES=false
-        
-        # Common PII patterns
-        EMAIL_PATTERN="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-        IP_PATTERN="[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
-        MAC_PATTERN="([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}"
-        
-        for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-          if [[ ! -f "$file" ]]; then
-            continue
-          fi
-          
-          echo "Scanning: $file"
-          
-          # Check for email addresses
-          if grep -qE "$EMAIL_PATTERN" "$file"; then
-            echo "⚠️  Warning: Potential email address found in $file"
-            grep -nE "$EMAIL_PATTERN" "$file" || true
-            SECURITY_ISSUES=true
-          fi
-          
-          # Check for IP addresses (but allow common ranges)
-          if grep -qE "$IP_PATTERN" "$file"; then
-            # Filter out common non-PII IP patterns
-            if grep -E "$IP_PATTERN" "$file" | grep -vE "127\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|0\.0\.0\.0|255\.255\.255\.255"; then
-              echo "⚠️  Warning: Potential public IP address found in $file"
-              grep -nE "$IP_PATTERN" "$file" | grep -vE "127\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\." || true
+      - name: Scan for potential PII leaks
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Scanning for potential personally identifiable information..."
+
+          SECURITY_ISSUES=false
+
+          # Common PII patterns
+          EMAIL_PATTERN="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+          IP_PATTERN="[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
+          MAC_PATTERN="([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}"
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ ! -f "$file" ]]; then
+              continue
             fi
-          fi
-          
-          # Check for obvious hostnames or usernames
-          if grep -qi "username\|hostname\|user.*name\|host.*name" "$file"; then
-            echo "⚠️  Warning: Potential username/hostname field found in $file"
-            grep -ni "username\|hostname\|user.*name\|host.*name" "$file" || true
-          fi
-          
-          # Check for serial numbers that look too real
-          if grep -qE '"[0-9a-zA-Z]{8,20}"' "$file"; then
-            # This is a basic check - the validation system should catch most cases
-            echo "ℹ️  Note: Long alphanumeric strings found - ensure they are properly anonymized"
-          fi
-        done
-        
-        if [[ $SECURITY_ISSUES == true ]]; then
-          echo ""
-          echo "❌ Potential security/privacy issues detected!"
-          echo "Please review the files and ensure all personally identifiable information is properly anonymized."
-          echo ""
-          echo "Common PII that should be anonymized:"
-          echo "- Email addresses"
-          echo "- IP addresses (except private ranges)"
-          echo "- Serial numbers"
-          echo "- MAC addresses"
-          echo "- Hostnames"
-          echo "- Usernames"
-          exit 1
-        else
-          echo "✅ No obvious PII detected"
-        fi
 
-    - name: Check file permissions and attributes
-      if: steps.changed-files.outputs.any_changed == 'true'
-      run: |
-        echo "Checking file permissions and attributes..."
-        
-        for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-          if [[ ! -f "$file" ]]; then
-            continue
+            echo "Scanning: $file"
+
+            # Check for email addresses
+            if grep -qE "$EMAIL_PATTERN" "$file"; then
+              echo "⚠️  Warning: Potential email address found in $file"
+              grep -nE "$EMAIL_PATTERN" "$file" || true
+              SECURITY_ISSUES=true
+            fi
+
+            # Check for IP addresses (but allow common ranges)
+            if grep -qE "$IP_PATTERN" "$file"; then
+              # Filter out common non-PII IP patterns
+              if grep -E "$IP_PATTERN" "$file" | grep -vE "127\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|0\.0\.0\.0|255\.255\.255\.255"; then
+                echo "⚠️  Warning: Potential public IP address found in $file"
+                grep -nE "$IP_PATTERN" "$file" | grep -vE "127\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\." || true
+              fi
+            fi
+
+            # Check for obvious hostnames or usernames
+            if grep -qi "username\|hostname\|user.*name\|host.*name" "$file"; then
+              echo "⚠️  Warning: Potential username/hostname field found in $file"
+              grep -ni "username\|hostname\|user.*name\|host.*name" "$file" || true
+            fi
+
+            # Check for serial numbers that look too real
+            if grep -qE '"[0-9a-zA-Z]{8,20}"' "$file"; then
+              # This is a basic check - the validation system should catch most cases
+              echo "ℹ️  Note: Long alphanumeric strings found - ensure they are properly anonymized"
+            fi
+          done
+
+          if [[ $SECURITY_ISSUES == true ]]; then
+            echo ""
+            echo "❌ Potential security/privacy issues detected!"
+            echo "Please review the files and ensure all personally identifiable information is properly anonymized."
+            echo ""
+            echo "Common PII that should be anonymized:"
+            echo "- Email addresses"
+            echo "- IP addresses (except private ranges)"
+            echo "- Serial numbers"
+            echo "- MAC addresses"
+            echo "- Hostnames"
+            echo "- Usernames"
+            exit 1
+          else
+            echo "✅ No obvious PII detected"
           fi
-          
-          # Check file permissions
-          perms=$(stat -c "%a" "$file")
-          if [[ "$perms" != "644" && "$perms" != "664" ]]; then
-            echo "⚠️  Warning: Unusual file permissions on $file: $perms"
-          fi
-          
-          # Check file is UTF-8
-          if ! file "$file" | grep -q "UTF-8"; then
-            echo "⚠️  Warning: File might not be UTF-8 encoded: $file"
-            file "$file"
-          fi
-        done
-        
-        echo "✅ File permission check complete"
+
+      - name: Check file permissions and attributes
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Checking file permissions and attributes..."
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ ! -f "$file" ]]; then
+              continue
+            fi
+
+            # Check file permissions
+            perms=$(stat -c "%a" "$file")
+            if [[ "$perms" != "644" && "$perms" != "664" ]]; then
+              echo "⚠️  Warning: Unusual file permissions on $file: $perms"
+            fi
+
+            # Check file is UTF-8
+            if ! file "$file" | grep -q "UTF-8"; then
+              echo "⚠️  Warning: File might not be UTF-8 encoded: $file"
+              file "$file"
+            fi
+          done
+
+          echo "✅ File permission check complete"

@@ -62,19 +62,16 @@ impl HardwareComponent {
     /// Get a unique identifier for this component
     pub fn get_identifier(&self) -> String {
         match (&self.vendor, &self.model) {
-            (Some(vendor), Some(model)) => format!("{}_{}", 
+            (Some(vendor), Some(model)) => format!(
+                "{}_{}",
                 vendor.to_lowercase().replace(' ', "_"),
                 model.to_lowercase().replace(' ', "_")
             ),
-            (Some(vendor), None) => format!("{}_unknown", 
-                vendor.to_lowercase().replace(' ', "_")
-            ),
-            (None, Some(model)) => format!("unknown_{}", 
-                model.to_lowercase().replace(' ', "_")
-            ),
-            (None, None) => format!("unknown_{}", 
-                self.component_type.to_lowercase().replace(' ', "_")
-            ),
+            (Some(vendor), None) => format!("{}_unknown", vendor.to_lowercase().replace(' ', "_")),
+            (None, Some(model)) => format!("unknown_{}", model.to_lowercase().replace(' ', "_")),
+            (None, None) => {
+                format!("unknown_{}", self.component_type.to_lowercase().replace(' ', "_"))
+            }
         }
     }
 
@@ -99,7 +96,7 @@ impl PopularModel {
     pub fn recommendation_level(&self) -> &'static str {
         match self.avg_compatibility as u8 {
             90..=100 => "Highly Recommended",
-            80..=89 => "Recommended", 
+            80..=89 => "Recommended",
             70..=79 => "Good Choice",
             60..=69 => "Acceptable",
             _ => "Consider Alternatives",
@@ -152,9 +149,10 @@ impl ComponentEntry {
             return 0.0;
         }
 
-        let successful = self.compatibility_distribution.get(&CompatibilityStatus::Excellent).unwrap_or(&0)
-            + self.compatibility_distribution.get(&CompatibilityStatus::Good).unwrap_or(&0);
-        
+        let successful =
+            self.compatibility_distribution.get(&CompatibilityStatus::Excellent).unwrap_or(&0)
+                + self.compatibility_distribution.get(&CompatibilityStatus::Good).unwrap_or(&0);
+
         (successful as f64 / total as f64) * 100.0
     }
 }
@@ -184,10 +182,9 @@ impl KernelEntry {
 impl DistributionEntry {
     /// Get the most compatible vendor for this distribution
     pub fn best_vendor(&self) -> Option<(&String, &f64)> {
-        self.vendor_compatibility.iter()
-            .max_by(|(_, score_a), (_, score_b)| {
-                score_a.partial_cmp(score_b).unwrap_or(std::cmp::Ordering::Equal)
-            })
+        self.vendor_compatibility.iter().max_by(|(_, score_a), (_, score_b)| {
+            score_a.partial_cmp(score_b).unwrap_or(std::cmp::Ordering::Equal)
+        })
     }
 
     /// Get average compatibility score across all vendors
@@ -219,14 +216,15 @@ impl Statistics {
         };
         score += volume_score.min(30.0);
 
-        // Diversity (max 25 points)  
+        // Diversity (max 25 points)
         let diversity_score = (self.total_vendors as f64).min(50.0) * 0.5;
         score += diversity_score.min(25.0);
 
         // Compatibility distribution (max 25 points)
         let total_compat: usize = self.compatibility_overview.values().sum();
         if total_compat > 0 {
-            let excellent = self.compatibility_overview.get(&CompatibilityStatus::Excellent).unwrap_or(&0);
+            let excellent =
+                self.compatibility_overview.get(&CompatibilityStatus::Excellent).unwrap_or(&0);
             let good = self.compatibility_overview.get(&CompatibilityStatus::Good).unwrap_or(&0);
             let compat_rate = (*excellent + *good) as f64 / total_compat as f64;
             score += compat_rate * 25.0;
@@ -256,7 +254,9 @@ impl Statistics {
         let previous = &self.growth_stats[self.growth_stats.len() - 2];
 
         let growth_rate = if previous.total_reports > 0 {
-            ((recent.total_reports as f64 - previous.total_reports as f64) / previous.total_reports as f64) * 100.0
+            ((recent.total_reports as f64 - previous.total_reports as f64)
+                / previous.total_reports as f64)
+                * 100.0
         } else {
             0.0
         };
@@ -274,7 +274,7 @@ impl Statistics {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum GrowthTrend {
     FastGrowth,
-    Moderate, 
+    Moderate,
     Stable,
     Declining,
 }
@@ -297,7 +297,9 @@ impl GrowthDataPoint {
             return 0.0;
         }
 
-        ((self.total_reports as f64 - previous.total_reports as f64) / previous.total_reports as f64) * 100.0
+        ((self.total_reports as f64 - previous.total_reports as f64)
+            / previous.total_reports as f64)
+            * 100.0
     }
 }
 
@@ -305,7 +307,9 @@ impl GrowthDataPoint {
 /// Normalize hardware vendor names to canonical forms
 pub fn normalize_vendor_name(vendor: &str) -> String {
     match vendor.to_lowercase().as_str() {
-        name if name.contains("advanced micro devices") || name.contains("amd") => "AMD".to_string(),
+        name if name.contains("advanced micro devices") || name.contains("amd") => {
+            "AMD".to_string()
+        }
         name if name.contains("intel") => "Intel".to_string(),
         name if name.contains("nvidia") => "NVIDIA".to_string(),
         name if name.contains("realtek") => "Realtek".to_string(),
@@ -329,10 +333,27 @@ pub fn extract_keywords(text: &str) -> Vec<String> {
 /// Check if word is a common stop word that shouldn't be indexed
 fn is_stop_word(word: &str) -> bool {
     const STOP_WORDS: &[&str] = &[
-        "the", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by",
-        "inc", "ltd", "corp", "corporation", "company", "co", "llc",
+        "the",
+        "and",
+        "or",
+        "but",
+        "in",
+        "on",
+        "at",
+        "to",
+        "for",
+        "of",
+        "with",
+        "by",
+        "inc",
+        "ltd",
+        "corp",
+        "corporation",
+        "company",
+        "co",
+        "llc",
     ];
-    
+
     STOP_WORDS.contains(&word)
 }
 
@@ -341,19 +362,19 @@ pub fn string_similarity(a: &str, b: &str) -> f64 {
     if a == b {
         return 1.0;
     }
-    
+
     let a_lower = a.to_lowercase();
     let b_lower = b.to_lowercase();
-    
+
     if a_lower == b_lower {
         return 0.95;
     }
-    
+
     // Simple substring matching
     if a_lower.contains(&b_lower) || b_lower.contains(&a_lower) {
         return 0.8;
     }
-    
+
     // Levenshtein distance would be better here
     0.0
 }

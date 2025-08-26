@@ -1,8 +1,8 @@
 //! Comprehensive unit tests for dmidecode detector
 
 use lx_hw_detect::detectors::dmidecode::DmidecodeDetector;
-use lx_hw_detect::detectors::{HardwareDetector, DetectionData};
-use std::process::{Output, ExitStatus};
+use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
+use std::process::{ExitStatus, Output};
 
 /// Mock dmidecode output for testing - represents real dmidecode output structure
 const MOCK_DMIDECODE_OUTPUT: &str = r#"# dmidecode 3.3
@@ -190,12 +190,12 @@ async fn test_dmidecode_detector_creation() {
 async fn test_parse_complete_dmidecode_output() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output(MOCK_DMIDECODE_OUTPUT, "", true);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     assert!(result.success);
     assert_eq!(result.tool_name, "dmidecode");
-    
+
     if let DetectionData::Dmidecode(data) = result.data {
         // Test BIOS information
         assert!(data.bios.is_some());
@@ -205,7 +205,7 @@ async fn test_parse_complete_dmidecode_output() {
         assert_eq!(bios.release_date, "05/21/2019");
         assert!(bios.characteristics.contains(&"PCI is supported".to_string()));
         assert!(bios.characteristics.contains(&"UEFI is supported".to_string()));
-        
+
         // Test System information
         assert!(data.system.is_some());
         let system = data.system.unwrap();
@@ -213,14 +213,14 @@ async fn test_parse_complete_dmidecode_output() {
         assert_eq!(system.product_name, "B450M DS3H");
         assert_eq!(system.version, Some("-CF".to_string()));
         assert_eq!(system.uuid, Some("12345678-1234-5678-9012-123456789012".to_string()));
-        
+
         // Test Baseboard information
         assert!(data.baseboard.is_some());
         let baseboard = data.baseboard.unwrap();
         assert_eq!(baseboard.manufacturer, "Gigabyte Technology Co., Ltd.");
         assert_eq!(baseboard.product_name, "B450M DS3H-CF");
         assert_eq!(baseboard.version, Some("x.x".to_string()));
-        
+
         // Test Processor information
         assert!(!data.processors.is_empty());
         let processor = &data.processors[0];
@@ -231,10 +231,10 @@ async fn test_parse_complete_dmidecode_output() {
         assert_eq!(processor.thread_count, Some(12));
         assert_eq!(processor.max_speed, Some(3600));
         assert_eq!(processor.current_speed, Some(3600));
-        
+
         // Test Memory devices
         assert_eq!(data.memory_devices.len(), 2);
-        
+
         let memory1 = &data.memory_devices[0];
         assert_eq!(memory1.locator, "DIMM 0");
         assert_eq!(memory1.size_mb, Some(8192));
@@ -242,18 +242,17 @@ async fn test_parse_complete_dmidecode_output() {
         assert_eq!(memory1.speed_mts, Some(3200));
         assert_eq!(memory1.manufacturer, Some("G.Skill".to_string()));
         assert_eq!(memory1.part_number, Some("F4-3200C16-8GVGB".to_string()));
-        
+
         let memory2 = &data.memory_devices[1];
         assert_eq!(memory2.locator, "DIMM 1");
         assert_eq!(memory2.size_mb, Some(8192));
-        
+
         // Test summary
         assert!(data.summary.is_some());
         let summary = data.summary.unwrap();
         assert_eq!(summary.total_memory_mb, 16384); // 2 x 8GB
         assert_eq!(summary.memory_slots_used, 2);
-        assert!(summary.privileged_execution);  // Mock data is comprehensive, indicating privileged execution
-        
+        assert!(summary.privileged_execution); // Mock data is comprehensive, indicating privileged execution
     } else {
         panic!("Expected DmidecodeData but got different variant");
     }
@@ -263,15 +262,15 @@ async fn test_parse_complete_dmidecode_output() {
 async fn test_parse_no_privileges_output() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output("", MOCK_DMIDECODE_NO_PRIVILEGES, false);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     assert!(!result.success);
     assert_eq!(result.tool_name, "dmidecode");
     assert!(!result.errors.is_empty());
-    // The error should contain the permission message from stderr  
+    // The error should contain the permission message from stderr
     assert!(result.errors.iter().any(|e| e.contains("Operation not permitted")));
-    
+
     if let DetectionData::Dmidecode(data) = result.data {
         assert!(data.bios.is_none());
         assert!(data.system.is_none());
@@ -285,9 +284,9 @@ async fn test_parse_no_privileges_output() {
 async fn test_parse_empty_output() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output("", "", true);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     assert!(!result.success);
     assert!(result.errors.contains(&"Empty output from dmidecode".to_string()));
 }
@@ -296,9 +295,9 @@ async fn test_parse_empty_output() {
 async fn test_parse_invalid_output() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output("", MOCK_DMIDECODE_INVALID, false);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     assert!(!result.success);
     assert!(!result.errors.is_empty());
 }
@@ -307,12 +306,12 @@ async fn test_parse_invalid_output() {
 async fn test_bios_characteristic_parsing() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output(MOCK_DMIDECODE_OUTPUT, "", true);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     if let DetectionData::Dmidecode(data) = result.data {
         let bios = data.bios.unwrap();
-        
+
         // Test that complex characteristics are correctly parsed
         assert!(bios.characteristics.contains(&"PCI is supported".to_string()));
         assert!(bios.characteristics.contains(&"BIOS is upgradeable".to_string()));
@@ -326,12 +325,12 @@ async fn test_bios_characteristic_parsing() {
 async fn test_processor_flags_parsing() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output(MOCK_DMIDECODE_OUTPUT, "", true);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     if let DetectionData::Dmidecode(data) = result.data {
         let processor = &data.processors[0];
-        
+
         // Test that processor flags are correctly parsed
         assert!(processor.flags.contains(&"FPU (Floating-point unit on-chip)".to_string()));
         assert!(processor.flags.contains(&"VME (Virtual mode extension)".to_string()));
@@ -345,12 +344,12 @@ async fn test_processor_flags_parsing() {
 async fn test_memory_detail_parsing() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output(MOCK_DMIDECODE_OUTPUT, "", true);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     if let DetectionData::Dmidecode(data) = result.data {
         let memory1 = &data.memory_devices[0];
-        
+
         // Test detailed memory parsing
         assert_eq!(memory1.total_width, Some(64));
         assert_eq!(memory1.data_width, Some(64));
@@ -366,15 +365,15 @@ async fn test_memory_detail_parsing() {
 async fn test_uuid_privacy_consideration() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output(MOCK_DMIDECODE_OUTPUT, "", true);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     if let DetectionData::Dmidecode(data) = result.data {
         let system = data.system.unwrap();
-        
+
         // UUID should be captured for potential anonymization
         assert_eq!(system.uuid, Some("12345678-1234-5678-9012-123456789012".to_string()));
-        
+
         // Check that serial numbers are captured (for anonymization)
         assert!(data.memory_devices[0].serial_number.is_some());
         assert!(data.memory_devices[1].serial_number.is_some());
@@ -385,12 +384,12 @@ async fn test_uuid_privacy_consideration() {
 async fn test_summary_statistics() {
     let detector = DmidecodeDetector::new();
     let output = create_mock_output(MOCK_DMIDECODE_OUTPUT, "", true);
-    
+
     let result = detector.parse_output(&output).unwrap();
-    
+
     if let DetectionData::Dmidecode(data) = result.data {
         let summary = data.summary.unwrap();
-        
+
         // Test calculated summary statistics
         assert_eq!(summary.total_memory_mb, 16384); // 2x 8GB
         assert_eq!(summary.memory_slots_used, 2);

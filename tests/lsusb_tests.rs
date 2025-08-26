@@ -1,14 +1,14 @@
 //! Tests for lsusb hardware detection
 
-use lx_hw_detect::detectors::lsusb::{LsusbDetector, LsusbData, UsbDevice};
-use lx_hw_detect::detectors::{HardwareDetector, DetectionData};
-use std::process::{Output, ExitStatus};
+use lx_hw_detect::detectors::lsusb::{LsusbData, LsusbDetector, UsbDevice};
+use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 use std::os::unix::process::ExitStatusExt;
+use std::process::{ExitStatus, Output};
 
 const SAMPLE_LSUSB_OUTPUT: &str = r#"Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
 Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-Bus 003 Device 002: ID 2109:2822 VIA Labs, Inc. USB2.0 Hub             
+Bus 003 Device 002: ID 2109:2822 VIA Labs, Inc. USB2.0 Hub
 Bus 003 Device 003: ID 1532:007b Razer USA, Ltd. RC30-0305 Gaming Mouse Dongle [Viper Ultimate (Wireless)]
 Bus 005 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 Bus 005 Device 002: ID 17aa:104d Generic Realtek USB Audio Front
@@ -43,23 +43,23 @@ async fn test_lsusb_availability_check() {
 #[test]
 fn test_lsusb_parsing_success() {
     let detector = LsusbDetector::new();
-    
+
     // Create combined output as it would come from execute()
     let mut combined_output = SAMPLE_LSUSB_OUTPUT.as_bytes().to_vec();
     combined_output.extend_from_slice(b"\n--- TOPOLOGY DATA ---\n");
     combined_output.extend_from_slice(SAMPLE_LSUSB_TOPOLOGY.as_bytes());
-    
-    let output = Output {
-        status: ExitStatus::from_raw(0),
-        stdout: combined_output,
-        stderr: Vec::new(),
-    };
+
+    let output =
+        Output { status: ExitStatus::from_raw(0), stdout: combined_output, stderr: Vec::new() };
 
     // Debug: test individual line parsing first
     for line in SAMPLE_LSUSB_OUTPUT.lines() {
         println!("Testing line: '{}'", line);
         match detector.parse_device_line(line) {
-            Ok(Some(device)) => println!("  Parsed: Bus {} Device {}: {}:{}", device.bus, device.device, device.vendor_id, device.product_id),
+            Ok(Some(device)) => println!(
+                "  Parsed: Bus {} Device {}: {}:{}",
+                device.bus, device.device, device.vendor_id, device.product_id
+            ),
             Ok(None) => println!("  No device parsed"),
             Err(e) => println!("  Error: {}", e),
         }
@@ -76,48 +76,56 @@ fn test_lsusb_parsing_success() {
                 println!("No devices parsed - checking result errors: {:?}", result.errors);
             }
             assert!(!data.devices.is_empty());
-            
+
             // Check that we parsed the expected number of devices
             assert_eq!(data.devices.len(), 9);
-            
+
             // Check Linux Foundation root hub
-            let root_hub = data.devices.iter()
+            let root_hub = data
+                .devices
+                .iter()
                 .find(|d| d.bus == 1 && d.device == 1)
                 .expect("Root hub should be found");
-            
+
             assert_eq!(root_hub.vendor_id, "1d6b");
             assert_eq!(root_hub.product_id, "0002");
             assert!(root_hub.vendor_name.as_ref().unwrap().contains("Linux Foundation"));
             assert!(root_hub.product_name.as_ref().unwrap().contains("2.0 root hub"));
-            
+
             // Check VIA Labs hub
-            let via_hub = data.devices.iter()
+            let via_hub = data
+                .devices
+                .iter()
                 .find(|d| d.bus == 3 && d.device == 2)
                 .expect("VIA hub should be found");
-            
+
             assert_eq!(via_hub.vendor_id, "2109");
             assert_eq!(via_hub.product_id, "2822");
             assert!(via_hub.vendor_name.as_ref().unwrap().contains("VIA Labs, Inc."));
             assert!(via_hub.product_name.as_ref().unwrap().contains("USB2.0 Hub"));
-            
+
             // Check Razer gaming mouse
-            let razer_mouse = data.devices.iter()
+            let razer_mouse = data
+                .devices
+                .iter()
                 .find(|d| d.bus == 3 && d.device == 3)
                 .expect("Razer mouse should be found");
-            
+
             assert_eq!(razer_mouse.vendor_id, "1532");
             assert_eq!(razer_mouse.product_id, "007b");
             assert!(razer_mouse.vendor_name.as_ref().unwrap().contains("Razer USA, Ltd."));
-            
+
             // Check USB 3.0 root hub
-            let usb3_hub = data.devices.iter()
+            let usb3_hub = data
+                .devices
+                .iter()
                 .find(|d| d.bus == 2 && d.device == 1)
                 .expect("USB 3.0 hub should be found");
-            
+
             assert_eq!(usb3_hub.vendor_id, "1d6b");
             assert_eq!(usb3_hub.product_id, "0003");
             assert!(usb3_hub.product_name.as_ref().unwrap().contains("3.0 root hub"));
-            
+
             // Check topology data
             println!("Topology buses: {}", data.bus_topology.len());
             if !data.bus_topology.is_empty() {
@@ -130,13 +138,13 @@ fn test_lsusb_parsing_success() {
                     println!("Bus 1 topology not found in parsed data");
                 }
             }
-            
+
             // Check summary
             assert!(data.summary.is_some());
             let summary = data.summary.as_ref().unwrap();
             assert_eq!(summary.total_devices, 9);
             println!("Total buses parsed: {}", summary.total_buses);
-        },
+        }
         _ => panic!("Expected LsusbData"),
     }
 }
@@ -144,11 +152,7 @@ fn test_lsusb_parsing_success() {
 #[test]
 fn test_lsusb_empty_output() {
     let detector = LsusbDetector::new();
-    let output = Output {
-        status: ExitStatus::from_raw(0),
-        stdout: Vec::new(),
-        stderr: Vec::new(),
-    };
+    let output = Output { status: ExitStatus::from_raw(0), stdout: Vec::new(), stderr: Vec::new() };
 
     let result = detector.parse_output(&output).unwrap();
     assert!(!result.success);
@@ -159,11 +163,11 @@ fn test_lsusb_empty_output() {
 #[test]
 fn test_lsusb_stderr_handling() {
     let detector = LsusbDetector::new();
-    
+
     let mut combined_output = SAMPLE_LSUSB_OUTPUT.as_bytes().to_vec();
     combined_output.extend_from_slice(b"\n--- TOPOLOGY DATA ---\n");
     combined_output.extend_from_slice(SAMPLE_LSUSB_TOPOLOGY.as_bytes());
-    
+
     let stderr_message = "lsusb: cannot access USB device database\n";
     let output = Output {
         status: ExitStatus::from_raw(0),
@@ -226,13 +230,13 @@ async fn test_lsusb_execution_timeout() {
 #[test]
 fn test_lsusb_device_parsing_edge_cases() {
     let detector = LsusbDetector::new();
-    
+
     // Test parsing with various device line formats
     let test_lines = vec![
         "Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub",
         "Bus 010 Device 255: ID abcd:1234 Test Vendor Test Product",
     ];
-    
+
     for line in test_lines {
         if let Ok(Some(device)) = detector.parse_device_line(line) {
             assert!(!device.vendor_id.is_empty());

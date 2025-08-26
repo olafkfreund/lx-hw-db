@@ -1,12 +1,12 @@
 //! inxi hardware detection implementation
 
-use super::{HardwareDetector, DetectionResult, DetectionData};
-use crate::errors::{Result, LxHwError};
+use super::{DetectionData, DetectionResult, HardwareDetector};
+use crate::errors::{LxHwError, Result};
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::process::Output;
 use std::time::Duration;
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
 
 /// Complete system information from inxi
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -279,20 +279,20 @@ impl InxiDetector {
         let mut data = InxiData::default();
         let mut current_section = String::new();
         let mut section_content = Vec::new();
-        
+
         for line in output.lines() {
             let trimmed = line.trim();
             if trimmed.is_empty() {
                 continue;
             }
-            
+
             // Check if this is a new section (starts without indent)
             if !line.starts_with(' ') && line.contains(':') {
                 // Process previous section
                 if !current_section.is_empty() && !section_content.is_empty() {
                     self.parse_section(&mut data, &current_section, &section_content)?;
                 }
-                
+
                 // Start new section
                 let parts: Vec<&str> = line.splitn(2, ':').collect();
                 current_section = parts[0].trim().to_string();
@@ -305,15 +305,15 @@ impl InxiDetector {
                 section_content.push(trimmed.to_string());
             }
         }
-        
+
         // Process final section
         if !current_section.is_empty() && !section_content.is_empty() {
             self.parse_section(&mut data, &current_section, &section_content)?;
         }
-        
+
         Ok(data)
     }
-    
+
     /// Parse individual section content
     fn parse_section(&self, data: &mut InxiData, section: &str, content: &[String]) -> Result<()> {
         match section {
@@ -359,19 +359,20 @@ impl InxiDetector {
         }
         Ok(())
     }
-    
+
     /// Parse key-value pairs from section content
     fn parse_key_values(&self, content: &[String]) -> HashMap<String, String> {
         let mut kv = HashMap::new();
         let full_text = content.join(" ");
-        
+
         // Use regex-like approach to extract specific patterns
         self.extract_specific_patterns(&mut kv, &full_text);
-        
+
         kv
     }
-    
+
     /// Extract specific known patterns from inxi output
+    #[allow(clippy::excessive_nesting)]
     fn extract_specific_patterns(&self, kv: &mut HashMap<String, String>, text: &str) {
         // Pattern: "Kernel 6.16.0" or "12Kernel 6.16.0"
         if let Some(start) = text.find("Kernel ") {
@@ -383,7 +384,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Pattern: "arch x86_64"
         if let Some(start) = text.find("arch ") {
             let after_arch = &text[start + 5..];
@@ -394,7 +395,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Pattern: "bits 64"
         if let Some(start) = text.find("bits ") {
             let after_bits = &text[start + 5..];
@@ -405,7 +406,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Pattern: "Desktop Hyprland"
         if let Some(start) = text.find("Desktop ") {
             let after_desktop = &text[start + 8..];
@@ -416,7 +417,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Pattern: "Distro NixOS 25.11 (Xantusia)"
         if let Some(start) = text.find("Distro ") {
             let after_distro = &text[start + 7..];
@@ -429,7 +430,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Pattern: "Type Desktop"
         if let Some(start) = text.find("Type ") {
             let after_type = &text[start + 5..];
@@ -440,7 +441,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Pattern: "System LENOVO"
         if let Some(start) = text.find("System ") {
             let after_system = &text[start + 7..];
@@ -451,7 +452,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Pattern: "product 30E1S6620H"
         if let Some(start) = text.find("product ") {
             let after_product = &text[start + 8..];
@@ -462,22 +463,23 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Pattern: "model AMD Ryzen Threadripper PRO 3995WX"
         if let Some(start) = text.find("model ") {
             let after_model = &text[start + 6..];
             // Find the next key to know where the model name ends
-            let end_pos = after_model.find(" bits ")
+            let end_pos = after_model
+                .find(" bits ")
                 .or_else(|| after_model.find(" type "))
                 .or_else(|| after_model.find(" cache "))
                 .unwrap_or(after_model.len().min(100));
-            
+
             let model = after_model[..end_pos].trim();
             if !model.is_empty() {
                 kv.insert("model".to_string(), model.to_string());
             }
         }
-        
+
         // Pattern: "Info 64-core"
         if let Some(start) = text.find("Info ") {
             let after_info = &text[start + 5..];
@@ -488,11 +490,11 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Memory patterns from Info section
         if let Some(start) = text.find("Memory ") {
             let after_memory = &text[start + 7..];
-            
+
             // Pattern: "total 224 GiB"
             if let Some(total_start) = after_memory.find("total ") {
                 let after_total = &after_memory[total_start + 6..];
@@ -503,7 +505,7 @@ impl InxiDetector {
                     }
                 }
             }
-            
+
             // Pattern: "available 219.99 GiB"
             if let Some(available_start) = after_memory.find("available ") {
                 let after_available = &after_memory[available_start + 10..];
@@ -514,7 +516,7 @@ impl InxiDetector {
                     }
                 }
             }
-            
+
             // Pattern: "used 53.94 GiB"
             if let Some(used_start) = after_memory.find("used ") {
                 let after_used = &after_memory[used_start + 5..];
@@ -528,7 +530,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         // Bluetooth patterns
         if let Some(start) = text.find("Device-1 ") {
             let after_device = &text[start + 9..];
@@ -539,7 +541,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         if let Some(start) = text.find("driver ") {
             let after_driver = &text[start + 7..];
             if let Some(end) = after_driver.find(' ') {
@@ -549,7 +551,7 @@ impl InxiDetector {
                 }
             }
         }
-        
+
         if let Some(start) = text.find("type ") {
             let after_type = &text[start + 5..];
             if let Some(end) = after_type.find(' ') {
@@ -560,7 +562,7 @@ impl InxiDetector {
             }
         }
     }
-    
+
     /// Parse system section
     fn parse_system_section(&self, content: &[String]) -> Result<InxiSystem> {
         let kv = self.parse_key_values(content);
@@ -573,7 +575,7 @@ impl InxiDetector {
             distro: kv.get("Distro").cloned(),
         })
     }
-    
+
     /// Parse machine section
     fn parse_machine_section(&self, content: &[String]) -> Result<InxiMachine> {
         let kv = self.parse_key_values(content);
@@ -592,7 +594,7 @@ impl InxiDetector {
             uefi_date: kv.get("date").cloned(),
         })
     }
-    
+
     /// Parse CPU section
     fn parse_cpu_section(&self, content: &[String]) -> Result<InxiCpu> {
         let kv = self.parse_key_values(content);
@@ -607,32 +609,22 @@ impl InxiDetector {
             cores: Vec::new(), // TODO: Parse individual core data
         })
     }
-    
+
     /// Parse graphics section
     fn parse_graphics_section(&self, _content: &[String]) -> Result<InxiGraphics> {
-        Ok(InxiGraphics {
-            devices: Vec::new(),
-            display: None,
-            apis: Vec::new(),
-        })
+        Ok(InxiGraphics { devices: Vec::new(), display: None, apis: Vec::new() })
     }
-    
+
     /// Parse audio section
     fn parse_audio_section(&self, _content: &[String]) -> Result<InxiAudio> {
-        Ok(InxiAudio {
-            devices: Vec::new(),
-            server: None,
-        })
+        Ok(InxiAudio { devices: Vec::new(), server: None })
     }
-    
+
     /// Parse network section
     fn parse_network_section(&self, _content: &[String]) -> Result<InxiNetwork> {
-        Ok(InxiNetwork {
-            devices: Vec::new(),
-            interfaces: Vec::new(),
-        })
+        Ok(InxiNetwork { devices: Vec::new(), interfaces: Vec::new() })
     }
-    
+
     /// Parse bluetooth section
     fn parse_bluetooth_section(&self, content: &[String]) -> Result<InxiBluetooth> {
         let kv = self.parse_key_values(content);
@@ -646,7 +638,7 @@ impl InxiDetector {
             bt_version: kv.get("bt-v").cloned(),
         })
     }
-    
+
     /// Parse drives section
     fn parse_drives_section(&self, _content: &[String]) -> Result<InxiDrives> {
         Ok(InxiDrives {
@@ -658,7 +650,7 @@ impl InxiDetector {
             swap: Vec::new(),
         })
     }
-    
+
     /// Parse memory from info section
     fn parse_info_memory(&self, content: &[String]) -> Result<Option<InxiMemory>> {
         let kv = self.parse_key_values(content);
@@ -673,7 +665,7 @@ impl InxiDetector {
             Ok(None)
         }
     }
-    
+
     /// Parse memory section
     fn parse_memory_section(&self, content: &[String]) -> Result<InxiMemory> {
         let kv = self.parse_key_values(content);
@@ -684,7 +676,7 @@ impl InxiDetector {
             usage_percent: None,
         })
     }
-    
+
     /// Parse sensors section
     fn parse_sensors_section(&self, _content: &[String]) -> Result<InxiSensors> {
         Ok(InxiSensors {
@@ -694,22 +686,47 @@ impl InxiDetector {
             fan_speeds: Vec::new(),
         })
     }
-    
+
     /// Generate summary statistics
-    fn generate_summary(&self, data: &InxiData, privileged: bool, warnings: Vec<String>) -> InxiSummary {
+    fn generate_summary(
+        &self,
+        data: &InxiData,
+        privileged: bool,
+        warnings: Vec<String>,
+    ) -> InxiSummary {
         let mut sections_parsed = 0;
-        
-        if data.system.is_some() { sections_parsed += 1; }
-        if data.machine.is_some() { sections_parsed += 1; }
-        if data.cpu.is_some() { sections_parsed += 1; }
-        if data.graphics.is_some() { sections_parsed += 1; }
-        if data.audio.is_some() { sections_parsed += 1; }
-        if data.network.is_some() { sections_parsed += 1; }
-        if data.bluetooth.is_some() { sections_parsed += 1; }
-        if data.drives.is_some() { sections_parsed += 1; }
-        if data.memory.is_some() { sections_parsed += 1; }
-        if data.sensors.is_some() { sections_parsed += 1; }
-        
+
+        if data.system.is_some() {
+            sections_parsed += 1;
+        }
+        if data.machine.is_some() {
+            sections_parsed += 1;
+        }
+        if data.cpu.is_some() {
+            sections_parsed += 1;
+        }
+        if data.graphics.is_some() {
+            sections_parsed += 1;
+        }
+        if data.audio.is_some() {
+            sections_parsed += 1;
+        }
+        if data.network.is_some() {
+            sections_parsed += 1;
+        }
+        if data.bluetooth.is_some() {
+            sections_parsed += 1;
+        }
+        if data.drives.is_some() {
+            sections_parsed += 1;
+        }
+        if data.memory.is_some() {
+            sections_parsed += 1;
+        }
+        if data.sensors.is_some() {
+            sections_parsed += 1;
+        }
+
         InxiSummary {
             sections_parsed,
             inxi_version: None,
@@ -747,7 +764,7 @@ impl HardwareDetector for InxiDetector {
 
         Ok(output)
     }
-    
+
     fn timeout(&self) -> Duration {
         Duration::from_secs(20)
     }
@@ -755,7 +772,7 @@ impl HardwareDetector for InxiDetector {
     fn parse_output(&self, output: &Output) -> Result<DetectionResult> {
         let mut errors = Vec::new();
         let mut warnings = Vec::new();
-        
+
         // Check for execution errors
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
@@ -766,7 +783,7 @@ impl HardwareDetector for InxiDetector {
                 errors: vec![format!("inxi execution failed: {}", error_msg)],
             });
         }
-        
+
         // Handle empty output
         if output.stdout.is_empty() {
             return Ok(DetectionResult {
@@ -776,7 +793,7 @@ impl HardwareDetector for InxiDetector {
                 errors: vec!["Empty output from inxi".to_string()],
             });
         }
-        
+
         // Process stderr for warnings
         let stderr_str = String::from_utf8_lossy(&output.stderr);
         if !stderr_str.is_empty() {
@@ -786,7 +803,7 @@ impl HardwareDetector for InxiDetector {
                 }
             }
         }
-        
+
         // Parse inxi output
         let stdout_str = String::from_utf8_lossy(&output.stdout);
         let mut data = match self.parse_inxi_output(&stdout_str) {
@@ -800,10 +817,11 @@ impl HardwareDetector for InxiDetector {
                 });
             }
         };
-        
+
         // Detect if we had privileged access
-        let privileged = !warnings.iter().any(|w| w.contains("superuser required") || w.contains("permission"));
-        
+        let privileged =
+            !warnings.iter().any(|w| w.contains("superuser required") || w.contains("permission"));
+
         let summary = self.generate_summary(&data, privileged, warnings.clone());
         data.summary = Some(summary);
         errors.extend(warnings);

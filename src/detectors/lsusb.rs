@@ -1,12 +1,12 @@
 //! lsusb hardware detection implementation
 
-use super::{HardwareDetector, DetectionResult, DetectionData};
-use crate::errors::{Result, LxHwError};
+use super::{DetectionData, DetectionResult, HardwareDetector};
+use crate::errors::{LxHwError, Result};
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::process::Output;
 use std::time::Duration;
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
 
 /// Complete USB device information from lsusb
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -140,50 +140,51 @@ impl LsusbDetector {
     /// Parse basic lsusb device listing
     fn parse_device_list(&self, output: &str) -> Result<Vec<UsbDevice>> {
         let mut devices = Vec::new();
-        
+
         for line in output.lines() {
             if let Some(device) = self.parse_device_line(line)? {
                 devices.push(device);
             }
         }
-        
+
         Ok(devices)
     }
-    
+
     /// Parse single device line (e.g., "Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub")
     pub fn parse_device_line(&self, line: &str) -> Result<Option<UsbDevice>> {
         let parts: Vec<&str> = line.split_whitespace().collect();
         if parts.len() < 6 {
             return Ok(None);
         }
-        
+
         // Parse: Bus 001 Device 001: ID 1d6b:0002 ...
         // Check if parts[4] starts with "ID" (it should be "ID")
         if parts[0] != "Bus" || parts[2] != "Device" || parts[4] != "ID" {
             return Ok(None);
         }
-        
-        let bus = parts[1].parse::<u8>().map_err(|_| {
-            LxHwError::DetectionError("Invalid bus number".to_string())
-        })?;
-        
-        let device = parts[3].trim_end_matches(':').parse::<u8>().map_err(|_| {
-            LxHwError::DetectionError("Invalid device number".to_string())
-        })?;
-        
+
+        let bus = parts[1]
+            .parse::<u8>()
+            .map_err(|_| LxHwError::DetectionError("Invalid bus number".to_string()))?;
+
+        let device = parts[3]
+            .trim_end_matches(':')
+            .parse::<u8>()
+            .map_err(|_| LxHwError::DetectionError("Invalid device number".to_string()))?;
+
         // parts[4] is "ID", parts[5] is "1d6b:0002"
         let ids: Vec<&str> = parts[5].split(':').collect();
         if ids.len() != 2 {
             return Ok(None);
         }
-        
+
         let vendor_id = ids[0].to_string();
         let product_id = ids[1].to_string();
-        
+
         // Remaining parts are vendor and product names
         let description = parts[6..].join(" ");
         let (vendor_name, product_name) = self.split_vendor_product(&description);
-        
+
         Ok(Some(UsbDevice {
             bus,
             device,
@@ -204,40 +205,49 @@ impl LsusbDetector {
             descriptor: None,
         }))
     }
-    
+
     /// Split vendor and product names from description
     fn split_vendor_product(&self, description: &str) -> (Option<String>, Option<String>) {
         if description.is_empty() {
             return (None, None);
         }
-        
+
         // Try to split at common patterns
         if let Some(pos) = description.find(" Ltd.") {
             let vendor = description[..pos + 5].trim().to_string();
             let product = description[pos + 5..].trim();
-            return (Some(vendor), if product.is_empty() { None } else { Some(product.to_string()) });
+            return (
+                Some(vendor),
+                if product.is_empty() { None } else { Some(product.to_string()) },
+            );
         }
-        
+
         if let Some(pos) = description.find(" Inc.") {
             let vendor = description[..pos + 5].trim().to_string();
             let product = description[pos + 5..].trim();
-            return (Some(vendor), if product.is_empty() { None } else { Some(product.to_string()) });
+            return (
+                Some(vendor),
+                if product.is_empty() { None } else { Some(product.to_string()) },
+            );
         }
-        
+
         if let Some(pos) = description.find(" Foundation") {
             let vendor = description[..pos + 11].trim().to_string();
             let product = description[pos + 11..].trim();
-            return (Some(vendor), if product.is_empty() { None } else { Some(product.to_string()) });
+            return (
+                Some(vendor),
+                if product.is_empty() { None } else { Some(product.to_string()) },
+            );
         }
-        
+
         // If no clear split, treat whole thing as product with unknown vendor
         (None, Some(description.to_string()))
     }
-    
+
     /// Parse USB bus topology from lsusb -t output
     fn parse_topology(&self, output: &str) -> Result<Vec<UsbBus>> {
         let mut buses = Vec::new();
-        
+
         for line in output.lines() {
             if line.starts_with("/:  Bus ") {
                 if let Some(bus) = self.parse_bus_line(line)? {
@@ -245,10 +255,10 @@ impl LsusbDetector {
                 }
             }
         }
-        
+
         Ok(buses)
     }
-    
+
     /// Parse bus line from topology (e.g., "/:  Bus 001.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 480M")
     fn parse_bus_line(&self, line: &str) -> Result<Option<UsbBus>> {
         // Parse: /:  Bus 001.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 480M
@@ -256,29 +266,34 @@ impl LsusbDetector {
         if parts.len() < 4 {
             return Ok(None);
         }
-        
+
         // Extract bus number from "Bus 001.Port"
         if let Some(bus_part) = parts.iter().find(|p| p.starts_with("Bus")) {
             let bus_str = bus_part.trim_start_matches("Bus").split('.').next().unwrap_or("0");
             if let Ok(bus_number) = bus_str.parse::<u8>() {
                 // Extract device number
                 let device = if let Some(dev_part) = parts.iter().find(|p| p.starts_with("Dev")) {
-                    dev_part.trim_start_matches("Dev").trim_end_matches(',').parse::<u8>().unwrap_or(0)
+                    dev_part
+                        .trim_start_matches("Dev")
+                        .trim_end_matches(',')
+                        .parse::<u8>()
+                        .unwrap_or(0)
                 } else {
                     0
                 };
-                
+
                 // Extract driver
-                let driver = parts.iter()
+                let driver = parts
+                    .iter()
                     .find(|p| p.starts_with("Driver="))
-                    .map(|p| p.trim_start_matches("Driver=").split('/').next().unwrap_or("").to_string())
+                    .map(|p| {
+                        p.trim_start_matches("Driver=").split('/').next().unwrap_or("").to_string()
+                    })
                     .filter(|s| !s.is_empty());
-                
+
                 // Extract speed
-                let speed = parts.iter()
-                    .find(|p| p.ends_with('M'))
-                    .map(|p| p.to_string());
-                
+                let speed = parts.iter().find(|p| p.ends_with('M')).map(|p| p.to_string());
+
                 return Ok(Some(UsbBus {
                     bus_number,
                     root_hub_device: device,
@@ -288,30 +303,36 @@ impl LsusbDetector {
                 }));
             }
         }
-        
+
         Ok(None)
     }
-    
+
     /// Generate summary statistics
-    fn generate_summary(&self, devices: &[UsbDevice], buses: &[UsbBus], privileged: bool, warnings: Vec<String>) -> LsusbSummary {
+    fn generate_summary(
+        &self,
+        devices: &[UsbDevice],
+        buses: &[UsbBus],
+        privileged: bool,
+        warnings: Vec<String>,
+    ) -> LsusbSummary {
         let mut devices_by_class = HashMap::new();
         let mut devices_with_drivers = 0;
         let mut usb_versions = HashMap::new();
-        
+
         for device in devices {
             if let Some(class) = &device.device_class {
                 *devices_by_class.entry(class.clone()).or_insert(0) += 1;
             }
-            
+
             if device.interfaces.iter().any(|i| i.driver.is_some()) {
                 devices_with_drivers += 1;
             }
-            
+
             if let Some(version) = &device.usb_version {
                 *usb_versions.entry(version.clone()).or_insert(0) += 1;
             }
         }
-        
+
         LsusbSummary {
             total_devices: devices.len(),
             total_buses: buses.len(),
@@ -343,30 +364,28 @@ impl HardwareDetector for LsusbDetector {
         // Execute both device listing and topology commands
         let device_future = tokio::process::Command::new("lsusb").output();
         let topology_future = tokio::process::Command::new("lsusb").arg("-t").output();
-        
+
         let (device_result, topology_result) = tokio::try_join!(device_future, topology_future)
-            .map_err(|e| LxHwError::SystemCommandError {
-                command: format!("lsusb: {}", e)
-            })?;
-        
+            .map_err(|e| LxHwError::SystemCommandError { command: format!("lsusb: {}", e) })?;
+
         // Create combined output - topology data goes in a separate section
         let mut combined_stdout = device_result.stdout;
         combined_stdout.extend_from_slice(b"\n--- TOPOLOGY DATA ---\n");
         combined_stdout.extend_from_slice(&topology_result.stdout);
-        
+
         let mut combined_stderr = device_result.stderr;
         if !topology_result.stderr.is_empty() {
             combined_stderr.extend_from_slice(b"\nTopology command stderr:\n");
             combined_stderr.extend_from_slice(&topology_result.stderr);
         }
-        
+
         Ok(Output {
             status: device_result.status,
             stdout: combined_stdout,
             stderr: combined_stderr,
         })
     }
-    
+
     fn timeout(&self) -> Duration {
         Duration::from_secs(10)
     }
@@ -374,7 +393,7 @@ impl HardwareDetector for LsusbDetector {
     fn parse_output(&self, output: &Output) -> Result<DetectionResult> {
         let mut errors = Vec::new();
         let mut warnings = Vec::new();
-        
+
         // Check for execution errors
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
@@ -385,7 +404,7 @@ impl HardwareDetector for LsusbDetector {
                 errors: vec![format!("lsusb execution failed: {}", error_msg)],
             });
         }
-        
+
         // Handle empty output
         if output.stdout.is_empty() {
             return Ok(DetectionResult {
@@ -395,7 +414,7 @@ impl HardwareDetector for LsusbDetector {
                 errors: vec!["Empty output from lsusb".to_string()],
             });
         }
-        
+
         // Process stderr for warnings
         let stderr_str = String::from_utf8_lossy(&output.stderr);
         if !stderr_str.is_empty() {
@@ -405,11 +424,11 @@ impl HardwareDetector for LsusbDetector {
                 }
             }
         }
-        
+
         // Parse combined output (device list + topology)
         let stdout_str = String::from_utf8_lossy(&output.stdout);
         let parts: Vec<&str> = stdout_str.splitn(2, "--- TOPOLOGY DATA ---").collect();
-        
+
         // Parse device list
         let devices = match self.parse_device_list(parts[0]) {
             Ok(devices) => devices,
@@ -422,7 +441,7 @@ impl HardwareDetector for LsusbDetector {
                 });
             }
         };
-        
+
         // Parse topology data if available
         let bus_topology = if parts.len() > 1 {
             match self.parse_topology(parts[1].trim()) {
@@ -435,18 +454,15 @@ impl HardwareDetector for LsusbDetector {
         } else {
             Vec::new()
         };
-        
+
         // Detect if we had privileged access
-        let privileged = !warnings.iter().any(|w| w.contains("permission") || w.contains("access denied"));
-        
+        let privileged =
+            !warnings.iter().any(|w| w.contains("permission") || w.contains("access denied"));
+
         let summary = self.generate_summary(&devices, &bus_topology, privileged, warnings.clone());
         errors.extend(warnings);
-        
-        let data = LsusbData {
-            devices,
-            bus_topology,
-            summary: Some(summary),
-        };
+
+        let data = LsusbData { devices, bus_topology, summary: Some(summary) };
 
         Ok(DetectionResult {
             tool_name: self.name().to_string(),

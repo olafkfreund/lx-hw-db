@@ -9,6 +9,7 @@
 ## Hardware Report Details
 
 ### System Information
+
 - **Anonymized System ID**: <!-- From metadata.anonymized_system_id -->
 - **Kernel Version**: <!-- e.g., 6.16.0 -->
 - **Distribution**: <!-- e.g., NixOS 25.11, Ubuntu 24.04 -->
@@ -45,16 +46,19 @@ Example:
 ## File Information
 
 ### File Naming Convention
+
 **File Name**: `YYYY-MM-DD_KERNEL-VERSION_ARCH_SYSTEM-ID.json`
 **Example**: `2025-08-26_6.16.0_x86_64_abc123def456.json`
 
 ### File Location
+
 **Directory**: `hardware-reports/YYYY/MM/`
 **Full Path**: `hardware-reports/2025/08/2025-08-26_6.16.0_x86_64_abc123def456.json`
 
 ## Validation Checklist
 
 ### Pre-submission Validation
+
 - [ ] Report generated with latest version of `lx-hw-detect`
 - [ ] Ran `lx-hw-detect validate <file>` successfully (no errors)
 - [ ] Confirmed privacy level is appropriate for public sharing
@@ -63,12 +67,14 @@ Example:
 - [ ] File placed in correct directory structure
 
 ### Quality Assurance
+
 - [ ] Hardware summary accurately reflects the detected hardware
 - [ ] Known issues documented with available workarounds
 - [ ] Report includes sufficient detail for community value
 - [ ] File size is reasonable (typically < 100KB)
 
 ### Legal and Ethical
+
 - [ ] Hardware report generated from my own system
 - [ ] I have the right to share this hardware information
 - [ ] I understand this will be publicly available under open license
@@ -114,6 +120,7 @@ Example:
 ## Reviewer Guidelines
 
 ### For Maintainers
+
 - [ ] Verify file follows naming convention
 - [ ] Confirm file is in correct directory structure
 - [ ] Run automated validation workflow
@@ -122,7 +129,9 @@ Example:
 - [ ] Verify no duplicate submissions from same system
 
 ### Automated Checks
+
 The following will be automatically verified:
+
 - JSON schema validation
 - Privacy compliance check
 - File naming convention

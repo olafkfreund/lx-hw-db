@@ -1,18 +1,18 @@
 //! dmidecode hardware detection implementation
-//! 
+//!
 //! dmidecode reads BIOS/UEFI data structures (also called DMI or SMBIOS tables)
 //! to extract hardware information about BIOS, system, baseboard, processor, and memory.
 //! This provides complementary information to lshw, particularly for BIOS details
 //! and memory module specifications.
 
-use super::{HardwareDetector, DetectionResult, DetectionData};
-use crate::errors::{Result, LxHwError};
+use super::{DetectionData, DetectionResult, HardwareDetector};
+use crate::errors::{LxHwError, Result};
 use async_trait::async_trait;
-use std::process::{Output, Command};
-use std::collections::HashMap;
-use std::time::Duration;
+use log::{debug, error, warn};
 use serde::{Deserialize, Serialize};
-use log::{debug, warn, error};
+use std::collections::HashMap;
+use std::process::{Command, Output};
+use std::time::Duration;
 
 /// Complete hardware information from dmidecode
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -67,7 +67,7 @@ pub struct SystemInfo {
     pub wake_up_type: Option<String>,
 }
 
-/// Baseboard information from DMI type 2  
+/// Baseboard information from DMI type 2
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BaseboardInfo {
     pub manufacturer: String,
@@ -203,24 +203,24 @@ impl HardwareDetector for DmidecodeDetector {
             .output()
             .map(|output| output.status.success())
             .unwrap_or(false);
-            
+
         if which_result {
             return true;
         }
-        
+
         // Also check common installation paths
         for path in &["/usr/bin/dmidecode", "/usr/sbin/dmidecode", "/sbin/dmidecode"] {
             if std::path::Path::new(path).exists() {
                 return true;
             }
         }
-        
+
         false
     }
 
     async fn execute(&self) -> Result<Output> {
         debug!("Executing dmidecode hardware detection");
-        
+
         let output = tokio::process::Command::new("dmidecode")
             .arg("-t") // Specify types to read
             .arg("system,baseboard,bios,processor,memory") // Focus on key hardware types
@@ -230,30 +230,32 @@ impl HardwareDetector for DmidecodeDetector {
             .map_err(|_e| LxHwError::SystemCommandError {
                 command: "dmidecode -t system,baseboard,bios,processor,memory -q".to_string()
             })?;
-            
+
         debug!("dmidecode execution completed with status: {}", output.status);
-        
+
         // dmidecode may return non-zero exit status due to privilege issues but still provide data
         if !output.status.success() && output.stdout.is_empty() {
             // Check if it's a permission error
             let stderr_str = String::from_utf8_lossy(&output.stderr);
-            if stderr_str.contains("Permission denied") || stderr_str.contains("Operation not permitted") {
+            if stderr_str.contains("Permission denied")
+                || stderr_str.contains("Operation not permitted")
+            {
                 debug!("dmidecode requires elevated privileges");
             } else {
-                return Err(LxHwError::DetectionError(
-                    format!("dmidecode failed with exit code: {} and stderr: {}", 
-                           output.status.code().unwrap_or(-1),
-                           stderr_str)
-                ));
+                return Err(LxHwError::DetectionError(format!(
+                    "dmidecode failed with exit code: {} and stderr: {}",
+                    output.status.code().unwrap_or(-1),
+                    stderr_str
+                )));
             }
         }
-        
+
         Ok(output)
     }
 
     fn parse_output(&self, output: &Output) -> Result<DetectionResult> {
         let mut errors = Vec::new();
-        
+
         // Handle stderr warnings and errors
         if !output.stderr.is_empty() {
             let stderr_str = String::from_utf8_lossy(&output.stderr);
@@ -264,7 +266,7 @@ impl HardwareDetector for DmidecodeDetector {
                 }
             }
         }
-        
+
         // Parse stdout text
         if output.stdout.is_empty() {
             errors.push("Empty output from dmidecode".to_string());
@@ -275,21 +277,22 @@ impl HardwareDetector for DmidecodeDetector {
                 errors,
             });
         }
-        
+
         let stdout_str = String::from_utf8_lossy(&output.stdout);
         debug!("Parsing dmidecode text output ({} bytes)", stdout_str.len());
-        
+
         match self.parse_dmidecode_text(&stdout_str) {
             Ok(mut dmidecode_data) => {
-                debug!("Successfully parsed dmidecode output - bios: {}, system: {}, processors: {}, memory: {}", 
+                debug!("Successfully parsed dmidecode output - bios: {}, system: {}, processors: {}, memory: {}",
                        dmidecode_data.bios.is_some(),
                        dmidecode_data.system.is_some(),
                        dmidecode_data.processors.len(),
                        dmidecode_data.memory_devices.len());
-                
+
                 // Generate summary with error context for privilege detection
-                dmidecode_data.summary = Some(self.generate_summary_with_errors(&dmidecode_data, &errors));
-                
+                dmidecode_data.summary =
+                    Some(self.generate_summary_with_errors(&dmidecode_data, &errors));
+
                 Ok(DetectionResult {
                     tool_name: self.name().to_string(),
                     success: true,
@@ -309,7 +312,7 @@ impl HardwareDetector for DmidecodeDetector {
             }
         }
     }
-    
+
     fn timeout(&self) -> Duration {
         // dmidecode is typically faster than lshw since it reads from /sys
         Duration::from_secs(15)
@@ -322,85 +325,87 @@ impl DmidecodeDetector {
         let mut dmidecode_data = DmidecodeData::default();
         let mut current_section = String::new();
         let mut current_handle = HashMap::new();
-        
+
         let lines: Vec<&str> = text.lines().collect();
         let mut i = 0;
-        
+
         while i < lines.len() {
             let line = lines[i];
-            
+
             // Skip empty lines and comments (but don't trim yet to preserve tabs)
             if line.trim().is_empty() || line.starts_with('#') {
                 i += 1;
                 continue;
             }
-            
+
             // Check for handle start
             if line.starts_with("Handle ") {
                 // Process previous handle if it exists
                 if !current_section.is_empty() {
                     self.process_handle(&current_section, &current_handle, &mut dmidecode_data);
                 }
-                
+
                 // Reset for new handle
                 current_handle.clear();
                 current_section.clear();
                 i += 1;
                 continue;
             }
-            
+
             // Check for section headers (e.g., "BIOS Information", "System Information", "Base Board Information", "Memory Device")
             // These are not indented and contain "Information" or are "Memory Device"
-            if !line.starts_with('\t') && (line.contains("Information") || line == "Memory Device") {
+            if !line.starts_with('\t') && (line.contains("Information") || line == "Memory Device")
+            {
                 current_section = line.to_string();
                 i += 1;
                 continue;
             }
-            
+
             // Parse key-value pairs (indented lines)
-            if line.starts_with('\t') && line.contains(':') {
-                let parts: Vec<&str> = line[1..].splitn(2, ':').collect();
-                if parts.len() == 2 {
-                    let key = parts[0].trim();
-                    let value = parts[1].trim();
-                    
-                    // Handle multi-line values (characteristics, flags, etc.)
-                    if value.is_empty() {
-                        let mut multi_values = Vec::new();
-                        i += 1;
-                        
-                        // Collect indented sub-items
-                        while i < lines.len() && lines[i].starts_with("\t\t") {
-                            let sub_value = lines[i][2..].trim();
-                            if !sub_value.is_empty() {
-                                multi_values.push(sub_value.to_string());
-                            }
-                            i += 1;
-                        }
-                        
-                        current_handle.insert(key.to_string(), multi_values.join(","));
-                        continue;
-                    } else {
-                        current_handle.insert(key.to_string(), value.to_string());
-                    }
-                }
+            if !line.starts_with('\t') || !line.contains(':') {
+                i += 1;
+                continue;
             }
-            
+
+            let parts: Vec<&str> = line[1..].splitn(2, ':').collect();
+            if parts.len() != 2 {
+                i += 1;
+                continue;
+            }
+
+            let key = parts[0].trim();
+            let value = parts[1].trim();
+
+            // Handle multi-line values (characteristics, flags, etc.)
+            if value.is_empty() {
+                let (multi_value, new_index) = self.collect_multi_line_value(&lines, i + 1);
+                current_handle.insert(key.to_string(), multi_value);
+                i = new_index;
+                continue;
+            }
+
+            current_handle.insert(key.to_string(), value.to_string());
+
             i += 1;
         }
-        
+
         // Process the last handle
         if !current_section.is_empty() {
             self.process_handle(&current_section, &current_handle, &mut dmidecode_data);
         }
-        
+
         // Note: errors are passed separately in parse_output, summary is generated there
-        
+
         Ok(dmidecode_data)
     }
-    
+
     /// Process a parsed handle into the appropriate data structure
-    fn process_handle(&self, section: &str, data: &HashMap<String, String>, dmidecode_data: &mut DmidecodeData) {
+    fn process_handle(
+        &self,
+        section: &str,
+        data: &HashMap<String, String>,
+        dmidecode_data: &mut DmidecodeData,
+    ) {
         match section {
             "BIOS Information" => {
                 if let Some(bios) = self.parse_bios_info(data) {
@@ -432,17 +437,35 @@ impl DmidecodeDetector {
             }
         }
     }
-    
+
+    /// Collect multi-line values from dmidecode output
+    fn collect_multi_line_value(&self, lines: &[&str], start_index: usize) -> (String, usize) {
+        let mut multi_values = Vec::new();
+        let mut current_index = start_index;
+
+        // Collect indented sub-items
+        while current_index < lines.len() && lines[current_index].starts_with("\t\t") {
+            let sub_value = lines[current_index][2..].trim();
+            if !sub_value.is_empty() {
+                multi_values.push(sub_value.to_string());
+            }
+            current_index += 1;
+        }
+
+        (multi_values.join(","), current_index)
+    }
+
     /// Parse BIOS information
     fn parse_bios_info(&self, data: &HashMap<String, String>) -> Option<BiosInfo> {
         let vendor = data.get("Vendor")?.clone();
         let version = data.get("Version")?.clone();
         let release_date = data.get("Release Date")?.clone();
-        
-        let characteristics = data.get("Characteristics")
+
+        let characteristics = data
+            .get("Characteristics")
             .map(|s| s.split(',').map(|s| s.trim().to_string()).collect())
             .unwrap_or_default();
-        
+
         Some(BiosInfo {
             vendor,
             version,
@@ -454,12 +477,12 @@ impl DmidecodeDetector {
             bios_revision: data.get("BIOS Revision").cloned(),
         })
     }
-    
+
     /// Parse system information
     fn parse_system_info(&self, data: &HashMap<String, String>) -> Option<SystemInfo> {
         let manufacturer = data.get("Manufacturer")?.clone();
         let product_name = data.get("Product Name")?.clone();
-        
+
         Some(SystemInfo {
             manufacturer,
             product_name,
@@ -471,16 +494,17 @@ impl DmidecodeDetector {
             wake_up_type: data.get("Wake-up Type").cloned(),
         })
     }
-    
+
     /// Parse baseboard information
     fn parse_baseboard_info(&self, data: &HashMap<String, String>) -> Option<BaseboardInfo> {
         let manufacturer = data.get("Manufacturer")?.clone();
         let product_name = data.get("Product Name")?.clone();
-        
-        let features = data.get("Features")
+
+        let features = data
+            .get("Features")
             .map(|s| s.split(',').map(|s| s.trim().to_string()).collect())
             .unwrap_or_default();
-        
+
         Some(BaseboardInfo {
             manufacturer,
             product_name,
@@ -492,21 +516,23 @@ impl DmidecodeDetector {
             board_type: data.get("Type").cloned(),
         })
     }
-    
+
     /// Parse processor information
     fn parse_processor_info(&self, data: &HashMap<String, String>) -> Option<ProcessorInfo> {
         let socket_designation = data.get("Socket Designation")?.clone();
         let manufacturer = data.get("Manufacturer")?.clone();
         let version = data.get("Version")?.clone();
-        
-        let flags = data.get("Flags")
+
+        let flags = data
+            .get("Flags")
             .map(|s| s.split(',').map(|s| s.trim().to_string()).collect())
             .unwrap_or_default();
-            
-        let characteristics = data.get("Characteristics")
+
+        let characteristics = data
+            .get("Characteristics")
             .map(|s| s.split(',').map(|s| s.trim().to_string()).collect())
             .unwrap_or_default();
-        
+
         Some(ProcessorInfo {
             socket_designation,
             processor_type: data.get("Type").cloned(),
@@ -531,11 +557,11 @@ impl DmidecodeDetector {
             part_number: data.get("Part Number").cloned(),
         })
     }
-    
+
     /// Parse memory device information
     fn parse_memory_device(&self, data: &HashMap<String, String>) -> Option<MemoryDevice> {
         let locator = data.get("Locator")?.clone();
-        
+
         Some(MemoryDevice {
             locator,
             bank_locator: data.get("Bank Locator").cloned(),
@@ -555,17 +581,17 @@ impl DmidecodeDetector {
             configured_voltage: data.get("Configured Voltage").cloned(),
         })
     }
-    
+
     /// Helper to parse frequency values (removes MHz, MT/s units)
     fn parse_frequency(&self, value: Option<&String>) -> Option<u32> {
         value?.split_whitespace().next()?.parse().ok()
     }
-    
+
     /// Helper to parse u32 values
     fn parse_u32(&self, value: Option<&String>) -> Option<u32> {
         value?.split_whitespace().next()?.parse().ok()
     }
-    
+
     /// Helper to parse memory size values (converts MB to u32)
     fn parse_memory_size(&self, value: Option<&String>) -> Option<u32> {
         let size_str = value?;
@@ -577,38 +603,41 @@ impl DmidecodeDetector {
             None
         }
     }
-    
+
     /// Generate summary statistics
-    /// 
+    ///
     /// Note: privileged_execution detection relies on checking from the parse_output level
     /// whether there were privilege-related errors in stderr
-    fn generate_summary_with_errors(&self, data: &DmidecodeData, errors: &[String]) -> DmidecodeSummary {
-        let total_memory_mb = data.memory_devices
-            .iter()
-            .filter_map(|mem| mem.size_mb)
-            .map(|size| size as u64)
-            .sum();
-        
-        let memory_slots_used = data.memory_devices
+    fn generate_summary_with_errors(
+        &self,
+        data: &DmidecodeData,
+        errors: &[String],
+    ) -> DmidecodeSummary {
+        let total_memory_mb =
+            data.memory_devices.iter().filter_map(|mem| mem.size_mb).map(|size| size as u64).sum();
+
+        let memory_slots_used = data
+            .memory_devices
             .iter()
             .filter(|mem| mem.size_mb.is_some() && mem.size_mb.unwrap() > 0)
             .count();
-        
+
         // Detect privileged execution by checking for privilege-related errors
         // OR if we have comprehensive data (both system and BIOS info)
-        let has_privilege_errors = errors.iter().any(|e| 
-            e.contains("Operation not permitted") || 
-            e.contains("Permission denied") ||
-            e.contains("/dev/mem")
-        );
-        
-        let privileged_execution = !has_privilege_errors && data.system.is_some() && data.bios.is_some();
-        
+        let has_privilege_errors = errors.iter().any(|e| {
+            e.contains("Operation not permitted")
+                || e.contains("Permission denied")
+                || e.contains("/dev/mem")
+        });
+
+        let privileged_execution =
+            !has_privilege_errors && data.system.is_some() && data.bios.is_some();
+
         let mut warnings = Vec::new();
         if !privileged_execution {
             warnings.push("Some hardware information may be missing due to insufficient privileges. Run as root for complete detection.".to_string());
         }
-        
+
         DmidecodeSummary {
             total_memory_mb,
             memory_slots_used,

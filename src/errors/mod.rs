@@ -7,25 +7,25 @@ use thiserror::Error;
 pub enum LxHwError {
     #[error("Hardware detection failed: {0}")]
     DetectionError(String),
-    
+
     #[error("Privacy anonymization failed: {0}")]
     PrivacyError(String),
-    
+
     #[error("System command failed: {command}")]
     SystemCommandError { command: String },
-    
+
     #[error("System error: {message}")]
     SystemError { message: String },
-    
+
     #[error("Invalid input: {message}")]
     InvalidInput { message: String },
-    
+
     #[error("IO operation failed: {0}")]
     IoError(#[from] std::io::Error),
-    
+
     #[error("Serialization failed: {0}")]
     SerializationError(String),
-    
+
     #[error("Configuration error: {0}")]
     ConfigError(String),
 

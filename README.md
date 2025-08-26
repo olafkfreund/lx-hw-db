@@ -65,9 +65,11 @@ lx-hw-detect --privacy-level high --output my-hardware-report.json
 
 1. Fork this repository
 2. Add your report to the `hardware-reports/` directory:
+
    ```bash
    cp my-hardware-report.json hardware-reports/$(date +%Y-%m-%d)-$(hostname)-report.json
    ```
+
 3. Create a pull request with your report
 
 The automated system will process your report and update the database indices within minutes of merging.
@@ -112,6 +114,7 @@ The system implements multiple layers of privacy protection:
 - **Data Minimization**: Only essential hardware information is collected, with no personal files, network configurations, or user credentials
 
 Users can select from three privacy levels:
+
 - **Basic**: Standard anonymization with 24-hour salt rotation
 - **Enhanced**: Additional generalization with 12-hour salt rotation  
 - **Strict**: Maximum privacy with 1-hour salt rotation and aggressive anonymization
@@ -139,18 +142,21 @@ The system supports distributed collaboration through a federated network:
 The system provides advanced kernel compatibility analysis that goes beyond simple hardware detection:
 
 ### Real-Time Compatibility Verification
+
 - **Module Resolution**: Maps detected hardware to kernel modules using `/lib/modules/*/modules.alias`
 - **Support Classification**: Categorizes devices as supported, experimental, generic, or unsupported
 - **Driver Information**: Provides kernel module names, configuration dependencies, and version requirements
 - **Missing Module Detection**: Identifies hardware lacking kernel drivers
 
 ### Kernel Source Analysis
+
 - **Direct Source Queries**: Searches official Linux kernel repositories via GitHub API
 - **MODULE_DEVICE_TABLE Parsing**: Extracts hardware support information directly from driver source code
 - **Version History Tracking**: Determines when hardware support was introduced in specific kernel versions
 - **Experimental Driver Detection**: Identifies staging or experimental drivers for newer hardware
 
 ### Upgrade Recommendations
+
 - **Distribution-Specific Commands**: Provides tailored kernel upgrade instructions for major Linux distributions
 - **Success Probability**: Estimates likelihood of improved hardware support after kernel upgrades
 - **Configuration Guidance**: Suggests kernel configuration options and module parameters
@@ -161,6 +167,7 @@ The system provides advanced kernel compatibility analysis that goes beyond simp
 The hardware detection system uses a modular architecture with multiple specialized detectors:
 
 ### lshw Detector (Complete)
+
 - **Data Source**: JSON output from `lshw -json -quiet -sanitize`
 - **Capabilities**: Comprehensive hardware tree with PCI, USB, memory, storage, and network devices  
 - **Privilege Handling**: Warns about missing privileges but continues with available data
@@ -168,12 +175,13 @@ The hardware detection system uses a modular architecture with multiple speciali
 - **Performance**: 30-second timeout, efficient JSON parsing with serde
 
 ### dmidecode Detector (Complete)
+
 - **Data Source**: Text output from `dmidecode -t system,baseboard,bios,processor,memory`
 - **Capabilities**: BIOS information, motherboard details, memory modules, processor specifications
 - **Privilege Handling**: Detects `/dev/mem` access issues, gracefully handles unprivileged execution
 - **Privacy Features**: Captures UUIDs, serial numbers, asset tags for anonymization pipeline
 - **Performance**: 15-second timeout, custom text parser for DMI/SMBIOS data structures
-- **Data Coverage**: 
+- **Data Coverage**:
   - **BIOS**: Vendor, version, release date, characteristics, revision
   - **System**: Manufacturer, product name, UUID, serial number, SKU
   - **Baseboard**: Manufacturer, product name, version, serial number, features
@@ -181,6 +189,7 @@ The hardware detection system uses a modular architecture with multiple speciali
   - **Memory**: DIMMs with size, type, speed, manufacturer, part numbers
 
 ### Kernel Compatibility Detector (Complete)
+
 - **Data Source**: `/lib/modules/*/modules.alias` and sysfs filesystem (`/sys/bus/pci/devices/*`)
 - **Capabilities**: Real-time kernel compatibility verification for detected hardware
 - **Support Analysis**: Identifies supported, unsupported, experimental, and generic driver support
@@ -190,6 +199,7 @@ The hardware detection system uses a modular architecture with multiple speciali
 - **Performance**: Concurrent device analysis with intelligent fallback strategies
 
 ### Kernel Source Detector (Complete)
+
 - **Data Source**: Official Linux kernel Git repositories (GitHub API integration)
 - **Capabilities**: Direct kernel source code analysis for hardware support verification
 - **Search Scope**: MODULE_DEVICE_TABLE definitions, driver source code, Kconfig entries
@@ -199,6 +209,7 @@ The hardware detection system uses a modular architecture with multiple speciali
 - **Performance**: Efficient API queries with rate limiting and caching strategies
 
 ### Planned Detectors
+
 - **lspci**: PCI device enumeration with extended kernel driver mapping
 - **lsusb**: USB device detection with vendor/product identification  
 - **inxi**: User-friendly system summaries and additional hardware insights
@@ -206,12 +217,14 @@ The hardware detection system uses a modular architecture with multiple speciali
 ## Current Status
 
 **Phase 1: Foundation Complete**
+
 - Rust CLI tool with comprehensive argument parsing
 - Privacy-preserving anonymization architecture
 - Modular project structure ready for hardware detection implementation
 - Configuration management and error handling systems
 
 **Phase 2: Hardware Detection Complete**
+
 - **lshw detector**: Complete JSON-based hardware information extraction
 - **dmidecode detector**: Complete BIOS, motherboard, and memory detection with privilege handling
 - **Kernel compatibility detector**: Real-time kernel module compatibility verification
@@ -225,6 +238,7 @@ The hardware detection system uses a modular architecture with multiple speciali
 - **inxi detector**: Planned - User-friendly system summary information
 
 **Next: Phase 3 - Report Generation & Submission**
+
 - Report generation and validation
 - Community submission workflows
 - GitHub integration for automated database updates

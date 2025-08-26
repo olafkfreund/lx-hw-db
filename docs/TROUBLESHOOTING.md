@@ -21,6 +21,7 @@ This guide helps you diagnose and fix common issues when using the Linux Hardwar
 **Cause**: Your Rust toolchain is outdated.
 
 **Solution**:
+
 ```bash
 # Update Rust to the latest stable version
 rustup update stable
@@ -39,6 +40,7 @@ cargo build --release --bin lx-hw-detect
 **Solution**:
 
 **Ubuntu/Debian**:
+
 ```bash
 sudo apt update
 sudo apt install build-essential pkg-config libssl-dev
@@ -46,12 +48,14 @@ cargo build --release --bin lx-hw-detect
 ```
 
 **Fedora/RHEL**:
+
 ```bash
 sudo dnf install gcc openssl-devel pkgconf-pkg-config
 cargo build --release --bin lx-hw-detect
 ```
 
 **Arch Linux**:
+
 ```bash
 sudo pacman -S base-devel openssl pkgconf
 cargo build --release --bin lx-hw-detect
@@ -62,6 +66,7 @@ cargo build --release --bin lx-hw-detect
 **Cause**: Network issues or dependency problems.
 
 **Solution**:
+
 ```bash
 # Clear cargo cache
 cargo clean
@@ -80,6 +85,7 @@ cargo build --release --offline
 #### Error: "No hardware detected by any detector"
 
 **Diagnostic Steps**:
+
 ```bash
 # Check if detection tools are available
 which lspci    # Should show path to lspci
@@ -97,24 +103,27 @@ lsusb -t       # Should show USB devices
 **Solutions**:
 
 1. **Install missing tools**:
+
    ```bash
    # Ubuntu/Debian
    sudo apt install pciutils usbutils inxi
-   
+
    # Fedora/RHEL
    sudo dnf install pciutils usbutils inxi
-   
+
    # Arch Linux
    sudo pacman -S pciutils usbutils inxi
    ```
 
 2. **Check permissions**:
+
    ```bash
    # Some hardware info requires root access
    sudo ./target/release/lx-hw-detect detect --verbose
    ```
 
 3. **Virtual machine limitations**:
+
    ```bash
    # VMs may not expose all hardware
    # Try with --allow-virtual flag (if implemented)
@@ -126,6 +135,7 @@ lsusb -t       # Should show USB devices
 #### Issue: Some hardware components not detected
 
 **Diagnostic**:
+
 ```bash
 # Check specific detector outputs
 lspci -v | grep -i "your-missing-hardware"
@@ -136,10 +146,11 @@ inxi -F   # Full system information
 **Common Causes and Solutions**:
 
 1. **Driver not loaded**:
+
    ```bash
    # Check loaded modules
    lsmod | grep -i "hardware-name"
-   
+
    # Load missing driver
    sudo modprobe driver-name
    ```
@@ -163,6 +174,7 @@ inxi -F   # Full system information
 **Cause**: Usually internal data structure issues.
 
 **Diagnostic**:
+
 ```bash
 # Run with debug output
 RUST_LOG=debug ./target/release/lx-hw-detect detect --format json
@@ -172,6 +184,7 @@ RUST_LOG=debug ./target/release/lx-hw-detect detect --format json
 ```
 
 **Solution**:
+
 ```bash
 # Try with minimal detection
 ./target/release/lx-hw-detect detect --format json --minimal
@@ -187,6 +200,7 @@ RUST_LOG=debug ./target/release/lx-hw-detect detect --format json
 **Cause**: Issues with system ID generation or HMAC calculation.
 
 **Diagnostic**:
+
 ```bash
 # Check system identifiers manually
 hostname
@@ -195,6 +209,7 @@ ip link show          # Network interfaces
 ```
 
 **Solution**:
+
 ```bash
 # Try with different privacy level
 ./target/release/lx-hw-detect detect --privacy basic
@@ -210,6 +225,7 @@ sudo systemd-machine-id-setup
 #### Error: "Schema validation failed"
 
 **Diagnostic**:
+
 ```bash
 # Run validation with verbose output
 ./target/release/lx-hw-detect validate report.json --verbose
@@ -221,6 +237,7 @@ jq . report.json > /dev/null && echo "Valid JSON" || echo "Invalid JSON"
 **Common Issues**:
 
 1. **Missing required fields**:
+
    ```bash
    # Check report structure
    jq '.metadata' report.json  # Should show metadata
@@ -229,6 +246,7 @@ jq . report.json > /dev/null && echo "Valid JSON" || echo "Invalid JSON"
    ```
 
 2. **Invalid field values**:
+
    ```bash
    # Check specific fields mentioned in error
    jq '.system.kernel_version' report.json
@@ -236,6 +254,7 @@ jq . report.json > /dev/null && echo "Valid JSON" || echo "Invalid JSON"
    ```
 
 **Solution**: Regenerate the report with latest tool version:
+
 ```bash
 ./target/release/lx-hw-detect detect --format json --output new-report.json
 ```
@@ -245,6 +264,7 @@ jq . report.json > /dev/null && echo "Valid JSON" || echo "Invalid JSON"
 #### Error: "Potential personally identifiable information detected"
 
 **Diagnostic**:
+
 ```bash
 # Check for common PII patterns
 grep -E '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' report.json  # Email
@@ -255,11 +275,13 @@ grep -i "username\|hostname" report.json                               # Usernam
 **Solutions**:
 
 1. **Use stricter privacy level**:
+
    ```bash
    ./target/release/lx-hw-detect detect --privacy strict --output report.json
    ```
 
 2. **Clean up system before detection**:
+
    ```bash
    # Remove temporary files with personal info
    # Set generic hostname temporarily
@@ -268,6 +290,7 @@ grep -i "username\|hostname" report.json                               # Usernam
    ```
 
 3. **Manual cleanup** (not recommended):
+
    ```bash
    # Only if you understand the implications
    # Replace specific PII found in report
@@ -281,6 +304,7 @@ grep -i "username\|hostname" report.json                               # Usernam
 #### Error: "File naming convention violation"
 
 **Diagnostic**:
+
 ```bash
 # Check your filename format
 ls -la your-report.json
@@ -290,6 +314,7 @@ ls -la your-report.json
 ```
 
 **Solution**:
+
 ```bash
 # Extract information from report
 SYSTEM_ID=$(jq -r '.metadata.anonymized_system_id' report.json)
@@ -306,6 +331,7 @@ mv report.json "${DATE}_${KERNEL_VERSION}_${ARCH}_${SYSTEM_ID}.json"
 #### Error: "File in wrong directory"
 
 **Diagnostic**:
+
 ```bash
 # Check current file location
 find . -name "*.json" -type f
@@ -314,6 +340,7 @@ find . -name "*.json" -type f
 ```
 
 **Solution**:
+
 ```bash
 # Create correct directory structure
 DATE=$(echo your-filename.json | cut -d'_' -f1)
@@ -341,6 +368,7 @@ mv your-filename.json hardware-reports/$YEAR/$MONTH/
    - Run `./target/release/lx-hw-detect validate` locally first
 
 2. **File permissions**:
+
    ```bash
    # Fix file permissions before committing
    chmod 644 your-report.json
@@ -360,6 +388,7 @@ mv your-filename.json hardware-reports/$YEAR/$MONTH/
 #### Issue: Detection takes a very long time
 
 **Diagnostic**:
+
 ```bash
 # Time the detection process
 time ./target/release/lx-hw-detect detect --format json
@@ -372,16 +401,18 @@ htop  # If available
 **Solutions**:
 
 1. **Disable slow detectors**:
+
    ```bash
    # Skip inxi if it's slow
    ./target/release/lx-hw-detect detect --skip-inxi
    ```
 
 2. **System performance**:
+
    ```bash
    # Check disk I/O
    iotop  # If available
-   
+
    # Check for background processes
    ps aux | grep -v "^\[" | sort -k3 -nr | head -10
    ```
@@ -396,6 +427,7 @@ htop  # If available
 #### Issue: Generated reports are unexpectedly large
 
 **Diagnostic**:
+
 ```bash
 # Check report size
 ls -lh report.json
@@ -407,11 +439,13 @@ jq 'to_entries | map({key: .key, size: (.value | tostring | length)}) | sort_by(
 **Solutions**:
 
 1. **Use minimal reporting**:
+
    ```bash
    ./target/release/lx-hw-detect detect --minimal
    ```
 
 2. **Check for repetitive data**:
+
    ```bash
    # Look for repeated sections
    jq '.' report.json | grep -o '"[^"]*"' | sort | uniq -c | sort -nr | head -20
@@ -424,6 +458,7 @@ jq 'to_entries | map({key: .key, size: (.value | tostring | length)}) | sort_by(
 #### Issue: Permission denied accessing hardware
 
 **Solution**:
+
 ```bash
 # Add user to necessary groups
 sudo usermod -a -G disk,dialout $USER
@@ -440,6 +475,7 @@ sudo apt install hwinfo lshw-gtk
 #### Issue: SELinux blocks hardware access
 
 **Diagnostic**:
+
 ```bash
 # Check SELinux status
 sestatus
@@ -449,6 +485,7 @@ sudo ausearch -m avc -ts recent
 ```
 
 **Solution**:
+
 ```bash
 # Temporarily set permissive mode for testing
 sudo setenforce 0
@@ -467,6 +504,7 @@ sudo setenforce 1
 #### Issue: Rolling release compatibility
 
 **Solution**:
+
 ```bash
 # Update all packages first
 sudo pacman -Syu
@@ -484,6 +522,7 @@ rustup default nightly
 #### Issue: Tools not in PATH
 
 **Solution**:
+
 ```nix
 # Add to shell.nix or configuration.nix
 environment.systemPackages = with pkgs; [

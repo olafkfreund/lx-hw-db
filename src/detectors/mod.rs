@@ -5,30 +5,30 @@ use async_trait::async_trait;
 use std::process::Output;
 use std::time::Duration;
 
-pub mod lshw;
-pub mod dmidecode;  
-pub mod lspci;
-pub mod lsusb;
+pub mod dmidecode;
+pub mod integration;
 pub mod inxi;
 pub mod kernel;
 pub mod kernel_source;
-pub mod integration;
+pub mod lshw;
+pub mod lspci;
+pub mod lsusb;
 
 /// Trait for hardware detection tools
 #[async_trait]
 pub trait HardwareDetector: Send + Sync {
     /// Name of this detector
     fn name(&self) -> &'static str;
-    
+
     /// Check if this detector is available on the system
     async fn is_available(&self) -> bool;
-    
+
     /// Execute the detection tool and return raw output
     async fn execute(&self) -> Result<Output>;
-    
+
     /// Parse the raw output into hardware information
     fn parse_output(&self, output: &Output) -> Result<DetectionResult>;
-    
+
     /// Get the timeout for this detector
     fn timeout(&self) -> Duration {
         Duration::from_secs(30)
@@ -109,19 +109,17 @@ impl DetectorRegistry {
 
         for detector in available {
             match detector.execute().await {
-                Ok(output) => {
-                    match detector.parse_output(&output) {
-                        Ok(result) => results.push(result),
-                        Err(e) => {
-                            results.push(DetectionResult {
-                                tool_name: detector.name().to_string(),
-                                success: false,
-                                data: Self::default_data_for_detector(detector.name()),
-                                errors: vec![e.to_string()],
-                            });
-                        }
+                Ok(output) => match detector.parse_output(&output) {
+                    Ok(result) => results.push(result),
+                    Err(e) => {
+                        results.push(DetectionResult {
+                            tool_name: detector.name().to_string(),
+                            success: false,
+                            data: Self::default_data_for_detector(detector.name()),
+                            errors: vec![e.to_string()],
+                        });
                     }
-                }
+                },
                 Err(e) => {
                     results.push(DetectionResult {
                         tool_name: detector.name().to_string(),

@@ -7,15 +7,15 @@ body:
     attributes:
       value: |
         # Hardware Compatibility Report Submission
-        
-        Thank you for contributing to the Linux Hardware Compatibility Database! 
+
+        Thank you for contributing to the Linux Hardware Compatibility Database!
         This helps the community understand hardware support across different Linux distributions and kernel versions.
-        
+
         **Before submitting:**
         - Ensure you've run the latest version of `lx-hw-detect`
         - Verify your report passes validation with `lx-hw-detect validate`
         - Check that no personally identifiable information (PII) is included
-        
+
   - type: dropdown
     id: report_type
     attributes:
@@ -93,7 +93,7 @@ body:
       description: What privacy level did you use when generating the report?
       options:
         - Basic (24-hour salt rotation)
-        - Enhanced (12-hour salt rotation)  
+        - Enhanced (12-hour salt rotation)
         - Strict (1-hour salt rotation)
     validations:
       required: true
@@ -153,12 +153,12 @@ body:
       label: Hardware Report File
       description: |
         **Important**: DO NOT paste the report content directly here for security reasons.
-        
+
         Instead, you should:
         1. Create a Pull Request with your hardware report file
         2. Reference the PR number in the field below
         3. Or attach the file using GitHub's file attachment feature
-        
+
         **File naming convention**: `YYYY-MM-DD_KERNEL-VERSION_ARCH_SYSTEM-ID.json`
         Example: `2025-08-26_6.16.0_x86_64_abc123def456.json`
       placeholder: "Pull Request #XXX or attach file via GitHub's attachment feature"

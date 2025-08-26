@@ -2,20 +2,20 @@ name: Build Hardware Compatibility Indices
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
     inputs:
       force_rebuild:
-        description: 'Force complete rebuild of all indices'
+        description: "Force complete rebuild of all indices"
         required: false
-        default: 'false'
+        default: "false"
         type: boolean
       min_reports:
-        description: 'Minimum number of reports required for inclusion'
+        description: "Minimum number of reports required for inclusion"
         required: false
-        default: '1'
+        default: "1"
         type: string
 
 permissions:
@@ -34,258 +34,258 @@ env:
 jobs:
   build-indices:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Setup Rust toolchain
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-        components: rustfmt, clippy
-        
-    - name: Cache Rust dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
-          
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential pkg-config
-        
-    - name: Build indexer binary
-      run: |
-        echo "Building hardware compatibility indexer..."
-        cargo build --release --bin lx-hw-indexer
-        
-    - name: Validate hardware reports
-      run: |
-        echo "Validating hardware report JSON files..."
-        find hardware-reports -name "*.json" -type f | head -5 | while read file; do
-          echo "Validating: $file"
-          if ! jq empty "$file" 2>/dev/null; then
-            echo "Error Invalid JSON in $file"
-            exit 1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config
+
+      - name: Build indexer binary
+        run: |
+          echo "Building hardware compatibility indexer..."
+          cargo build --release --bin lx-hw-indexer
+
+      - name: Validate hardware reports
+        run: |
+          echo "Validating hardware report JSON files..."
+          find hardware-reports -name "*.json" -type f | head -5 | while read file; do
+            echo "Validating: $file"
+            if ! jq empty "$file" 2>/dev/null; then
+              echo "Error Invalid JSON in $file"
+              exit 1
+            fi
+          done
+          echo "JSON validation completed"
+
+      - name: Check for existing reports
+        id: check-reports
+        run: |
+          REPORT_COUNT=$(find hardware-reports -name "*.json" -type f | wc -l)
+          echo "report_count=$REPORT_COUNT" >> $GITHUB_OUTPUT
+          echo "Found $REPORT_COUNT hardware report files"
+
+          if [ "$REPORT_COUNT" -eq 0 ]; then
+            echo "No hardware reports found. Creating sample data structure..."
+            mkdir -p hardware-reports/sample
+            echo '{"sample": true}' > hardware-reports/sample/.gitkeep.json
           fi
-        done
-        echo "JSON validation completed"
-        
-    - name: Check for existing reports
-      id: check-reports
-      run: |
-        REPORT_COUNT=$(find hardware-reports -name "*.json" -type f | wc -l)
-        echo "report_count=$REPORT_COUNT" >> $GITHUB_OUTPUT
-        echo "Found $REPORT_COUNT hardware report files"
-        
-        if [ "$REPORT_COUNT" -eq 0 ]; then
-          echo "No hardware reports found. Creating sample data structure..."
-          mkdir -p hardware-reports/sample
-          echo '{"sample": true}' > hardware-reports/sample/.gitkeep.json
-        fi
-        
-    - name: Generate compatibility indices
-      run: |
-        echo "Starting hardware compatibility index generation..."
-        
-        MIN_REPORTS="${{ github.event.inputs.min_reports || '1' }}"
-        
-        ./target/release/lx-hw-indexer generate \
-          --input hardware-reports \
-          --output indices \
-          --api-output api \
-          --stats-output statistics \
-          --min-reports "$MIN_REPORTS" \
-          --verbose
-          
-        echo "Index generation completed"
-        
-    - name: Validate generated indices
-      run: |
-        echo "Validating generated indices..."
-        
-        # Run validation but don't fail the build if validation fails with sparse data
-        if ./target/release/lx-hw-indexer validate \
-          --indices indices \
-          --reports hardware-reports \
-          --verbose; then
-          echo "Index validation completed successfully"
-        else
-          echo "Index validation had warnings (likely due to sparse data) - continuing build"
-        fi
-        
-    - name: Generate statistics report
-      run: |
-        echo "Generating statistics report..."
-        
-        ./target/release/lx-hw-indexer stats \
-          --input hardware-reports \
-          --verbose > statistics/latest-stats.txt
-          
-        echo "Statistics generation completed"
-        
-    - name: Generate static website
-      run: |
-        echo "Generating static website..."
-        
-        # Create minimal templates directory if it doesn't exist
-        mkdir -p templates
-        
-        ./target/release/lx-hw-indexer generate-site \
-          --output web \
-          --template-dir templates \
-          --indices indices \
-          --verbose
-          
-        # Copy generated indices and API to web directory for serving
-        cp -r indices web/
-        cp -r api web/
-        cp -r statistics web/
-        
-        echo "Static website generation completed"
-        
-    - name: Archive build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: hardware-compatibility-indices
-        path: |
-          indices/
-          api/
-          statistics/
-          web/
-        retention-days: 30
-        
-    - name: Create deployment package
-      run: |
-        echo "Creating deployment package..."
-        
-        # Create deployment info
-        cat > web/build-info.json << EOF
-        {
-          "build_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-          "commit_sha": "${{ github.sha }}",
-          "commit_ref": "${{ github.ref }}",
-          "workflow_run": "${{ github.run_number }}",
-          "report_count": ${{ steps.check-reports.outputs.report_count }},
-          "indices_generated": $(find indices -name "*.json" | wc -l),
-          "api_endpoints": $(find api -name "*.json" | wc -l)
-        }
-        EOF
-        
-        # Create index summary
-        echo "# Hardware Compatibility Database - Build ${{ github.run_number }}" > web/README.md
-        echo "" >> web/README.md
-        echo "Built on: $(date -u)" >> web/README.md
-        echo "Commit: ${{ github.sha }}" >> web/README.md
-        echo "Reports processed: ${{ steps.check-reports.outputs.report_count }}" >> web/README.md
-        echo "" >> web/README.md
-        cat statistics/latest-stats.txt >> web/README.md
-        
-    - name: Setup Pages
-      if: github.ref == 'refs/heads/main'
-      uses: actions/configure-pages@v4
-      
-    - name: Upload Pages artifact
-      if: github.ref == 'refs/heads/main'
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: web/
-        
-    - name: Commit updated indices (if on main)
-      if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-      run: |
-        echo "Committing updated indices to repository..."
-        
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        # Add generated files
-        git add indices/ api/ statistics/ web/
-        
-        # Check if there are changes to commit
-        if git diff --staged --quiet; then
-          echo "ℹ️ No changes to commit"
-        else
-          # Create commit with build info
-          git commit -m "Automated Update hardware compatibility indices
-          
-          - Build: ${{ github.run_number }}
-          - Commit: ${{ github.sha }}
-          - Reports: ${{ steps.check-reports.outputs.report_count }}
-          - Generated: $(date -u)
-          
-          Generated by automated indexing workflow"
-          
-          # Push changes
-          git push
-          
-          echo "Indices committed to repository"
-        fi
-        
-    - name: Create release (on main branch, weekly)
-      if: github.ref == 'refs/heads/main' && github.event.schedule
-      run: |
-        echo "Creating weekly data release..."
-        
-        RELEASE_TAG="data-$(date +%Y.%W)"
-        RELEASE_NAME="Hardware Compatibility Data - Week $(date +%W, %Y)"
-        
-        # Create release notes
-        cat > release-notes.md << EOF
-        # Hardware Compatibility Database - Week $(date +%W, %Y)
-        
-        ## Analyzing Database Statistics
-        - **Total Reports**: ${{ steps.check-reports.outputs.report_count }}
-        - **API Endpoints**: $(find api -name "*.json" | wc -l)
-        - **Search Indices**: $(find indices -name "*.json" | wc -l)
-        - **Last Updated**: $(date -u)
-        
-        ## 🔗 Access Points
-        - **Web Interface**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
-        - **API Base**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/api/
-        - **Search Indices**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/indices/
-        
-        ## 📈 Latest Statistics
-        $(cat statistics/latest-stats.txt)
-        EOF
-        
-        # Create GitHub release
-        gh release create "$RELEASE_TAG" \
-          --title "$RELEASE_NAME" \
-          --notes-file release-notes.md \
-          indices/**/*.json \
-          api/**/*.json \
-          statistics/**/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate compatibility indices
+        run: |
+          echo "Starting hardware compatibility index generation..."
+
+          MIN_REPORTS="${{ github.event.inputs.min_reports || '1' }}"
+
+          ./target/release/lx-hw-indexer generate \
+            --input hardware-reports \
+            --output indices \
+            --api-output api \
+            --stats-output statistics \
+            --min-reports "$MIN_REPORTS" \
+            --verbose
+
+          echo "Index generation completed"
+
+      - name: Validate generated indices
+        run: |
+          echo "Validating generated indices..."
+
+          # Run validation but don't fail the build if validation fails with sparse data
+          if ./target/release/lx-hw-indexer validate \
+            --indices indices \
+            --reports hardware-reports \
+            --verbose; then
+            echo "Index validation completed successfully"
+          else
+            echo "Index validation had warnings (likely due to sparse data) - continuing build"
+          fi
+
+      - name: Generate statistics report
+        run: |
+          echo "Generating statistics report..."
+
+          ./target/release/lx-hw-indexer stats \
+            --input hardware-reports \
+            --verbose > statistics/latest-stats.txt
+
+          echo "Statistics generation completed"
+
+      - name: Generate static website
+        run: |
+          echo "Generating static website..."
+
+          # Create minimal templates directory if it doesn't exist
+          mkdir -p templates
+
+          ./target/release/lx-hw-indexer generate-site \
+            --output web \
+            --template-dir templates \
+            --indices indices \
+            --verbose
+
+          # Copy generated indices and API to web directory for serving
+          cp -r indices web/
+          cp -r api web/
+          cp -r statistics web/
+
+          echo "Static website generation completed"
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardware-compatibility-indices
+          path: |
+            indices/
+            api/
+            statistics/
+            web/
+          retention-days: 30
+
+      - name: Create deployment package
+        run: |
+          echo "Creating deployment package..."
+
+          # Create deployment info
+          cat > web/build-info.json << EOF
+          {
+            "build_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit_sha": "${{ github.sha }}",
+            "commit_ref": "${{ github.ref }}",
+            "workflow_run": "${{ github.run_number }}",
+            "report_count": ${{ steps.check-reports.outputs.report_count }},
+            "indices_generated": $(find indices -name "*.json" | wc -l),
+            "api_endpoints": $(find api -name "*.json" | wc -l)
+          }
+          EOF
+
+          # Create index summary
+          echo "# Hardware Compatibility Database - Build ${{ github.run_number }}" > web/README.md
+          echo "" >> web/README.md
+          echo "Built on: $(date -u)" >> web/README.md
+          echo "Commit: ${{ github.sha }}" >> web/README.md
+          echo "Reports processed: ${{ steps.check-reports.outputs.report_count }}" >> web/README.md
+          echo "" >> web/README.md
+          cat statistics/latest-stats.txt >> web/README.md
+
+      - name: Setup Pages
+        if: github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/
+
+      - name: Commit updated indices (if on main)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          echo "Committing updated indices to repository..."
+
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Add generated files
+          git add indices/ api/ statistics/ web/
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "ℹ️ No changes to commit"
+          else
+            # Create commit with build info
+            git commit -m "Automated Update hardware compatibility indices
+
+            - Build: ${{ github.run_number }}
+            - Commit: ${{ github.sha }}
+            - Reports: ${{ steps.check-reports.outputs.report_count }}
+            - Generated: $(date -u)
+
+            Generated by automated indexing workflow"
+
+            # Push changes
+            git push
+
+            echo "Indices committed to repository"
+          fi
+
+      - name: Create release (on main branch, weekly)
+        if: github.ref == 'refs/heads/main' && github.event.schedule
+        run: |
+          echo "Creating weekly data release..."
+
+          RELEASE_TAG="data-$(date +%Y.%W)"
+          RELEASE_NAME="Hardware Compatibility Data - Week $(date +%W, %Y)"
+
+          # Create release notes
+          cat > release-notes.md << EOF
+          # Hardware Compatibility Database - Week $(date +%W, %Y)
+
+          ## Analyzing Database Statistics
+          - **Total Reports**: ${{ steps.check-reports.outputs.report_count }}
+          - **API Endpoints**: $(find api -name "*.json" | wc -l)
+          - **Search Indices**: $(find indices -name "*.json" | wc -l)
+          - **Last Updated**: $(date -u)
+
+          ## 🔗 Access Points
+          - **Web Interface**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          - **API Base**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/api/
+          - **Search Indices**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/indices/
+
+          ## 📈 Latest Statistics
+          $(cat statistics/latest-stats.txt)
+          EOF
+
+          # Create GitHub release
+          gh release create "$RELEASE_TAG" \
+            --title "$RELEASE_NAME" \
+            --notes-file release-notes.md \
+            indices/**/*.json \
+            api/**/*.json \
+            statistics/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-pages:
     if: github.ref == 'refs/heads/main'
     needs: build-indices
     runs-on: ubuntu-latest
-    
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-      
+
     steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-      
-    - name: Update deployment status
-      run: |
-        echo "Deployment completed successfully!"
-        echo "Website URL: ${{ steps.deployment.outputs.page_url }}"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Update deployment status
+        run: |
+          echo "Deployment completed successfully!"
+          echo "Website URL: ${{ steps.deployment.outputs.page_url }}"

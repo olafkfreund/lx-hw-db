@@ -2,9 +2,7 @@
   "Unknown": {
     "total_reports": 1,
     "vendor_compatibility": {},
-    "common_kernels": [
-      "6.16.0"
-    ],
+    "common_kernels": ["6.16.0"],
     "notes": []
   }
 }

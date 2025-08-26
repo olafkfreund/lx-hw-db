@@ -2,8 +2,8 @@
 
 use super::*;
 use crate::errors::Result;
-use std::collections::{HashMap, HashSet};
 use chrono::Utc;
+use std::collections::{HashMap, HashSet};
 
 /// Builder for generating all types of indices from hardware reports
 pub struct IndexBuilder<'a> {
@@ -14,10 +14,7 @@ pub struct IndexBuilder<'a> {
 
 impl<'a> IndexBuilder<'a> {
     pub fn new(config: &'a IndexerConfig) -> Self {
-        Self {
-            config,
-            vendor_aliases: Self::create_vendor_aliases(),
-        }
+        Self { config, vendor_aliases: Self::create_vendor_aliases() }
     }
 
     /// Build complete index collection from reports
@@ -46,6 +43,7 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Build vendor-organized index
+    #[allow(clippy::excessive_nesting)]
     fn build_vendor_index(&self, reports: &[IndexedReport]) -> Result<VendorIndex> {
         if self.config.verbose {
             println!("Building vendor index...");
@@ -57,15 +55,16 @@ impl<'a> IndexBuilder<'a> {
             for component in &report.components {
                 if let Some(vendor) = &component.vendor {
                     let normalized_vendor = self.normalize_vendor_name(vendor);
-                    
-                    let entry = vendor_index
-                        .entry(normalized_vendor.clone())
-                        .or_insert_with(|| VendorEntry {
-                            total_reports: 0,
-                            components: HashMap::new(),
-                            recent_reports: Vec::new(),
-                            compatibility_score: 0.0,
-                            last_updated: Utc::now(),
+
+                    let entry =
+                        vendor_index.entry(normalized_vendor.clone()).or_insert_with(|| {
+                            VendorEntry {
+                                total_reports: 0,
+                                components: HashMap::new(),
+                                recent_reports: Vec::new(),
+                                compatibility_score: 0.0,
+                                last_updated: Utc::now(),
+                            }
                         });
 
                     entry.total_reports += 1;
@@ -77,7 +76,7 @@ impl<'a> IndexBuilder<'a> {
                             .components
                             .entry(component.component_type.clone())
                             .or_insert_with(Vec::new);
-                        
+
                         if !component_list.contains(model) {
                             component_list.push(model.clone());
                         }
@@ -92,10 +91,8 @@ impl<'a> IndexBuilder<'a> {
                     }
 
                     // Update compatibility score
-                    entry.compatibility_score = self.calculate_vendor_compatibility_score(
-                        &normalized_vendor,
-                        reports,
-                    );
+                    entry.compatibility_score =
+                        self.calculate_vendor_compatibility_score(&normalized_vendor, reports);
                 }
             }
         }
@@ -116,6 +113,7 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Build component type organized index
+    #[allow(clippy::excessive_nesting)]
     fn build_component_index(&self, reports: &[IndexedReport]) -> Result<ComponentIndex> {
         if self.config.verbose {
             println!("Building component index...");
@@ -125,13 +123,14 @@ impl<'a> IndexBuilder<'a> {
 
         for report in reports {
             for component in &report.components {
-                let entry = component_index
-                    .entry(component.component_type.clone())
-                    .or_insert_with(|| ComponentEntry {
-                        total_reports: 0,
-                        vendors: HashMap::new(),
-                        popular_models: Vec::new(),
-                        compatibility_distribution: HashMap::new(),
+                let entry =
+                    component_index.entry(component.component_type.clone()).or_insert_with(|| {
+                        ComponentEntry {
+                            total_reports: 0,
+                            vendors: HashMap::new(),
+                            popular_models: Vec::new(),
+                            compatibility_distribution: HashMap::new(),
+                        }
                     });
 
                 entry.total_reports += 1;
@@ -161,6 +160,7 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Build kernel version organized index
+    #[allow(clippy::excessive_nesting)]
     fn build_kernel_index(&self, reports: &[IndexedReport]) -> Result<KernelIndex> {
         if self.config.verbose {
             println!("Building kernel index...");
@@ -170,22 +170,20 @@ impl<'a> IndexBuilder<'a> {
 
         for report in reports {
             let kernel_version = &report.metadata.kernel_version;
-            
-            let entry = kernel_index
-                .entry(kernel_version.clone())
-                .or_insert_with(|| KernelEntry {
-                    total_reports: 0,
-                    compatibility_stats: HashMap::new(),
-                    problematic_hardware: Vec::new(),
-                    release_date: None, // Would be populated from external data
-                });
+
+            let entry = kernel_index.entry(kernel_version.clone()).or_insert_with(|| KernelEntry {
+                total_reports: 0,
+                compatibility_stats: HashMap::new(),
+                problematic_hardware: Vec::new(),
+                release_date: None, // Would be populated from external data
+            });
 
             entry.total_reports += 1;
 
             // Update compatibility statistics
             let status_str = match report.compatibility.status {
                 CompatibilityStatus::Excellent => "excellent",
-                CompatibilityStatus::Good => "good", 
+                CompatibilityStatus::Good => "good",
                 CompatibilityStatus::Fair => "fair",
                 CompatibilityStatus::Poor => "poor",
                 CompatibilityStatus::Unknown => "unknown",
@@ -193,7 +191,10 @@ impl<'a> IndexBuilder<'a> {
             *entry.compatibility_stats.entry(status_str.to_string()).or_insert(0) += 1;
 
             // Track problematic hardware
-            if matches!(report.compatibility.status, CompatibilityStatus::Poor | CompatibilityStatus::Fair) {
+            if matches!(
+                report.compatibility.status,
+                CompatibilityStatus::Poor | CompatibilityStatus::Fair
+            ) {
                 for component in &report.components {
                     if let (Some(vendor), Some(model)) = (&component.vendor, &component.model) {
                         let hw_id = format!("{} {}", vendor, model);
@@ -222,10 +223,9 @@ impl<'a> IndexBuilder<'a> {
 
         for report in reports {
             let distribution = &report.metadata.distribution;
-            
-            let entry = dist_index
-                .entry(distribution.clone())
-                .or_insert_with(|| DistributionEntry {
+
+            let entry =
+                dist_index.entry(distribution.clone()).or_insert_with(|| DistributionEntry {
                     total_reports: 0,
                     vendor_compatibility: HashMap::new(),
                     common_kernels: Vec::new(),
@@ -245,10 +245,9 @@ impl<'a> IndexBuilder<'a> {
                 if let Some(vendor) = &component.vendor {
                     let normalized_vendor = self.normalize_vendor_name(vendor);
                     let compat_score = self.component_compatibility_score(component, report);
-                    
-                    let current_score = entry.vendor_compatibility
-                        .get(&normalized_vendor)
-                        .unwrap_or(&0.0);
+
+                    let current_score =
+                        entry.vendor_compatibility.get(&normalized_vendor).unwrap_or(&0.0);
                     let new_score = (current_score + compat_score) / 2.0;
                     entry.vendor_compatibility.insert(normalized_vendor, new_score);
                 }
@@ -309,10 +308,7 @@ impl<'a> IndexBuilder<'a> {
 
             // Add terms to index
             for term in terms {
-                search_index
-                    .entry(term)
-                    .or_insert_with(Vec::new)
-                    .push(report.id.clone());
+                search_index.entry(term).or_insert_with(Vec::new).push(report.id.clone());
             }
         }
 
@@ -330,6 +326,7 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Build hardware compatibility scoring matrix
+    #[allow(clippy::excessive_nesting)]
     fn build_compatibility_matrix(&self, reports: &[IndexedReport]) -> Result<CompatibilityMatrix> {
         if self.config.verbose {
             println!("Building compatibility matrix...");
@@ -341,32 +338,34 @@ impl<'a> IndexBuilder<'a> {
             for component in &report.components {
                 if let (Some(vendor), Some(model)) = (&component.vendor, &component.model) {
                     let hw_key = format!("{} {}", self.normalize_vendor_name(vendor), model);
-                    let kernel_key = format!("{}_{}", 
-                        report.metadata.kernel_version,
-                        report.metadata.distribution
+                    let kernel_key = format!(
+                        "{}_{}",
+                        report.metadata.kernel_version, report.metadata.distribution
                     );
 
                     let hardware_entry = matrix.entry(hw_key).or_insert_with(HashMap::new);
-                    
-                    let score_entry = hardware_entry.entry(kernel_key).or_insert_with(|| {
-                        CompatibilityScore {
+
+                    let score_entry =
+                        hardware_entry.entry(kernel_key).or_insert_with(|| CompatibilityScore {
                             score: 0,
                             driver: component.driver.clone(),
                             sample_size: 0,
                             confidence: ConfidenceLevel::Low,
                             last_updated: Utc::now(),
-                        }
-                    });
+                        });
 
                     // Update score based on compatibility
-                    let component_score = self.component_compatibility_score(component, report) as u8;
+                    let component_score =
+                        self.component_compatibility_score(component, report) as u8;
                     let total_samples = score_entry.sample_size + 1;
-                    
+
                     // Calculate weighted average
-                    score_entry.score = (((score_entry.score as usize * score_entry.sample_size) + component_score as usize) / total_samples) as u8;
+                    score_entry.score = (((score_entry.score as usize * score_entry.sample_size)
+                        + component_score as usize)
+                        / total_samples) as u8;
                     score_entry.sample_size = total_samples;
                     score_entry.last_updated = Utc::now();
-                    
+
                     // Update confidence level
                     score_entry.confidence = match total_samples {
                         1..=2 => ConfidenceLevel::Low,
@@ -415,7 +414,10 @@ impl<'a> IndexBuilder<'a> {
             all_distributions.insert(&report.metadata.distribution);
 
             // Count compatibility status
-            *stats.compatibility_overview.entry(report.compatibility.status.clone()).or_insert(0) += 1;
+            *stats
+                .compatibility_overview
+                .entry(report.compatibility.status.clone())
+                .or_insert(0) += 1;
 
             for component in &report.components {
                 all_component_types.insert(&component.component_type);
@@ -438,8 +440,10 @@ impl<'a> IndexBuilder<'a> {
         stats.growth_stats = self.build_growth_statistics(reports);
 
         if self.config.verbose {
-            println!("   Statistics: {} unique systems, {} vendors, {} distributions",
-                stats.unique_systems, stats.total_vendors, stats.distributions);
+            println!(
+                "   Statistics: {} unique systems, {} vendors, {} distributions",
+                stats.unique_systems, stats.total_vendors, stats.distributions
+            );
         }
 
         Ok(stats)
@@ -449,7 +453,7 @@ impl<'a> IndexBuilder<'a> {
     /// Create vendor name normalization aliases
     fn create_vendor_aliases() -> HashMap<String, String> {
         let mut aliases = HashMap::new();
-        
+
         // Common vendor name variations
         aliases.insert("Advanced Micro Devices, Inc.".to_string(), "AMD".to_string());
         aliases.insert("Advanced Micro Devices [AMD]".to_string(), "AMD".to_string());
@@ -466,10 +470,7 @@ impl<'a> IndexBuilder<'a> {
 
     /// Normalize vendor name using aliases
     fn normalize_vendor_name(&self, vendor: &str) -> String {
-        self.vendor_aliases
-            .get(vendor)
-            .unwrap_or(&vendor.to_string())
-            .clone()
+        self.vendor_aliases.get(vendor).unwrap_or(&vendor.to_string()).clone()
     }
 
     /// Add search terms from a text string
@@ -484,7 +485,11 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Calculate compatibility score for a component
-    fn component_compatibility_score(&self, _component: &HardwareComponent, report: &IndexedReport) -> f64 {
+    fn component_compatibility_score(
+        &self,
+        _component: &HardwareComponent,
+        report: &IndexedReport,
+    ) -> f64 {
         match report.compatibility.status {
             CompatibilityStatus::Excellent => 100.0,
             CompatibilityStatus::Good => 85.0,
@@ -495,13 +500,18 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Get compatibility status for a component
-    fn get_component_compatibility_status(&self, _component: &HardwareComponent, report: &IndexedReport) -> CompatibilityStatus {
+    fn get_component_compatibility_status(
+        &self,
+        _component: &HardwareComponent,
+        report: &IndexedReport,
+    ) -> CompatibilityStatus {
         // For now, use overall report status
         // In a real implementation, this would analyze component-specific data
         report.compatibility.status.clone()
     }
 
     /// Calculate vendor compatibility score
+    #[allow(clippy::excessive_nesting)]
     fn calculate_vendor_compatibility_score(&self, vendor: &str, reports: &[IndexedReport]) -> f64 {
         let mut total_score = 0.0;
         let mut count = 0;
@@ -525,7 +535,12 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Build popular models for a component type
-    fn build_popular_models_for_component(&self, component_type: &str, reports: &[IndexedReport]) -> Vec<PopularModel> {
+    #[allow(clippy::excessive_nesting)]
+    fn build_popular_models_for_component(
+        &self,
+        component_type: &str,
+        reports: &[IndexedReport],
+    ) -> Vec<PopularModel> {
         let mut model_counts: HashMap<(String, String), usize> = HashMap::new();
         let mut model_scores: HashMap<(String, String), f64> = HashMap::new();
 
@@ -535,7 +550,7 @@ impl<'a> IndexBuilder<'a> {
                     if let (Some(vendor), Some(model)) = (&component.vendor, &component.model) {
                         let key = (self.normalize_vendor_name(vendor), model.clone());
                         *model_counts.entry(key.clone()).or_insert(0) += 1;
-                        
+
                         let current_score = model_scores.get(&key).unwrap_or(&0.0);
                         let component_score = self.component_compatibility_score(component, report);
                         model_scores.insert(key, (current_score + component_score) / 2.0);
@@ -557,8 +572,11 @@ impl<'a> IndexBuilder<'a> {
 
         // Sort by report count, then by compatibility score
         popular_models.sort_by(|a, b| {
-            b.report_count.cmp(&a.report_count)
-                .then_with(|| b.avg_compatibility.partial_cmp(&a.avg_compatibility).unwrap_or(std::cmp::Ordering::Equal))
+            b.report_count.cmp(&a.report_count).then_with(|| {
+                b.avg_compatibility
+                    .partial_cmp(&a.avg_compatibility)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
         });
 
         popular_models.truncate(20); // Keep top 20
@@ -613,8 +631,10 @@ impl<'a> IndexBuilder<'a> {
         println!("   Kernel Versions: {}", indices.by_kernel.len());
         println!("   Distributions: {}", indices.by_distribution.len());
         println!("   Search Terms: {}", indices.search_terms.len());
-        println!("   Hardware/Kernel Combinations: {}", 
-            indices.compatibility_matrix.values().map(|v| v.len()).sum::<usize>());
+        println!(
+            "   Hardware/Kernel Combinations: {}",
+            indices.compatibility_matrix.values().map(|v| v.len()).sum::<usize>()
+        );
         println!("   Total Reports: {}", indices.statistics.total_reports);
         println!("   Unique Systems: {}", indices.statistics.unique_systems);
     }
