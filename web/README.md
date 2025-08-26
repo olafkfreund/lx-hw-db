@@ -2,6 +2,8 @@
 
 A comprehensive, fully-functional web interface for the Linux Hardware Compatibility Database with community-driven configuration tips, hardware profiles, and contributor recognition system.
 
+> **Build Information**: Originally build 15 created on Tue Aug 26 19:46:16 UTC 2025, now extended with complete community features.
+
 ## 🎉 Status: **FULLY IMPLEMENTED & WORKING**
 
 All features are complete and functional with comprehensive sample data. The website is ready for local testing and development.
