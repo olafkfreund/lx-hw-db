@@ -62,10 +62,13 @@ pub enum Commands {
         output: Option<PathBuf>,
 
         /// Specific tools to run (default: all available)
+        /// Available tools: lshw, dmidecode, lspci, lsusb, inxi
+        /// Example: --tools lshw,lspci
         #[arg(short, long, value_delimiter = ',')]
         tools: Option<Vec<String>>,
 
         /// Timeout for each detection tool in seconds
+        /// Individual detectors will be terminated if they exceed this time limit
         #[arg(long, default_value_t = 30)]
         timeout: u64,
 
@@ -108,6 +111,41 @@ pub enum Commands {
         /// Generate default configuration file
         #[command(subcommand)]
         command: ConfigCommands,
+    },
+
+    /// Submit hardware report directly to GitHub
+    Submit {
+        /// GitHub username (will prompt if not provided)
+        #[arg(long)]
+        github_username: Option<String>,
+
+        /// GitHub personal access token (will prompt if not provided)
+        #[arg(long)]
+        github_token: Option<String>,
+
+        /// Hardware report file to submit (if not provided, will generate automatically)
+        #[arg(short, long)]
+        report: Option<PathBuf>,
+
+        /// Brief description of the hardware setup
+        #[arg(short, long)]
+        description: Option<String>,
+
+        /// Skip interactive confirmation prompts
+        #[arg(short, long)]
+        yes: bool,
+
+        /// Fork repository if not already forked
+        #[arg(long)]
+        auto_fork: bool,
+
+        /// Specific tools to use for detection (if generating report)
+        #[arg(short, long, value_delimiter = ',')]
+        tools: Option<Vec<String>>,
+
+        /// Use draft pull request
+        #[arg(long)]
+        draft: bool,
     },
 }
 
@@ -166,6 +204,29 @@ impl CliHandler {
                 self.handle_analyze(device, kernel_source, kernel_repo, recommendations).await
             }
             Commands::Config { command } => self.handle_config(command).await,
+            Commands::Submit {
+                github_username,
+                github_token,
+                report,
+                description,
+                yes,
+                auto_fork,
+                tools,
+                draft,
+            } => {
+                self.handle_submit(
+                    github_username,
+                    github_token,
+                    report,
+                    description,
+                    yes,
+                    auto_fork,
+                    tools,
+                    draft,
+                    &cli.global,
+                )
+                .await
+            }
         }
     }
 
@@ -197,18 +258,31 @@ impl CliHandler {
         privacy: PrivacyLevel,
         format: OutputFormat,
         output: Option<PathBuf>,
-        _tools: Option<Vec<String>>, // TODO: Use to filter specific tools
-        _timeout: u64,               // TODO: Apply timeout to individual detectors
+        tools: Option<Vec<String>>,
+        timeout: u64,
         no_anonymize: bool,
     ) -> Result<()> {
         use crate::detectors::integration::HardwareAnalyzer;
         use crate::output::OutputRenderer;
+        use std::time::Duration;
 
         log::info!("Starting hardware detection and analysis...");
         println!("Detecting hardware and analyzing kernel compatibility...\n");
 
-        // Create hardware analyzer with privacy settings
+        // Create hardware analyzer with privacy settings and configure tools/timeout
         let mut analyzer = HardwareAnalyzer::new(privacy)?;
+        
+        // Configure tool filtering if specified
+        if let Some(tool_names) = &tools {
+            analyzer.set_enabled_tools(tool_names.clone())?;
+            println!("Using only specified tools: {}", tool_names.join(", "));
+        }
+        
+        // Configure timeout if specified
+        analyzer.set_detection_timeout(Duration::from_secs(timeout));
+        if timeout != 30 {
+            println!("Using custom timeout: {}s per detector", timeout);
+        }
 
         // Run complete analysis
         let report = analyzer.analyze_system().await?;
@@ -477,6 +551,124 @@ impl CliHandler {
                 Ok(())
             }
         }
+    }
+
+    /// Handle the submit command
+    async fn handle_submit(
+        &self,
+        github_username: Option<String>,
+        github_token: Option<String>,
+        report: Option<PathBuf>,
+        description: Option<String>,
+        yes: bool,
+        auto_fork: bool,
+        tools: Option<Vec<String>>,
+        _draft: bool,
+        global: &GlobalOptions,
+    ) -> Result<()> {
+        use crate::github_submit::{setup_github_config, GitHubSubmitter, SubmissionInfo};
+        use chrono::Utc;
+        use std::fs;
+        use tempfile::NamedTempFile;
+
+        println!("🚀 Starting automated GitHub submission...\n");
+
+        // Step 1: Setup GitHub configuration
+        let mut github_config = setup_github_config(github_username, github_token)?;
+        github_config.auto_fork = auto_fork;
+
+        // Step 2: Generate or use existing report
+        let report_path = if let Some(report_path) = report {
+            if !report_path.exists() {
+                return Err(LxHwError::Validation(format!(
+                    "Report file not found: {}",
+                    report_path.display()
+                )));
+            }
+            report_path
+        } else {
+            println!("📊 No report file provided, generating hardware report...");
+
+            // Create temporary file for the report
+            let temp_file = NamedTempFile::new()
+                .map_err(|e| LxHwError::Io(format!("Failed to create temporary file: {}", e)))?;
+
+            // Generate report using the detect functionality
+            let mut registry = crate::detectors::DetectorRegistry::new();
+
+            // Configure detection tools if specified
+            if let Some(tool_names) = tools {
+                registry.set_enabled_tools(tool_names)?;
+            }
+
+            // Run detection
+            let detection_results = registry.detect_all().await?;
+
+            // Generate hardware report  
+            let mut hardware_analyzer = crate::detectors::integration::HardwareAnalyzer::new(global.privacy)?;
+            let hardware_report = hardware_analyzer.analyze_system().await?;
+
+            // Write report to temporary file
+            let report_json = serde_json::to_string_pretty(&hardware_report)
+                .map_err(|e| LxHwError::SerializationError(e.to_string()))?;
+
+            fs::write(temp_file.path(), report_json)
+                .map_err(|e| LxHwError::Io(format!("Failed to write report: {}", e)))?;
+
+            println!("✅ Hardware report generated successfully");
+            temp_file.path().to_path_buf()
+        };
+
+        // Step 3: Get description if not provided
+        let description = if let Some(desc) = description {
+            desc
+        } else {
+            // Extract basic system info for default description
+            let content = fs::read_to_string(&report_path)
+                .map_err(|e| LxHwError::Io(format!("Failed to read report: {}", e)))?;
+
+            let report: crate::hardware::HardwareReport = serde_json::from_str(&content)
+                .map_err(|e| LxHwError::Validation(format!("Invalid report format: {}", e)))?;
+
+            let cpu_info = report.cpu
+                .as_ref()
+                .map(|cpu| format!("{} {}", cpu.vendor, cpu.model))
+                .unwrap_or_else(|| "Unknown CPU".to_string());
+
+            let gpu_info = report.graphics
+                .first()
+                .map(|gpu| format!("{} {}", gpu.vendor, gpu.model))
+                .unwrap_or_else(|| "Unknown GPU".to_string());
+
+            format!("{} with {} on {} {}",
+                cpu_info,
+                gpu_info,
+                report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string()),
+                report.system.kernel_version)
+        };
+
+        // Step 4: Create submission info
+        let submission = SubmissionInfo {
+            description,
+            report_path: report_path.clone(),
+            generated_at: Utc::now(),
+            privacy_level: global.privacy,
+            tools_used: Vec::new(), // Will be populated from report
+        };
+
+        // Step 5: Submit to GitHub
+        let mut submitter = GitHubSubmitter::new(github_config);
+        let pr_url = submitter.submit_report(submission, yes).await?;
+
+        println!("\n🎉 Submission completed successfully!");
+        println!("📋 Pull Request: {}", pr_url);
+        println!("\nNext steps:");
+        println!("1. Your submission will be automatically validated");
+        println!("2. Community members will review your hardware report");
+        println!("3. Once approved, it will be merged into the database");
+        println!("\nThank you for contributing to the Linux Hardware Database! 🐧");
+
+        Ok(())
     }
 }
 

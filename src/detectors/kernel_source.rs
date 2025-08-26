@@ -188,7 +188,7 @@ impl KernelSourceAnalyzer {
     ) -> Result<Vec<HardwareSupportInfo>> {
         let mut results = Vec::new();
         let line_regex = Regex::new(r"^([^:]+):(\d+):(.*)$")
-            .map_err(|e| LxHwError::ValidationError { message: format!("Regex error: {}", e) })?;
+            .map_err(|e| LxHwError::Validation(format!("Regex error: {}", e)))?;
 
         for line in output.lines() {
             if let Some(captures) = line_regex.captures(line) {

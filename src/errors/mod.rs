@@ -32,8 +32,14 @@ pub enum LxHwError {
     #[error("Database error: {message}")]
     DatabaseError { message: String },
 
-    #[error("Validation error: {message}")]
-    ValidationError { message: String },
+    #[error("Validation error: {0}")]
+    Validation(String),
+
+    #[error("GitHub submission failed: {0}")]
+    Submission(String),
+
+    #[error("IO error: {0}")]
+    Io(String),
 }
 
 /// Result type alias for hardware detection operations

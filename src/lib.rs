@@ -7,6 +7,7 @@
 pub mod cli;
 pub mod detectors;
 pub mod errors;
+pub mod github_submit;
 pub mod hardware;
 pub mod indexer;
 pub mod output;
