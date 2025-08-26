@@ -13,15 +13,9 @@ class DataLoader {
     }
     
     getBaseUrl() {
-        // Detect if we're running locally or from a server
-        const protocol = window.location.protocol;
-        const hostname = window.location.hostname;
-        
-        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
-            return './';
-        }
-        
-        return window.location.origin + '/';
+        // Use relative paths for all environments to avoid CORS issues
+        // This works for both local development and GitHub Pages
+        return './';
     }
     
     init() {
