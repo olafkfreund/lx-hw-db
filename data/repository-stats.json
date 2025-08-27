@@ -1,0 +1,49 @@
+{
+  "generated_at": "2025-08-27T22:25:03.138043",
+  "git_stats": {
+    "total_commits": 128,
+    "contributors": 3,
+    "repository_age_days": 1,
+    "recent_commits_30d": 128,
+    "first_commit_date": "2025-08-26T12:07:51"
+  },
+  "github_stats": {
+    "stars": 0,
+    "forks": 0,
+    "watchers": 0,
+    "open_issues": 0,
+    "size_kb": 854,
+    "default_branch": "main",
+    "language": "JavaScript",
+    "created_at": "2025-08-26T11:07:50+00:00",
+    "updated_at": "2025-08-27T22:24:54+00:00",
+    "pushed_at": "2025-08-27T22:24:50+00:00",
+    "topics": [],
+    "pull_requests": 4,
+    "releases": 0,
+    "recent_issues": 0,
+    "recent_pull_requests": 0
+  },
+  "hardware_stats": {
+    "total_hardware_reports": 0,
+    "yaml_reports": 0,
+    "yml_reports": 0,
+    "json_reports": 0,
+    "categories": {}
+  },
+  "code_stats": {
+    "total_lines": 81605,
+    "code_files": 176,
+    "lines_by_type": {
+      ".yml": 7039,
+      ".md": 9205,
+      ".yaml": 214,
+      ".toml": 378,
+      ".rs": 25046,
+      ".css": 12291,
+      ".html": 788,
+      ".js": 26123,
+      ".py": 521
+    }
+  }
+}
