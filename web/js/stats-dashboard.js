@@ -12,15 +12,8 @@ class StatsDashboard {
         // Wait a bit for DOM to be fully ready
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Check if DataLoader has already populated statistics
-        const reportsElement = document.querySelector('[data-stat="reports"]');
-        if (reportsElement && reportsElement.textContent !== 'Loading...' && reportsElement.textContent !== '') {
-            console.log('Statistics already loaded by DataLoader, skipping API calls');
-            this.initializeCompatibilityChart();
-            return;
-        }
-        
         await this.loadOverviewStats();
+        this.initializeCompatibilityChart();
     }
 
     async loadOverviewStats() {
@@ -38,55 +31,97 @@ class StatsDashboard {
     }
 
     displayOverviewStats(stats) {
+        console.log('Displaying stats:', stats);
+        
         // Update hardware reports count
         const reportsElement = document.querySelector('[data-stat="reports"]');
         if (reportsElement) {
             reportsElement.textContent = stats.total_reports || 0;
+            const card = reportsElement.closest('.stat-card');
+            if (card) card.classList.remove('loading');
         }
 
         // Update unique systems count
         const systemsElement = document.querySelector('[data-stat="systems"]');
         if (systemsElement) {
             systemsElement.textContent = stats.unique_systems || 0;
+            const card = systemsElement.closest('.stat-card');
+            if (card) card.classList.remove('loading');
         }
 
         // Update vendors count
         const vendorsElement = document.querySelector('[data-stat="vendors"]');
         if (vendorsElement) {
             vendorsElement.textContent = stats.total_vendors || 0;
+            const card = vendorsElement.closest('.stat-card');
+            if (card) card.classList.remove('loading');
         }
 
         // Update kernel versions count
         const kernelsElement = document.querySelector('[data-stat="kernels"]');
         if (kernelsElement) {
             kernelsElement.textContent = stats.kernel_versions || 0;
+            const card = kernelsElement.closest('.stat-card');
+            if (card) card.classList.remove('loading');
         }
 
-        // Remove loading text
-        document.querySelectorAll('.loading').forEach(el => {
-            el.textContent = '';
-            el.classList.remove('loading');
-        });
+        console.log('Statistics updated successfully');
+    }
+
+    initializeCompatibilityChart() {
+        const chartContainer = document.getElementById('compatibility-chart');
+        if (!chartContainer) {
+            console.log('Compatibility chart container not found');
+            return;
+        }
+
+        // Create a simple compatibility overview
+        chartContainer.innerHTML = `
+            <div class="compatibility-overview-content">
+                <div class="compatibility-stats">
+                    <div class="compat-stat">
+                        <div class="compat-label">Full Support</div>
+                        <div class="compat-value" id="compat-full">0</div>
+                    </div>
+                    <div class="compat-stat">
+                        <div class="compat-label">Partial Support</div>
+                        <div class="compat-value" id="compat-partial">0</div>
+                    </div>
+                    <div class="compat-stat">
+                        <div class="compat-label">Limited Support</div>
+                        <div class="compat-value" id="compat-limited">0</div>
+                    </div>
+                    <div class="compat-stat">
+                        <div class="compat-label">Unknown</div>
+                        <div class="compat-value" id="compat-unknown">1</div>
+                    </div>
+                </div>
+                <div class="chart-placeholder">
+                    <p>Compatibility distribution will be visualized here as more data is collected.</p>
+                </div>
+            </div>
+        `;
     }
 
     displayError(message) {
-        document.querySelectorAll('.loading').forEach(el => {
-            el.textContent = 'Error loading data';
+        console.error('Stats display error:', message);
+        document.querySelectorAll('[data-stat]').forEach(el => {
+            el.textContent = '—';
+        });
+        document.querySelectorAll('.stat-card.loading').forEach(el => {
+            el.classList.remove('loading');
             el.classList.add('error');
         });
     }
 }
 
-// Initialize dashboard when DataLoader has finished loading
-document.addEventListener('app-data-ready', () => {
-    console.log('App data ready, initializing StatsDashboard');
-    window.statsDashboard = new StatsDashboard();
-});
-
-// Fallback: Initialize after a delay if DataLoader doesn't fire the event
-setTimeout(() => {
-    if (!window.statsDashboard) {
-        console.log('DataLoader event not received, initializing StatsDashboard anyway');
+// Initialize dashboard immediately - simplified approach
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, initializing StatsDashboard immediately');
         window.statsDashboard = new StatsDashboard();
-    }
-}, 5000);
+    });
+} else {
+    console.log('DOM already loaded, initializing StatsDashboard immediately');
+    window.statsDashboard = new StatsDashboard();
+}
