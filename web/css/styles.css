@@ -3713,6 +3713,12 @@ section {
     color: transparent;
 }
 
+.stat-card:not(.loading) .stat-value {
+    background: none;
+    animation: none;
+    color: var(--primary);
+}
+
 @keyframes skeleton-loading {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }

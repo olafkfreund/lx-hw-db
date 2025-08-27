@@ -29,30 +29,39 @@ class StatsDashboard {
         const reportsElement = document.querySelector('[data-stat="reports"]');
         if (reportsElement) {
             reportsElement.textContent = stats.total_reports || 0;
+            const card = reportsElement.closest('.stat-card');
+            if (card) card.classList.remove('loading');
         }
 
         // Update unique systems count
         const systemsElement = document.querySelector('[data-stat="systems"]');
         if (systemsElement) {
             systemsElement.textContent = stats.unique_systems || 0;
+            const card = systemsElement.closest('.stat-card');
+            if (card) card.classList.remove('loading');
         }
 
         // Update vendors count
         const vendorsElement = document.querySelector('[data-stat="vendors"]');
         if (vendorsElement) {
             vendorsElement.textContent = stats.total_vendors || 0;
+            const card = vendorsElement.closest('.stat-card');
+            if (card) card.classList.remove('loading');
         }
 
         // Update kernel versions count
         const kernelsElement = document.querySelector('[data-stat="kernels"]');
         if (kernelsElement) {
             kernelsElement.textContent = stats.kernel_versions || 0;
+            const card = kernelsElement.closest('.stat-card');
+            if (card) card.classList.remove('loading');
         }
 
-        // Remove loading text
-        document.querySelectorAll('.loading').forEach(el => {
-            el.textContent = '';
-            el.classList.remove('loading');
+        console.log('Stats updated:', {
+            reports: stats.total_reports,
+            systems: stats.unique_systems,
+            vendors: stats.total_vendors,
+            kernels: stats.kernel_versions
         });
     }
 
