@@ -66,6 +66,7 @@ class StatsDashboard {
         });
 
         // Update compatibility chart with new data
+        console.log('About to update compatibility chart with:', stats.compatibility_overview);
         this.updateCompatibilityChart(stats.compatibility_overview);
     }
 
@@ -82,11 +83,23 @@ class StatsDashboard {
     }
 
     updateCompatibilityChart(compatibilityData) {
+        console.log('updateCompatibilityChart called with:', compatibilityData);
         const chartContainer = document.querySelector('#compatibility-chart');
-        if (!chartContainer || !compatibilityData) return;
+        console.log('Chart container found:', chartContainer);
+        
+        if (!chartContainer) {
+            console.error('Chart container not found!');
+            return;
+        }
+        
+        if (!compatibilityData) {
+            console.error('No compatibility data provided!');
+            return;
+        }
 
         // Calculate total and percentages
         const entries = Object.entries(compatibilityData);
+        console.log('Compatibility entries:', entries);
         const total = entries.reduce((sum, [, count]) => sum + count, 0);
 
         if (total === 0) {
