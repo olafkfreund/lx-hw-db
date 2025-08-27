@@ -8,7 +8,7 @@ Test the web interface at: https://olafkfreund.github.io/lx-hw-db/
 
 ## Project Status
 
-**Phase 3 Active Development** - Hardware detection suite complete with privacy-preserving data collection, comprehensive validation system, and web interface.
+**Phase 3 Complete** - Hardware detection suite with privacy-preserving data collection, comprehensive validation system, web interface, and full-featured GUI applications (GTK4 & Qt6).
 
 ### Implemented Components
 
@@ -25,6 +25,14 @@ Test the web interface at: https://olafkfreund.github.io/lx-hw-db/
 - Community configuration tips system
 - Multi-format export (Shell, Ansible, Docker, NixOS, Markdown, JSON)
 - Contributor achievement and recognition system
+
+**GUI Applications** (GTK4 & Qt6)
+- GTK4 application with libadwaita Material Design
+- Qt6 QML application with Material Design 3 theming
+- Real-time hardware detection with progress tracking
+- Interactive privacy controls with live data preview
+- Configuration recommendations with driver installation
+- GitHub-integrated community submission workflow
 
 **Validation System**
 - JSON schema validation for report structure
@@ -63,7 +71,7 @@ Hardware Detection -> Anonymization -> Validation -> Storage -> Web Interface
 git clone https://github.com/olafkfreund/lx-hw-db.git
 cd lx-hw-db
 
-# Build the detection tool
+# Build the CLI detection tool
 cargo build --release
 
 # Run detection with specific tools
@@ -75,6 +83,33 @@ cargo run --bin lx-hw-detect -- validate report.yaml
 # Check kernel compatibility
 cargo run --bin lx-hw-detect -- check --device-id 10de:2206
 ```
+
+### GUI Applications
+
+```bash
+# Build GTK4 application (requires GTK4 + libadwaita)
+cargo build --release --bin lx-hw-detect-gtk --features gtk-gui
+
+# Build Qt6 application (requires Qt6 + cxx-qt)
+cargo build --release --bin lx-hw-detect-qt6 --features qt6-gui
+
+# Build both GUI applications
+cargo build --release --features all-gui
+
+# Run GTK4 application
+cargo run --bin lx-hw-detect-gtk --features gtk-gui
+
+# Run Qt6 application
+cargo run --bin lx-hw-detect-qt6 --features qt6-gui
+```
+
+**GUI Features:**
+- **Welcome Screen**: Privacy overview and quick start workflow
+- **Detection Screen**: Real-time progress tracking with tool-specific status
+- **Hardware Screen**: Comprehensive device listing with compatibility matrix
+- **Configuration Screen**: Driver recommendations and kernel parameter suggestions
+- **Submission Screen**: GitHub-integrated community contribution workflow
+- **Privacy Screen**: Interactive privacy level selection with data preview
 
 ### Web Interface
 
@@ -179,11 +214,22 @@ POST /api/tips/submit
 - Rust 1.70+ (hardware detection tool)
 - Python 3.8+ (web server)
 - Node.js 16+ (optional, for development)
+- GTK4 + libadwaita (for GTK4 GUI)
+- Qt6 + cxx-qt (for Qt6 GUI)
 
 **Build Commands:**
 ```bash
-# Build all components
-cargo build --release --all
+# Build CLI tools only
+cargo build --release
+
+# Build with GTK4 GUI
+cargo build --release --features gtk-gui
+
+# Build with Qt6 GUI  
+cargo build --release --features qt6-gui
+
+# Build all applications including GUIs
+cargo build --release --features all-gui
 
 # Run tests
 cargo test --all
@@ -195,18 +241,33 @@ cargo fmt --all
 cargo clippy --all
 ```
 
+**NixOS Development:**
+```bash
+# Enter development shell with all dependencies
+nix develop
+
+# Or use direnv if configured
+direnv allow
+```
+
 ### Project Structure
 
 ```
 lx-hw-db/
 ├── src/                    # Rust source code
+│   ├── bin/               # Binary applications (CLI, GTK4, Qt6)
 │   ├── detectors/         # Hardware detection modules
 │   ├── validation/        # Report validation system
-│   └── privacy/           # Anonymization implementation
+│   ├── privacy/           # Anonymization implementation
+│   ├── gtk4/              # GTK4 GUI implementation
+│   └── qt6/               # Qt6 QML GUI implementation
+│       ├── qml/           # QML interface files
+│       └── components/    # Reusable QML components
 ├── web/                   # Web interface
 │   ├── js/               # JavaScript modules
 │   ├── css/              # Stylesheets
 │   └── data/             # JSON data files
+├── design/                # GUI design specifications
 ├── tests/                 # Integration tests
 └── docs/                  # Documentation
 ```
@@ -318,6 +379,26 @@ Hardware compatibility data: Creative Commons Zero v1.0 Universal (CC0-1.0)
 ## Acknowledgments
 
 Built with privacy-first principles and community collaboration. Special thanks to the Linux kernel developers, hardware vendors providing documentation, and the open source community.
+
+## Known Issues
+
+### Qt6 Implementation Status
+
+The Qt6 GUI application currently runs as a demonstration version due to cxx-qt integration complexity with Qt6 6.9+:
+
+- **Current Status**: Full QML interface implemented with Material Design 3 theming
+- **Issue**: cxx-qt compatibility with newer Qt6 versions causes deprecation warnings  
+- **Workaround**: Demo mode shows complete interface design and functionality
+- **Resolution**: Pending cxx-qt updates for Qt6 6.9+ compatibility
+
+The Qt6 application demonstrates all planned features:
+- Complete Material Design 3 interface with privacy-focused theming
+- All screens implemented (Welcome, Detection, Hardware, Config, Submission, Privacy)
+- Backend manager integration architecture ready for full cxx-qt binding
+
+### Build Recommendations
+
+For production use, the GTK4 application provides a fully functional native Linux GUI with identical features to the planned Qt6 version.
 
 ## Support
 

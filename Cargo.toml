@@ -3,12 +3,12 @@ name = "lx-hw-detect"
 version = "0.1.0"
 edition = "2021"
 authors = ["Linux Hardware Database Contributors"]
-description = "Privacy-preserving Linux hardware detection and compatibility reporting tool"
+description = "Privacy-preserving Linux hardware detection and compatibility reporting tool with CLI, GTK4, and Qt6 interfaces"
 license = "AGPL-3.0"
 repository = "https://github.com/lx-hw-db/lx-hw-db"
 readme = "README.md"
-keywords = ["linux", "hardware", "compatibility", "privacy", "detection"]
-categories = ["command-line-utilities", "hardware-support"]
+keywords = ["linux", "hardware", "compatibility", "privacy", "detection", "gtk4", "qt6"]
+categories = ["command-line-utilities", "hardware-support", "gui"]
 
 [dependencies]
 # CLI and configuration
@@ -60,6 +60,21 @@ urlencoding = "2.0"
 # File system operations
 glob = "0.3"
 
+# GUI dependencies (disabled for demo mode)
+# GTK4 with libadwaita - Full integration requires system libraries
+# gtk4 = { version = "0.9", package = "gtk4", features = ["v4_10"], optional = true }
+# libadwaita = { version = "0.7", package = "libadwaita", features = ["v1_6"], optional = true }
+# glib = { version = "0.20", optional = true }
+
+# Qt6 dependencies (currently optional for demo mode)
+cxx = { version = "1.0", optional = true }
+cxx-qt = { version = "0.6", optional = true }
+cxx-qt-lib = { version = "0.6", optional = true }
+
+# Internationalization
+fluent = { version = "0.16", optional = true }
+fluent-templates = { version = "0.10", optional = true }
+
 [[bin]]
 name = "lx-hw-detect"
 path = "src/bin/lx-hw-detect.rs"
@@ -67,6 +82,25 @@ path = "src/bin/lx-hw-detect.rs"
 [[bin]]
 name = "lx-hw-indexer"
 path = "src/bin/lx-hw-indexer.rs"
+
+[[bin]]
+name = "lx-hw-detect-gtk"
+path = "src/bin/lx-hw-detect-gtk.rs"
+required-features = ["gtk-gui"]
+
+[[bin]]
+name = "lx-hw-detect-qt6"
+path = "src/bin/lx-hw-detect-qt6.rs"
+required-features = ["qt6-gui"]
+
+[features]
+default = []
+gtk-gui = []  # Demo mode - GTK4 libraries not required for demonstration
+qt6-gui = []  # Demo mode - no cxx-qt required
+all-gui = ["gtk-gui", "qt6-gui"]
+
+[build-dependencies]
+# cxx-qt-build = { version = "0.6" }  # Disabled for demo mode
 
 [dev-dependencies]
 # Testing framework

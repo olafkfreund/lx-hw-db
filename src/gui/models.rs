@@ -1,12 +1,86 @@
 //! Application state models and data structures
+//!
+//! Note: This is a simplified implementation for demo mode
 
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::hardware::{HardwareReport, PrivacyLevel};
-use crate::configuration::Configuration;
 use crate::errors::LxHwError;
+
+// Simplified privacy level for demo mode
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum PrivacyLevel {
+    Basic,
+    Enhanced,
+    Strict,
+}
+
+// Simplified hardware report for demo mode
+#[derive(Debug, Clone)]
+pub struct HardwareReport {
+    pub system: SystemInfo,
+    pub cpu: Option<CpuInfo>,
+    pub graphics: Vec<GraphicsDevice>,
+    pub network: Vec<NetworkDevice>,
+    pub storage: Vec<StorageDevice>,
+    pub audio: Vec<AudioDevice>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SystemInfo {
+    pub distribution: Option<String>,
+    pub kernel_version: String,
+    pub architecture: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct CpuInfo {
+    pub vendor: String,
+    pub model: String,
+    pub cores: u32,
+    pub threads: u32,
+    pub base_frequency: Option<f64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct GraphicsDevice {
+    pub vendor: String,
+    pub model: String,
+    pub pci_id: String,
+    pub driver: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NetworkDevice {
+    pub vendor: String,
+    pub model: String,
+    pub device_type: String,
+    pub driver: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct StorageDevice {
+    pub vendor: Option<String>,
+    pub model: String,
+    pub size_bytes: u64,
+    pub interface: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AudioDevice {
+    pub vendor: String,
+    pub device_type: String,
+    pub driver: Option<String>,
+}
+
+// Simplified configuration for demo mode
+#[derive(Debug, Clone)]
+pub struct Configuration {
+    pub kernel_parameters: Vec<String>,
+    pub drivers: Vec<String>,
+    pub packages: Vec<String>,
+}
 
 /// Main application state
 #[derive(Debug, Clone)]

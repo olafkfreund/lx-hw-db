@@ -2,7 +2,33 @@
 
 This guide provides practical examples of using the Linux Hardware Database tools in real-world scenarios.
 
+## Application Overview
+
+The Linux Hardware Database provides three interfaces:
+
+1. **CLI Tool** (`lx-hw-detect`) - Command-line interface for scripting and automation
+2. **GTK4 GUI** (`lx-hw-detect-gtk`) - Native Linux application with libadwaita
+3. **Qt6 GUI** (`lx-hw-detect-qt6`) - Cross-platform application with Material Design 3
+
 ## Quick Start
+
+### GUI Applications
+
+```bash
+# Launch GTK4 application
+lx-hw-detect-gtk
+
+# Launch Qt6 application (demo mode)
+lx-hw-detect-qt6
+```
+
+**GUI Workflow:**
+1. **Welcome Screen** - Choose privacy level and review data collection
+2. **Detection Screen** - Run hardware detection with real-time progress
+3. **Hardware Screen** - Browse detected hardware with compatibility status
+4. **Configuration Screen** - Get driver recommendations and system optimizations
+5. **Submission Screen** - Submit hardware reports to the community database
+6. **Privacy Screen** - Configure data anonymization and privacy settings
 
 ### Basic Hardware Detection
 

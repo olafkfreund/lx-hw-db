@@ -1,0 +1,119 @@
+.TH lx-hw-detect-gtk 1 "August 2025" "lx-hw-detect 0.1.0" "User Commands"
+.SH NAME
+lx-hw-detect-gtk \- GTK4 GUI for Linux Hardware Database detection tool
+.SH SYNOPSIS
+.B lx-hw-detect-gtk
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.B lx-hw-detect-gtk
+provides a graphical user interface for the Linux Hardware Database hardware detection tool using GTK4 and libadwaita. It offers an intuitive way to detect hardware, configure privacy settings, view compatibility information, and submit hardware reports to the community database.
+.PP
+The application features a modern Material Design interface with dark/light theme support and follows GNOME Human Interface Guidelines for optimal user experience.
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Show help message and exit
+.TP
+.B \-V, \-\-version
+Print version information and exit
+.TP
+.B \-\-config \fICONFIG_FILE\fR
+Use custom configuration file
+.TP
+.B \-\-data\-dir \fIDIRECTORY\fR
+Set custom data directory for storing reports and cache
+.TP
+.B \-\-privacy\-level \fILEVEL\fR
+Set initial privacy level (basic|enhanced|strict)
+.TP
+.B \-\-theme \fITHEME\fR
+Set application theme (auto|light|dark)
+.SH INTERFACE
+The GTK4 GUI provides six main screens:
+.TP
+.B Welcome Screen
+Privacy overview, data collection explanation, and quick start workflow
+.TP
+.B Detection Screen
+Real-time hardware detection with progress tracking for lshw, dmidecode, lspci, lsusb, and inxi tools
+.TP
+.B Hardware Screen
+Comprehensive device listing with compatibility matrix, filtering, and device details
+.TP
+.B Configuration Screen
+Driver recommendations, kernel parameter suggestions, and system optimization tips
+.TP
+.B Submission Screen
+GitHub-integrated community submission workflow with privacy preview
+.TP
+.B Privacy Screen
+Interactive privacy level selection with data anonymization preview and GDPR controls
+.SH PRIVACY LEVELS
+.TP
+.B Basic
+Device models only, no personal identifiers collected
+.TP
+.B Enhanced (Recommended)
+HMAC-SHA256 hashing with time-rotating salts, k-anonymity protection
+.TP
+.B Strict
+Differential privacy with statistical noise injection for maximum anonymization
+.SH FILES
+.TP
+.I ~/.config/lx-hw-detect/config.toml
+User configuration file
+.TP
+.I ~/.local/share/lx-hw-detect/
+Local data directory for reports and cache
+.TP
+.I ~/.cache/lx-hw-detect/
+Application cache directory
+.SH ENVIRONMENT
+.TP
+.B LX_HW_DETECT_CONFIG
+Override default configuration file path
+.TP
+.B LX_HW_DETECT_DATA_DIR
+Override default data directory
+.TP
+.B GTK_THEME
+Set GTK theme (affects application appearance)
+.SH EXAMPLES
+.TP
+Launch the GTK4 application:
+.B lx-hw-detect-gtk
+.TP
+Launch with enhanced privacy level:
+.B lx-hw-detect-gtk --privacy-level enhanced
+.TP
+Launch with custom configuration:
+.B lx-hw-detect-gtk --config ~/.config/lx-hw-detect/custom.toml
+.SH EXIT STATUS
+.TP
+.B 0
+Successful execution
+.TP
+.B 1
+General error (missing dependencies, permission issues)
+.TP
+.B 2
+Configuration error
+.TP
+.B 3
+Hardware detection error
+.SH DEPENDENCIES
+.B lx-hw-detect-gtk
+requires GTK4 4.10+ and libadwaita 1.6+. Hardware detection tools (lshw, dmidecode, lspci, lsusb, inxi) should be installed for full functionality.
+.SH SEE ALSO
+.BR lx-hw-detect (1),
+.BR lx-hw-detect-qt6 (1),
+.BR lx-hw-indexer (1)
+.SH BUGS
+Report bugs at <https://github.com/olafkfreund/lx-hw-db/issues>
+.SH AUTHORS
+Linux Hardware Database Contributors
+.SH COPYRIGHT
+Copyright © 2025 Linux Hardware Database Contributors.
+License AGPLv3: GNU Affero General Public License version 3 <https://gnu.org/licenses/agpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

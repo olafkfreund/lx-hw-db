@@ -2,13 +2,28 @@
 
 ## System Requirements
 
-### Hardware Detection Tool
+### Hardware Detection Tool (CLI)
 
 - **Operating System**: Linux (any modern distribution)
 - **Architecture**: x86_64, ARM64
 - **Rust**: 1.70+ (if building from source)
 - **Memory**: 512MB RAM minimum
 - **Storage**: 50MB available space
+
+### GUI Applications
+
+#### GTK4 Application
+- **Operating System**: Linux with GTK4 support
+- **Dependencies**: GTK4 4.10+, libadwaita 1.6+
+- **Memory**: 1GB RAM minimum
+- **Storage**: 100MB available space
+
+#### Qt6 Application
+- **Operating System**: Linux with Qt6 support  
+- **Dependencies**: Qt6 6.5+, Qt6 QML modules
+- **Memory**: 1GB RAM minimum
+- **Storage**: 150MB available space
+- **Status**: Demo version (see Known Issues)
 
 ### Database Indexer Tool
 
@@ -54,15 +69,38 @@ cargo install --git https://github.com/olafkfreund/lx-hw-db.git --bin lx-hw-dete
 git clone https://github.com/olafkfreund/lx-hw-db.git
 cd lx-hw-db
 
-# Build the hardware detection tool
+# Build CLI tools only
 cargo build --release --bin lx-hw-detect
-
-# Build the indexer tool (optional)
 cargo build --release --bin lx-hw-indexer
+
+# Build GTK4 GUI (requires GTK4 development libraries)
+sudo apt install libgtk-4-dev libadwaita-1-dev  # Ubuntu/Debian
+sudo dnf install gtk4-devel libadwaita-devel    # Fedora
+cargo build --release --bin lx-hw-detect-gtk --features gtk-gui
+
+# Build Qt6 GUI (requires Qt6 development libraries)
+sudo apt install qt6-base-dev qt6-declarative-dev  # Ubuntu/Debian  
+sudo dnf install qt6-qtbase-devel qt6-qtdeclarative-devel  # Fedora
+cargo build --release --bin lx-hw-detect-qt6 --features qt6-gui
+
+# Build all applications
+cargo build --release --features all-gui
 
 # Install to system
 sudo cp target/release/lx-hw-detect /usr/local/bin/
 sudo cp target/release/lx-hw-indexer /usr/local/bin/
+sudo cp target/release/lx-hw-detect-gtk /usr/local/bin/ 2>/dev/null || true
+sudo cp target/release/lx-hw-detect-qt6 /usr/local/bin/ 2>/dev/null || true
+```
+
+#### NixOS Users
+
+```bash
+# Enter development shell with all dependencies
+nix develop
+
+# Build applications in Nix environment
+cargo build --release --features all-gui
 ```
 
 ### Method 4: Package Managers

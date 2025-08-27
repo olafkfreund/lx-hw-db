@@ -1,0 +1,143 @@
+.TH lx-hw-detect-qt6 1 "August 2025" "lx-hw-detect 0.1.0" "User Commands"
+.SH NAME
+lx-hw-detect-qt6 \- Qt6 QML GUI for Linux Hardware Database detection tool
+.SH SYNOPSIS
+.B lx-hw-detect-qt6
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.B lx-hw-detect-qt6
+provides a cross-platform graphical user interface for the Linux Hardware Database hardware detection tool using Qt6 QML and Material Design 3 theming. 
+.PP
+\fBNote:\fR Currently runs in demonstration mode due to cxx-qt compatibility issues with Qt6 6.9+. The complete interface design and functionality are implemented and ready for full cxx-qt integration when compatibility is resolved.
+.PP
+The application features a modern Material Design 3 interface with privacy-focused theming and responsive layouts that adapt to different screen sizes.
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Show help message and exit
+.TP
+.B \-V, \-\-version
+Print version information and exit
+.TP
+.B \-\-config \fICONFIG_FILE\fR
+Use custom configuration file
+.TP
+.B \-\-data\-dir \fIDIRECTORY\fR
+Set custom data directory for storing reports and cache
+.TP
+.B \-\-privacy\-level \fILEVEL\fR
+Set initial privacy level (basic|enhanced|strict)
+.TP
+.B \-\-style \fISTYLE\fR
+Set Qt application style (Material|Fusion|Windows)
+.SH INTERFACE
+The Qt6 QML GUI provides six main screens with Material Design 3 theming:
+.TP
+.B Welcome Screen
+Privacy overview with Material Design cards, data collection explanation, and workflow visualization
+.TP
+.B Detection Screen
+Real-time hardware detection progress with Material Design progress indicators and tool-specific status
+.TP
+.B Hardware Screen
+Expandable hardware categories with device compatibility status, filtering, and detailed device information
+.TP
+.B Configuration Screen
+System compatibility scoring, driver recommendations with installation previews, and kernel parameter suggestions
+.TP
+.B Submission Screen
+GitHub-integrated community submission with step-by-step workflow, privacy indicators, and submission history
+.TP
+.B Privacy Screen
+Interactive privacy level selection with live data previews, GDPR compliance features, and detailed anonymization explanations
+.SH PRIVACY LEVELS
+.TP
+.B Basic
+Device models only, no personal identifiers collected. Suitable for basic compatibility checking.
+.TP
+.B Enhanced (Recommended)
+HMAC-SHA256 hashing with time-rotating salts, k-anonymity protection. Balances privacy with data utility.
+.TP
+.B Strict
+Differential privacy with statistical noise injection (ε=1.0) for maximum anonymization. May reduce data precision.
+.SH DEMO MODE FEATURES
+In the current demonstration mode, the Qt6 application showcases:
+.IP \[bu] 2
+Complete Material Design 3 interface with privacy-focused purple theming (#6750A4)
+.IP \[bu] 2
+Navigation rail pattern optimized for desktop applications
+.IP \[bu] 2
+All six application screens with realistic data and interactive elements
+.IP \[bu] 2
+Backend manager architecture ready for full cxx-qt integration
+.IP \[bu] 2
+QML component library with reusable Material Design elements
+.SH FILES
+.TP
+.I ~/.config/lx-hw-detect/config.toml
+User configuration file
+.TP
+.I ~/.local/share/lx-hw-detect/
+Local data directory for reports and cache
+.TP
+.I ~/.cache/lx-hw-detect/
+Application cache directory
+.SH ENVIRONMENT
+.TP
+.B LX_HW_DETECT_CONFIG
+Override default configuration file path
+.TP
+.B LX_HW_DETECT_DATA_DIR
+Override default data directory
+.TP
+.B QT_SCALE_FACTOR
+Set Qt application scaling factor
+.TP
+.B QT_QPA_PLATFORM
+Set Qt platform abstraction layer
+.SH EXAMPLES
+.TP
+Launch the Qt6 application in demo mode:
+.B lx-hw-detect-qt6
+.TP
+Launch with enhanced privacy level:
+.B lx-hw-detect-qt6 --privacy-level enhanced
+.TP
+Launch with Material style:
+.B lx-hw-detect-qt6 --style Material
+.SH EXIT STATUS
+.TP
+.B 0
+Successful execution
+.TP
+.B 1
+General error (missing dependencies, Qt6 issues)
+.TP
+.B 2
+Configuration error
+.TP
+.B 3
+QML loading error
+.SH DEPENDENCIES
+.B lx-hw-detect-qt6
+requires Qt6 6.5+ with QML modules. For full functionality (when available), cxx-qt integration requires Qt6 development libraries and compatible cxx-qt version.
+.SH KNOWN ISSUES
+.IP \[bu] 2
+Currently runs in demonstration mode due to cxx-qt compatibility with Qt6 6.9+
+.IP \[bu] 2
+Full backend integration pending cxx-qt updates for newer Qt6 versions
+.IP \[bu] 2
+Some Qt6 deprecated API warnings during build (does not affect functionality)
+.SH SEE ALSO
+.BR lx-hw-detect (1),
+.BR lx-hw-detect-gtk (1),
+.BR lx-hw-indexer (1)
+.SH BUGS
+Report bugs at <https://github.com/olafkfreund/lx-hw-db/issues>
+.SH AUTHORS
+Linux Hardware Database Contributors
+.SH COPYRIGHT
+Copyright © 2025 Linux Hardware Database Contributors.
+License AGPLv3: GNU Affero General Public License version 3 <https://gnu.org/licenses/agpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

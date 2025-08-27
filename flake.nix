@@ -44,6 +44,14 @@
             graphene
             gobject-introspection
 
+            # Qt6 development libraries
+            qt6.qtbase
+            qt6.qtdeclarative
+            qt6.qttools
+            qt6.qmake
+            qt6.full  # Full Qt6 installation with all modules
+            cmake
+
             # Hardware detection tools
             lshw
             dmidecode
@@ -61,11 +69,13 @@
 
           shellHook = ''
             echo "🚀 Linux Hardware Database Development Environment"
-            echo "   GTK4 + libadwaita + Rust development shell"
+            echo "   GTK4 + libadwaita + Qt6 + Rust development shell"
             echo ""
             echo "📦 Available tools:"
-            echo "   • cargo build --bin lx-hw-detect-gtk"
-            echo "   • cargo run --bin lx-hw-detect-gtk"  
+            echo "   • cargo build --bin lx-hw-detect-gtk --features gtk-gui"
+            echo "   • cargo run --bin lx-hw-detect-gtk --features gtk-gui"
+            echo "   • cargo build --bin lx-hw-detect-qt6 --features qt6-gui"
+            echo "   • cargo run --bin lx-hw-detect-qt6 --features qt6-gui"
             echo "   • cargo test"
             echo "   • nix build .#lx-hw-db"
             echo ""
@@ -75,6 +85,7 @@
             echo "📚 Environment configured for:"
             echo "   • GTK4 $(pkg-config --modversion gtk4)"
             echo "   • libadwaita $(pkg-config --modversion libadwaita-1)"
+            echo "   • Qt6 $(pkg-config --modversion Qt6Core)"
             echo "   • Rust $(rustc --version | cut -d' ' -f2)"
             echo ""
             echo "✅ Development environment ready!"
