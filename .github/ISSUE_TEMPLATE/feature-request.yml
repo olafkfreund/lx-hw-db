@@ -1,0 +1,156 @@
+name: Feature Request
+description: Suggest a new feature for the Linux Hardware Database
+title: "[Feature Request] "
+labels: ["enhancement", "feature-request"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Your ideas help make the Linux Hardware Database better for everyone.
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: Feature Category
+      description: What area does this feature relate to?
+      options:
+        - Hardware Detection & Analysis
+        - Web Interface & Search
+        - Configuration Generation
+        - Community Features
+        - Privacy & Security
+        - API & Integration
+        - Documentation & Guides
+        - CLI Tools & Utilities
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: feature-title
+    attributes:
+      label: Feature Summary
+      description: Brief, clear summary of the feature
+      placeholder: e.g., Add support for detecting graphics card memory usage
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem or Need
+      description: What problem would this feature solve or what need would it meet?
+      placeholder: |
+        Describe the specific problem or limitation you've encountered:
+        - Who is affected by this problem?
+        - How frequently does it occur?
+        - What is the current workaround (if any)?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your idea for solving this problem
+      placeholder: |
+        Explain your proposed solution:
+        - How would this feature work?
+        - What would the user experience look like?
+        - Are there any specific implementation ideas?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches have you considered?
+      placeholder: |
+        Describe alternative solutions you've thought about:
+        - What other ways could this problem be solved?
+        - Why is your proposed solution better?
+        - Are there existing tools that partially address this?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: user-impact
+    attributes:
+      label: Expected Impact
+      description: How many users would benefit from this feature?
+      options:
+        - High - Most users would benefit
+        - Medium - Many users would benefit
+        - Low - Some users would benefit
+        - Niche - Specialized use case
+    validations:
+      required: true
+
+  - type: dropdown
+    id: implementation-complexity
+    attributes:
+      label: Estimated Implementation Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - Simple - Minor changes or additions
+        - Moderate - Some new code and testing
+        - Complex - Significant development work
+        - Major - Substantial architectural changes
+        - Unknown - Not sure
+    validations:
+      required: false
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases and Examples
+      description: Provide specific examples of how this feature would be used
+      placeholder: |
+        Example scenarios where this feature would be helpful:
+        1. When [specific situation], users could [action]
+        2. For [type of user], this would enable [benefit]
+        3. In [specific context], this would solve [problem]
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: research-done
+    attributes:
+      label: Research and Preparation
+      description: Have you done the following preparation?
+      options:
+        - label: Searched existing issues and discussions for similar requests
+          required: true
+        - label: Checked the project roadmap and documentation
+          required: true
+        - label: Considered how this fits with the project's privacy-first approach
+          required: true
+        - label: Thought about potential privacy or security implications
+          required: true
+
+  - type: checkboxes
+    id: contribution-interest
+    attributes:
+      label: Contribution Interest
+      description: Are you interested in helping implement this feature?
+      options:
+        - label: I can help design the feature
+        - label: I can help implement the feature
+        - label: I can help test the feature
+        - label: I can help document the feature
+        - label: I can provide feedback during development
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other context, mockups, or information
+      placeholder: |
+        Add any other relevant information:
+        - Links to similar features in other projects
+        - Mockups or diagrams
+        - Technical references or resources
+        - Community discussions about this topic

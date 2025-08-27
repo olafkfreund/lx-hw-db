@@ -1,0 +1,398 @@
+name: Discussion Management
+
+on:
+  discussion:
+    types: [created, answered, category_changed, labeled, unlabeled]
+  discussion_comment:
+    types: [created]
+  schedule:
+    # Run weekly to update discussion stats
+    - cron: '0 12 * * 0'  # Every Sunday at noon UTC
+
+jobs:
+  welcome-new-discussions:
+    name: Welcome New Discussions
+    runs-on: ubuntu-latest
+    if: github.event_name == 'discussion' && github.event.action == 'created'
+    
+    steps:
+      - name: Welcome new discussion creators
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const discussion = context.payload.discussion;
+            const author = discussion.user.login;
+            
+            // Check if this is the user's first discussion
+            const { data: discussions } = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} author:${author} is:discussion`,
+              sort: 'created',
+              order: 'asc'
+            });
+            
+            const isFirstDiscussion = discussions.total_count === 1;
+            
+            let welcomeMessage = '';
+            
+            if (isFirstDiscussion) {
+              welcomeMessage = `🎉 **Welcome to the Linux Hardware Database discussions, @${author}!**
+            
+            Thank you for starting your first discussion! This community is here to help with Linux hardware compatibility questions and share knowledge.
+            
+            📚 **Helpful Resources:**
+            - [Hardware Database](https://github.com/${context.repo.owner}/${context.repo.repo}/tree/main/hardware) - Browse existing hardware reports
+            - [Installation Guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/docs/INSTALLATION.md) - Get started with our tools
+            - [Community Guidelines](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/docs/COMMUNITY_GUIDELINES.md) - Community standards
+            
+            💡 **Tips for Better Engagement:**
+            - Include your system specifications when asking for help
+            - Share hardware detection output if relevant (\`lx-hw-detect analyze\`)
+            - Be specific about error messages and what you've already tried
+            
+            We're excited to have you in the community! 🐧`;
+            } else {
+              // Category-specific welcome messages for returning users
+              const category = discussion.category.name.toLowerCase();
+              
+              if (category.includes('help') || category.includes('support')) {
+                welcomeMessage = `👋 Thanks for reaching out for help, @${author}!
+            
+            To help us assist you better, please make sure to include:
+            - Your Linux distribution and kernel version
+            - Relevant hardware information  
+            - Error messages or unexpected behavior
+            - What you've already tried
+            
+            The community will do their best to help! 🚀`;
+              } else if (category.includes('showcase') || category.includes('show')) {
+                welcomeMessage = `🌟 Awesome hardware showcase, @${author}!
+            
+            Thanks for sharing your working Linux setup with the community. This helps other users know what works well!
+            
+            Consider submitting a formal hardware report to help expand our compatibility database:
+            \`\`\`bash
+            lx-hw-detect analyze --submit
+            \`\`\`
+            
+            Great contribution to the community! 🎯`;
+              } else if (category.includes('general') || category.includes('discussion')) {
+                welcomeMessage = `💬 Great discussion topic, @${author}!
+            
+            Thanks for bringing this topic to the community. These discussions help us all learn and improve Linux hardware compatibility.
+            
+            Looking forward to the community's insights! 🧠`;
+              }
+            }
+            
+            if (welcomeMessage) {
+              // Note: GitHub's discussions API doesn't support creating comments via REST API yet
+              // This would need to use GraphQL API or be handled differently
+              console.log('Welcome message prepared:', welcomeMessage.substring(0, 100) + '...');
+            }
+
+  discussion-triage:
+    name: Discussion Triage and Labeling
+    runs-on: ubuntu-latest
+    if: github.event_name == 'discussion' && github.event.action == 'created'
+    
+    steps:
+      - name: Auto-label discussions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const discussion = context.payload.discussion;
+            const title = discussion.title.toLowerCase();
+            const body = discussion.body.toLowerCase();
+            const category = discussion.category.name.toLowerCase();
+            
+            const labels = [];
+            
+            // Hardware-related labels
+            if (title.includes('gpu') || title.includes('graphics') || body.includes('nvidia') || body.includes('radeon')) {
+              labels.push('gpu');
+            }
+            if (title.includes('cpu') || title.includes('processor') || body.includes('intel') || body.includes('amd ryzen')) {
+              labels.push('cpu');
+            }
+            if (title.includes('network') || title.includes('wifi') || title.includes('ethernet')) {
+              labels.push('network');
+            }
+            if (title.includes('audio') || title.includes('sound') || body.includes('alsa') || body.includes('pulseaudio')) {
+              labels.push('audio');
+            }
+            if (title.includes('usb') || body.includes('usb device')) {
+              labels.push('usb');
+            }
+            
+            // Distribution labels
+            if (body.includes('ubuntu') || body.includes('debian')) {
+              labels.push('ubuntu-debian');
+            }
+            if (body.includes('fedora') || body.includes('rhel') || body.includes('centos')) {
+              labels.push('fedora-rhel');
+            }
+            if (body.includes('arch') || body.includes('manjaro')) {
+              labels.push('arch');
+            }
+            if (body.includes('nixos')) {
+              labels.push('nixos');
+            }
+            
+            // Urgency labels
+            if (title.includes('urgent') || title.includes('critical') || body.includes('not working')) {
+              labels.push('high-priority');
+            }
+            if (title.includes('help') || category.includes('help')) {
+              labels.push('needs-help');
+            }
+            
+            console.log(`Discussion auto-labeling suggestions: ${labels.join(', ')}`);
+            // Note: Actual labeling would require GraphQL API for discussions
+
+  discussion-stats:
+    name: Update Discussion Statistics
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests python-dateutil
+      
+      - name: Generate discussion statistics
+        run: |
+          cat > discussion_stats.py << 'EOF'
+          import json
+          import os
+          import requests
+          from datetime import datetime, timedelta
+          from collections import defaultdict
+          
+          # GitHub GraphQL API endpoint
+          GRAPHQL_URL = "https://api.github.com/graphql"
+          
+          def get_discussion_stats():
+              """Get discussion statistics using GitHub GraphQL API"""
+              
+              headers = {
+                  "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+                  "Content-Type": "application/json"
+              }
+              
+              # GraphQL query for discussion statistics
+              query = """
+              query($owner: String!, $name: String!, $after: String) {
+                repository(owner: $owner, name: $name) {
+                  discussions(first: 100, after: $after, orderBy: {field: CREATED_AT, direction: DESC}) {
+                    totalCount
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                    nodes {
+                      id
+                      title
+                      body
+                      createdAt
+                      updatedAt
+                      author {
+                        login
+                      }
+                      category {
+                        name
+                      }
+                      comments {
+                        totalCount
+                      }
+                      upvoteCount
+                      answerChosenAt
+                      isAnswered
+                    }
+                  }
+                }
+              }
+              """
+              
+              # Parse repository information
+              repo_parts = os.environ['GITHUB_REPOSITORY'].split('/')
+              owner = repo_parts[0]
+              repo_name = repo_parts[1]
+              
+              variables = {
+                  "owner": owner,
+                  "name": repo_name,
+                  "after": None
+              }
+              
+              all_discussions = []
+              
+              # Fetch all discussions (paginated)
+              while True:
+                  response = requests.post(
+                      GRAPHQL_URL,
+                      json={"query": query, "variables": variables},
+                      headers=headers
+                  )
+                  
+                  if response.status_code != 200:
+                      print(f"GraphQL API error: {response.status_code}")
+                      print(response.text)
+                      break
+                  
+                  data = response.json()
+                  
+                  if "errors" in data:
+                      print(f"GraphQL errors: {data['errors']}")
+                      break
+                  
+                  discussions_data = data["data"]["repository"]["discussions"]
+                  all_discussions.extend(discussions_data["nodes"])
+                  
+                  if not discussions_data["pageInfo"]["hasNextPage"]:
+                      break
+                      
+                  variables["after"] = discussions_data["pageInfo"]["endCursor"]
+              
+              # Analyze discussion statistics
+              stats = {
+                  "last_updated": datetime.now().isoformat(),
+                  "total_discussions": len(all_discussions),
+                  "categories": defaultdict(int),
+                  "monthly_activity": defaultdict(int),
+                  "top_contributors": defaultdict(int),
+                  "answered_discussions": 0,
+                  "unanswered_discussions": 0,
+                  "average_comments": 0,
+                  "recent_activity": []
+              }
+              
+              total_comments = 0
+              now = datetime.now()
+              one_month_ago = now - timedelta(days=30)
+              
+              for discussion in all_discussions:
+                  # Category stats
+                  category = discussion["category"]["name"]
+                  stats["categories"][category] += 1
+                  
+                  # Monthly activity
+                  created_date = datetime.fromisoformat(discussion["createdAt"].replace('Z', '+00:00'))
+                  month_key = created_date.strftime('%Y-%m')
+                  stats["monthly_activity"][month_key] += 1
+                  
+                  # Author stats
+                  if discussion["author"]:
+                      stats["top_contributors"][discussion["author"]["login"]] += 1
+                  
+                  # Answer stats
+                  if discussion["isAnswered"]:
+                      stats["answered_discussions"] += 1
+                  else:
+                      stats["unanswered_discussions"] += 1
+                  
+                  # Comment stats
+                  total_comments += discussion["comments"]["totalCount"]
+                  
+                  # Recent activity
+                  if created_date >= one_month_ago:
+                      stats["recent_activity"].append({
+                          "title": discussion["title"],
+                          "author": discussion["author"]["login"] if discussion["author"] else "unknown",
+                          "category": category,
+                          "created_at": discussion["createdAt"],
+                          "comments": discussion["comments"]["totalCount"],
+                          "upvotes": discussion["upvoteCount"]
+                      })
+              
+              # Calculate averages
+              stats["average_comments"] = total_comments / len(all_discussions) if all_discussions else 0
+              
+              # Convert defaultdicts to regular dicts
+              stats["categories"] = dict(stats["categories"])
+              stats["monthly_activity"] = dict(stats["monthly_activity"])
+              
+              # Top contributors (limit to top 10)
+              stats["top_contributors"] = dict(sorted(
+                  stats["top_contributors"].items(),
+                  key=lambda x: x[1],
+                  reverse=True
+              )[:10])
+              
+              return stats
+          
+          try:
+              discussion_stats = get_discussion_stats()
+              
+              # Save statistics
+              os.makedirs('data', exist_ok=True)
+              with open('data/discussion-stats.json', 'w') as f:
+                  json.dump(discussion_stats, f, indent=2)
+              
+              # Create summary
+              with open('data/discussion-summary.txt', 'w') as f:
+                  f.write("Linux Hardware Database - Discussion Statistics\n")
+                  f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
+                  f.write(f"Total Discussions: {discussion_stats['total_discussions']}\n")
+                  f.write(f"Answered Discussions: {discussion_stats['answered_discussions']}\n")
+                  f.write(f"Unanswered Discussions: {discussion_stats['unanswered_discussions']}\n")
+                  f.write(f"Average Comments per Discussion: {discussion_stats['average_comments']:.1f}\n\n")
+                  
+                  f.write("Discussion Categories:\n")
+                  for category, count in discussion_stats['categories'].items():
+                      f.write(f"  {category}: {count}\n")
+                  
+                  f.write(f"\nTop Discussion Contributors:\n")
+                  for author, count in list(discussion_stats['top_contributors'].items())[:5]:
+                      f.write(f"  {author}: {count} discussions\n")
+              
+              print(f"Discussion statistics generated: {discussion_stats['total_discussions']} discussions analyzed")
+              
+          except Exception as e:
+              print(f"Error generating discussion stats: {e}")
+              # Create empty stats file so workflow doesn't fail
+              with open('data/discussion-stats.json', 'w') as f:
+                  json.dump({
+                      "error": str(e),
+                      "last_updated": datetime.now().isoformat(),
+                      "total_discussions": 0
+                  }, f, indent=2)
+          EOF
+          
+          python discussion_stats.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+      
+      - name: Commit discussion statistics
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          git add data/discussion-stats.json data/discussion-summary.txt || true
+          
+          if ! git diff --cached --quiet; then
+            git commit -m "Update discussion statistics
+
+            Weekly update of community discussion metrics:
+            - Total discussions and activity trends
+            - Category breakdown and popular topics  
+            - Contributor engagement analysis
+            - Answer rate and community support metrics
+
+            🤖 Generated with [Claude Code](https://claude.ai/code)
+
+            Co-Authored-By: Claude <noreply@anthropic.com>"
+            git push
+          else
+            echo "No changes in discussion statistics"
+          fi

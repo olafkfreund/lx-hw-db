@@ -14,32 +14,60 @@ env:
 jobs:
   build-rust:
     name: Build Rust Binary
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: false
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: true
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            cross: true
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            cross: true
+    runs-on: ${{ matrix.os }}
+    
     steps:
     - uses: actions/checkout@v4
     
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+      
+    - name: Install cross-compilation tool
+      if: matrix.cross
+      run: cargo install cross --git https://github.com/cross-rs/cross
       
     - name: Cache cargo registry
       uses: actions/cache@v4
       with:
         path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-${{ matrix.target }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
         
     - name: Cache cargo index
       uses: actions/cache@v4
       with:
         path: ~/.cargo/git
-        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-${{ matrix.target }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
         
     - name: Cache cargo build
       uses: actions/cache@v4
       with:
         path: target
-        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-${{ matrix.target }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: Install system dependencies
+    - name: Install system dependencies (native build)
+      if: matrix.target == 'x86_64-unknown-linux-gnu'
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -53,25 +81,59 @@ jobs:
           usbutils \
           util-linux
 
-    - name: Build CLI
-      run: cargo build --release --bin lx-hw-detect
+    - name: Build CLI (native)
+      if: '!matrix.cross'
+      run: cargo build --release --target ${{ matrix.target }} --bin lx-hw-detect
       
-    - name: Build GTK GUI
-      run: cargo build --release --bin lx-hw-detect-gtk
+    - name: Build CLI (cross-compile)
+      if: matrix.cross
+      run: cross build --release --target ${{ matrix.target }} --bin lx-hw-detect
       
-    - name: Run tests
-      run: cargo test --release
+    - name: Build indexer (native)
+      if: '!matrix.cross'
+      run: cargo build --release --target ${{ matrix.target }} --bin lx-hw-indexer
+      
+    - name: Build indexer (cross-compile)
+      if: matrix.cross
+      run: cross build --release --target ${{ matrix.target }} --bin lx-hw-indexer
+      
+    - name: Build GTK GUI (native only)
+      if: matrix.target == 'x86_64-unknown-linux-gnu'
+      run: cargo build --release --target ${{ matrix.target }} --bin lx-hw-detect-gtk --features gtk-gui
+      
+    - name: Run tests (native only)
+      if: matrix.target == 'x86_64-unknown-linux-gnu'
+      run: cargo test --release --target ${{ matrix.target }}
+      
+    - name: Create archive
+      run: |
+        mkdir -p dist
+        if [ -f "target/${{ matrix.target }}/release/lx-hw-detect-gtk" ]; then
+          tar czf dist/lx-hw-db-${{ matrix.target }}.tar.gz \
+            -C target/${{ matrix.target }}/release \
+            lx-hw-detect lx-hw-indexer lx-hw-detect-gtk
+        else
+          tar czf dist/lx-hw-db-${{ matrix.target }}.tar.gz \
+            -C target/${{ matrix.target }}/release \
+            lx-hw-detect lx-hw-indexer
+        fi
       
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: rust-binaries
-        path: |
-          target/release/lx-hw-detect
-          target/release/lx-hw-detect-gtk
+        name: rust-binaries-${{ matrix.target }}
+        path: dist/lx-hw-db-${{ matrix.target }}.tar.gz
 
   build-debian:
     name: Build Debian Package
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            target: x86_64-unknown-linux-gnu
+          - arch: arm64
+            target: aarch64-unknown-linux-gnu
     runs-on: ubuntu-latest
     needs: build-rust
     steps:
@@ -80,11 +142,14 @@ jobs:
     - name: Download Rust binaries
       uses: actions/download-artifact@v4
       with:
-        name: rust-binaries
-        path: target/release/
+        name: rust-binaries-${{ matrix.target }}
+        path: dist/
         
-    - name: Make binaries executable
-      run: chmod +x target/release/*
+    - name: Extract binaries
+      run: |
+        cd dist
+        tar xzf lx-hw-db-${{ matrix.target }}.tar.gz
+        chmod +x *
     
     - name: Install build dependencies
       run: |
@@ -107,8 +172,11 @@ jobs:
         mkdir -p debian-build/DEBIAN
         
         # Copy binaries
-        cp target/release/lx-hw-detect debian-build/usr/bin/
-        cp target/release/lx-hw-detect-gtk debian-build/usr/bin/
+        cp dist/lx-hw-detect debian-build/usr/bin/
+        cp dist/lx-hw-indexer debian-build/usr/bin/
+        if [ -f "dist/lx-hw-detect-gtk" ]; then
+          cp dist/lx-hw-detect-gtk debian-build/usr/bin/
+        fi
         
         # Copy config
         cp config/default.toml debian-build/etc/lx-hw-db/
@@ -133,7 +201,7 @@ jobs:
         Version: 0.1.0
         Section: utils
         Priority: optional
-        Architecture: amd64
+        Architecture: ${{ matrix.arch }}
         Depends: lshw, dmidecode, pciutils, usbutils, util-linux
         Maintainer: Linux Hardware Database Team <team@lx-hw-db.org>
         Description: Privacy-first Linux hardware compatibility database
@@ -144,16 +212,24 @@ jobs:
         EOF
         
         # Build package
-        dpkg-deb --build debian-build lx-hw-db_0.1.0_amd64.deb
+        dpkg-deb --build debian-build lx-hw-db_0.1.0_${{ matrix.arch }}.deb
         
     - name: Upload Debian package
       uses: actions/upload-artifact@v4
       with:
-        name: debian-package
-        path: lx-hw-db_0.1.0_amd64.deb
+        name: debian-package-${{ matrix.arch }}
+        path: lx-hw-db_0.1.0_${{ matrix.arch }}.deb
 
   build-rpm:
     name: Build RPM Package
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
+        include:
+          - arch: x86_64
+            target: x86_64-unknown-linux-gnu
+          - arch: aarch64
+            target: aarch64-unknown-linux-gnu
     runs-on: ubuntu-latest
     needs: build-rust
     steps:
@@ -162,11 +238,14 @@ jobs:
     - name: Download Rust binaries
       uses: actions/download-artifact@v4
       with:
-        name: rust-binaries
-        path: target/release/
+        name: rust-binaries-${{ matrix.target }}
+        path: dist/
         
-    - name: Make binaries executable
-      run: chmod +x target/release/*
+    - name: Extract binaries
+      run: |
+        cd dist
+        tar xzf lx-hw-db-${{ matrix.target }}.tar.gz
+        chmod +x *
     
     - name: Install RPM build tools
       run: |
@@ -182,8 +261,11 @@ jobs:
         mkdir -p rpm-build/etc/lx-hw-db
         
         # Copy binaries
-        cp target/release/lx-hw-detect rpm-build/usr/bin/
-        cp target/release/lx-hw-detect-gtk rpm-build/usr/bin/
+        cp dist/lx-hw-detect rpm-build/usr/bin/
+        cp dist/lx-hw-indexer rpm-build/usr/bin/
+        if [ -f "dist/lx-hw-detect-gtk" ]; then
+          cp dist/lx-hw-detect-gtk rpm-build/usr/bin/
+        fi
         cp config/default.toml rpm-build/etc/lx-hw-db/
         
         # Create desktop file
@@ -207,19 +289,27 @@ jobs:
         cp packaging/fedora/lx-hw-db.spec ~/rpmbuild/SPECS/
         
         # Build RPM
-        rpmbuild -ba ~/rpmbuild/SPECS/lx-hw-db.spec
+        rpmbuild -ba ~/rpmbuild/SPECS/lx-hw-db.spec --target ${{ matrix.arch }}
         
         # Copy built RPM
-        cp ~/rpmbuild/RPMS/x86_64/lx-hw-db-0.1.0-1.x86_64.rpm .
+        cp ~/rpmbuild/RPMS/${{ matrix.arch }}/lx-hw-db-0.1.0-1.${{ matrix.arch }}.rpm .
         
     - name: Upload RPM package
       uses: actions/upload-artifact@v4
       with:
-        name: rpm-package
-        path: lx-hw-db-0.1.0-1.x86_64.rpm
+        name: rpm-package-${{ matrix.arch }}
+        path: lx-hw-db-0.1.0-1.${{ matrix.arch }}.rpm
 
   build-arch:
     name: Build Arch Package
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
+        include:
+          - arch: x86_64
+            target: x86_64-unknown-linux-gnu
+          - arch: aarch64
+            target: aarch64-unknown-linux-gnu
     runs-on: ubuntu-latest
     needs: build-rust
     steps:
@@ -228,11 +318,14 @@ jobs:
     - name: Download Rust binaries
       uses: actions/download-artifact@v4
       with:
-        name: rust-binaries
-        path: target/release/
+        name: rust-binaries-${{ matrix.target }}
+        path: dist/
         
-    - name: Make binaries executable
-      run: chmod +x target/release/*
+    - name: Extract binaries
+      run: |
+        cd dist
+        tar xzf lx-hw-db-${{ matrix.target }}.tar.gz
+        chmod +x *
 
     - name: Build Arch package (manual)
       run: |
@@ -242,8 +335,11 @@ jobs:
         mkdir -p arch-pkg/etc/lx-hw-db
         
         # Copy files
-        cp target/release/lx-hw-detect arch-pkg/usr/bin/
-        cp target/release/lx-hw-detect-gtk arch-pkg/usr/bin/
+        cp dist/lx-hw-detect arch-pkg/usr/bin/
+        cp dist/lx-hw-indexer arch-pkg/usr/bin/
+        if [ -f "dist/lx-hw-detect-gtk" ]; then
+          cp dist/lx-hw-detect-gtk arch-pkg/usr/bin/
+        fi
         cp config/default.toml arch-pkg/etc/lx-hw-db/
         
         # Create desktop file
@@ -266,7 +362,7 @@ jobs:
         pkgver = 0.1.0-1
         pkgdesc = Privacy-first Linux hardware compatibility database
         url = https://github.com/lx-hw-db/lx-hw-db
-        arch = x86_64
+        arch = ${{ matrix.arch }}
         license = AGPL3
         depend = lshw
         depend = dmidecode
@@ -277,17 +373,24 @@ jobs:
         
         # Create package
         cd arch-pkg
-        tar -czf ../lx-hw-db-0.1.0-1-x86_64.pkg.tar.gz *
+        tar -czf ../lx-hw-db-0.1.0-1-${{ matrix.arch }}.pkg.tar.gz *
         cd ..
         
     - name: Upload Arch package
       uses: actions/upload-artifact@v4
       with:
-        name: arch-package
-        path: lx-hw-db-0.1.0-1-x86_64.pkg.tar.gz
+        name: arch-package-${{ matrix.arch }}
+        path: lx-hw-db-0.1.0-1-${{ matrix.arch }}.pkg.tar.gz
 
   build-appimage:
     name: Build AppImage
+    strategy:
+      matrix:
+        arch: [x86_64]
+        include:
+          - arch: x86_64
+            target: x86_64-unknown-linux-gnu
+            appimage_tool: appimagetool-x86_64.AppImage
     runs-on: ubuntu-latest
     needs: build-rust
     steps:
@@ -296,16 +399,19 @@ jobs:
     - name: Download Rust binaries
       uses: actions/download-artifact@v4
       with:
-        name: rust-binaries
-        path: target/release/
+        name: rust-binaries-${{ matrix.target }}
+        path: dist/
         
-    - name: Make binaries executable
-      run: chmod +x target/release/*
+    - name: Extract binaries
+      run: |
+        cd dist
+        tar xzf lx-hw-db-${{ matrix.target }}.tar.gz
+        chmod +x *
 
     - name: Install AppImage tools
       run: |
-        wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-        chmod +x appimagetool-x86_64.AppImage
+        wget https://github.com/AppImage/AppImageKit/releases/download/continuous/${{ matrix.appimage_tool }}
+        chmod +x ${{ matrix.appimage_tool }}
 
     - name: Build AppImage
       run: |
@@ -316,8 +422,11 @@ jobs:
         mkdir -p AppDir/etc/lx-hw-db
         
         # Copy binaries
-        cp target/release/lx-hw-detect AppDir/usr/bin/
-        cp target/release/lx-hw-detect-gtk AppDir/usr/bin/
+        cp dist/lx-hw-detect AppDir/usr/bin/
+        cp dist/lx-hw-indexer AppDir/usr/bin/
+        if [ -f "dist/lx-hw-detect-gtk" ]; then
+          cp dist/lx-hw-detect-gtk AppDir/usr/bin/
+        fi
         cp config/default.toml AppDir/etc/lx-hw-db/
         
         # Create desktop file
@@ -350,13 +459,13 @@ jobs:
         echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==" | base64 -d > AppDir/lx-hw-detect.png
         
         # Build AppImage
-        ./appimagetool-x86_64.AppImage AppDir lx-hw-db-0.1.0-x86_64.AppImage
+        ./${{ matrix.appimage_tool }} AppDir lx-hw-db-0.1.0-${{ matrix.arch }}.AppImage
         
     - name: Upload AppImage
       uses: actions/upload-artifact@v4
       with:
-        name: appimage-package
-        path: lx-hw-db-0.1.0-x86_64.AppImage
+        name: appimage-package-${{ matrix.arch }}
+        path: lx-hw-db-0.1.0-${{ matrix.arch }}.AppImage
 
   build-nix:
     name: Build Nix Package
@@ -400,10 +509,13 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          debian-package/lx-hw-db_0.1.0_amd64.deb
-          rpm-package/lx-hw-db-0.1.0-1.x86_64.rpm
-          arch-package/lx-hw-db-0.1.0-1-x86_64.pkg.tar.gz
-          appimage-package/lx-hw-db-0.1.0-x86_64.AppImage
+          debian-package-amd64/lx-hw-db_0.1.0_amd64.deb
+          debian-package-arm64/lx-hw-db_0.1.0_arm64.deb
+          rpm-package-x86_64/lx-hw-db-0.1.0-1.x86_64.rpm
+          rpm-package-aarch64/lx-hw-db-0.1.0-1.aarch64.rpm
+          arch-package-x86_64/lx-hw-db-0.1.0-1-x86_64.pkg.tar.gz
+          arch-package-aarch64/lx-hw-db-0.1.0-1-aarch64.pkg.tar.gz
+          appimage-package-x86_64/lx-hw-db-0.1.0-x86_64.AppImage
           nix-package/lx-hw-detect-nix
           nix-package/lx-hw-detect-gtk-nix
         draft: false

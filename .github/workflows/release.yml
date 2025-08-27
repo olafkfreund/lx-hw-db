@@ -1,0 +1,696 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a pre-release?'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+  build-binaries:
+    name: Build Release Binaries
+    needs: prepare-release
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: false
+            gui: true
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: true
+            gui: false
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            cross: true
+            gui: false
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            cross: true
+            gui: false
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      
+      - name: Install cross-compilation tool
+        if: matrix.cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+      
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      
+      - name: Install system dependencies (GUI builds)
+        if: matrix.gui
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            pkg-config \
+            build-essential \
+            lshw \
+            dmidecode \
+            pciutils \
+            usbutils \
+            util-linux
+      
+      - name: Build CLI (native)
+        if: '!matrix.cross'
+        run: cargo build --release --target ${{ matrix.target }} --bin lx-hw-detect
+        
+      - name: Build CLI (cross-compile)
+        if: matrix.cross
+        run: cross build --release --target ${{ matrix.target }} --bin lx-hw-detect
+        
+      - name: Build indexer (native)
+        if: '!matrix.cross'
+        run: cargo build --release --target ${{ matrix.target }} --bin lx-hw-indexer
+        
+      - name: Build indexer (cross-compile)
+        if: matrix.cross
+        run: cross build --release --target ${{ matrix.target }} --bin lx-hw-indexer
+        
+      - name: Build GTK GUI
+        if: matrix.gui
+        run: cargo build --release --target ${{ matrix.target }} --bin lx-hw-detect-gtk --features gtk-gui
+        
+      - name: Run tests
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: cargo test --release --target ${{ matrix.target }}
+        
+      - name: Strip binaries
+        run: |
+          if command -v strip >/dev/null 2>&1; then
+            strip target/${{ matrix.target }}/release/lx-hw-detect 2>/dev/null || true
+            strip target/${{ matrix.target }}/release/lx-hw-indexer 2>/dev/null || true
+            if [ -f "target/${{ matrix.target }}/release/lx-hw-detect-gtk" ]; then
+              strip target/${{ matrix.target }}/release/lx-hw-detect-gtk 2>/dev/null || true
+            fi
+          fi
+        
+      - name: Create release archive
+        run: |
+          mkdir -p dist
+          if [ -f "target/${{ matrix.target }}/release/lx-hw-detect-gtk" ]; then
+            tar czf dist/lx-hw-db-${{ needs.prepare-release.outputs.version }}-${{ matrix.target }}.tar.gz \
+              -C target/${{ matrix.target }}/release \
+              lx-hw-detect lx-hw-indexer lx-hw-detect-gtk \
+              -C ../../.. \
+              LICENSE README.md CHANGELOG.md \
+              completions/ config/ docs/man/
+          else
+            tar czf dist/lx-hw-db-${{ needs.prepare-release.outputs.version }}-${{ matrix.target }}.tar.gz \
+              -C target/${{ matrix.target }}/release \
+              lx-hw-detect lx-hw-indexer \
+              -C ../../.. \
+              LICENSE README.md CHANGELOG.md \
+              completions/ config/ docs/man/
+          fi
+          
+          # Create checksums
+          cd dist
+          sha256sum *.tar.gz > lx-hw-db-${{ needs.prepare-release.outputs.version }}-${{ matrix.target }}.sha256
+          cd ..
+        
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target }}
+          path: |
+            dist/lx-hw-db-${{ needs.prepare-release.outputs.version }}-${{ matrix.target }}.tar.gz
+            dist/lx-hw-db-${{ needs.prepare-release.outputs.version }}-${{ matrix.target }}.sha256
+
+  build-packages:
+    name: Build Distribution Packages
+    needs: [prepare-release, build-binaries]
+    strategy:
+      matrix:
+        package_type: [deb, rpm, arch, appimage]
+        arch: [x86_64, aarch64]
+        exclude:
+          - package_type: appimage
+            arch: aarch64  # AppImage tools not available for ARM64
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: release-${{ matrix.arch }}-unknown-linux-gnu
+          path: dist/
+      
+      - name: Extract binaries
+        run: |
+          cd dist
+          tar xzf lx-hw-db-${{ needs.prepare-release.outputs.version }}-${{ matrix.arch }}-unknown-linux-gnu.tar.gz
+          chmod +x lx-hw-detect lx-hw-indexer
+          if [ -f "lx-hw-detect-gtk" ]; then
+            chmod +x lx-hw-detect-gtk
+          fi
+      
+      - name: Build Debian package
+        if: matrix.package_type == 'deb'
+        run: |
+          # Create debian package structure
+          mkdir -p pkg/usr/bin
+          mkdir -p pkg/usr/share/applications
+          mkdir -p pkg/usr/share/man/man1
+          mkdir -p pkg/etc/lx-hw-db
+          mkdir -p pkg/usr/share/bash-completion/completions
+          mkdir -p pkg/usr/share/zsh/site-functions
+          mkdir -p pkg/usr/share/fish/vendor_completions.d
+          mkdir -p pkg/DEBIAN
+          
+          # Copy binaries
+          cp dist/lx-hw-detect pkg/usr/bin/
+          cp dist/lx-hw-indexer pkg/usr/bin/
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cp dist/lx-hw-detect-gtk pkg/usr/bin/
+          fi
+          
+          # Copy configuration and documentation
+          cp config/default.toml pkg/etc/lx-hw-db/
+          cp docs/man/*.1 pkg/usr/share/man/man1/
+          cp completions/bash/* pkg/usr/share/bash-completion/completions/
+          cp completions/zsh/* pkg/usr/share/zsh/site-functions/
+          cp completions/fish/* pkg/usr/share/fish/vendor_completions.d/
+          
+          # Create desktop file if GUI is available
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cat > pkg/usr/share/applications/lx-hw-detect.desktop << 'EOF'
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Linux Hardware Database
+          Comment=Privacy-preserving hardware detection and compatibility reporting
+          Exec=lx-hw-detect-gtk
+          Icon=computer-symbolic
+          Terminal=false
+          StartupNotify=true
+          Categories=System;HardwareSettings;
+          EOF
+          fi
+          
+          # Create control file
+          INSTALLED_SIZE=$(du -sk pkg/usr pkg/etc | awk '{sum += $1} END {print sum}')
+          cat > pkg/DEBIAN/control << EOF
+          Package: lx-hw-db
+          Version: ${VERSION#v}
+          Section: utils
+          Priority: optional
+          Architecture: $(echo ${{ matrix.arch }} | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+          Installed-Size: $INSTALLED_SIZE
+          Depends: lshw, dmidecode, pciutils, usbutils, util-linux
+          Maintainer: Linux Hardware Database Team <team@lx-hw-db.org>
+          Description: Privacy-first Linux hardware compatibility database
+           Community-driven hardware detection and configuration tool that helps
+           Linux users ensure optimal hardware compatibility through privacy-preserving
+           hardware detection, automated configuration recommendations, and transparent
+           community-driven validation.
+          Homepage: https://github.com/lx-hw-db/lx-hw-db
+          EOF
+          
+          # Build package
+          dpkg-deb --build pkg lx-hw-db_${VERSION#v}_$(echo ${{ matrix.arch }} | sed 's/x86_64/amd64/;s/aarch64/arm64/').deb
+        env:
+          VERSION: ${{ needs.prepare-release.outputs.version }}
+      
+      - name: Build RPM package
+        if: matrix.package_type == 'rpm'
+        run: |
+          # Install RPM build tools
+          sudo apt-get update
+          sudo apt-get install -y rpm
+          
+          # Create RPM build structure
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+          mkdir -p rpm-build/usr/bin
+          mkdir -p rpm-build/usr/share/applications
+          mkdir -p rpm-build/usr/share/man/man1
+          mkdir -p rpm-build/etc/lx-hw-db
+          mkdir -p rpm-build/usr/share/bash-completion/completions
+          mkdir -p rpm-build/usr/share/zsh/site-functions
+          mkdir -p rpm-build/usr/share/fish/vendor_completions.d
+          
+          # Copy files
+          cp dist/lx-hw-detect rpm-build/usr/bin/
+          cp dist/lx-hw-indexer rpm-build/usr/bin/
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cp dist/lx-hw-detect-gtk rpm-build/usr/bin/
+          fi
+          
+          cp config/default.toml rpm-build/etc/lx-hw-db/
+          cp docs/man/*.1 rpm-build/usr/share/man/man1/
+          cp completions/bash/* rpm-build/usr/share/bash-completion/completions/
+          cp completions/zsh/* rpm-build/usr/share/zsh/site-functions/
+          cp completions/fish/* rpm-build/usr/share/fish/vendor_completions.d/
+          
+          # Create desktop file if GUI is available
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cat > rpm-build/usr/share/applications/lx-hw-detect.desktop << 'EOF'
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Linux Hardware Database
+          Comment=Privacy-preserving hardware detection and compatibility reporting
+          Exec=lx-hw-detect-gtk
+          Icon=computer-symbolic
+          Terminal=false
+          StartupNotify=true
+          Categories=System;HardwareSettings;
+          EOF
+          fi
+          
+          # Create tarball
+          tar -czf ~/rpmbuild/SOURCES/lx-hw-db-${VERSION#v}.tar.gz -C rpm-build .
+          
+          # Create spec file
+          cat > ~/rpmbuild/SPECS/lx-hw-db.spec << 'EOF'
+          Name:           lx-hw-db
+          Version:        ${VERSION#v}
+          Release:        1%{?dist}
+          Summary:        Privacy-first Linux hardware compatibility database
+          License:        AGPL-3.0
+          URL:            https://github.com/lx-hw-db/lx-hw-db
+          Source0:        %{name}-%{version}.tar.gz
+          BuildArch:      ${{ matrix.arch }}
+          
+          Requires:       lshw dmidecode pciutils usbutils util-linux
+          
+          %description
+          Community-driven hardware detection and configuration tool that helps
+          Linux users ensure optimal hardware compatibility through privacy-preserving
+          hardware detection, automated configuration recommendations, and transparent
+          community-driven validation.
+          
+          %prep
+          %setup -q -c
+          
+          %install
+          cp -pr * %{buildroot}/
+          
+          %files
+          %{_bindir}/lx-hw-detect
+          %{_bindir}/lx-hw-indexer
+          %{_mandir}/man1/lx-hw-detect.1*
+          %{_mandir}/man1/lx-hw-indexer.1*
+          %config(noreplace) %{_sysconfdir}/lx-hw-db/default.toml
+          %{_datadir}/bash-completion/completions/*
+          %{_datadir}/zsh/site-functions/*
+          %{_datadir}/fish/vendor_completions.d/*
+          
+          EOF
+          
+          # Add GUI files if available
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cat >> ~/rpmbuild/SPECS/lx-hw-db.spec << 'EOF'
+          %{_bindir}/lx-hw-detect-gtk
+          %{_mandir}/man1/lx-hw-detect-gtk.1*
+          %{_datadir}/applications/lx-hw-detect.desktop
+          EOF
+          fi
+          
+          # Build RPM
+          sed -i "s/\${VERSION#v}/${VERSION#v}/g" ~/rpmbuild/SPECS/lx-hw-db.spec
+          rpmbuild -ba ~/rpmbuild/SPECS/lx-hw-db.spec --target ${{ matrix.arch }}
+          
+          # Copy built RPM
+          cp ~/rpmbuild/RPMS/${{ matrix.arch }}/lx-hw-db-${VERSION#v}-1.*.rpm .
+        env:
+          VERSION: ${{ needs.prepare-release.outputs.version }}
+      
+      - name: Build Arch package
+        if: matrix.package_type == 'arch'
+        run: |
+          # Create package structure
+          mkdir -p arch-pkg/usr/bin
+          mkdir -p arch-pkg/usr/share/applications
+          mkdir -p arch-pkg/usr/share/man/man1
+          mkdir -p arch-pkg/etc/lx-hw-db
+          mkdir -p arch-pkg/usr/share/bash-completion/completions
+          mkdir -p arch-pkg/usr/share/zsh/site-functions
+          mkdir -p arch-pkg/usr/share/fish/vendor_completions.d
+          
+          # Copy files
+          cp dist/lx-hw-detect arch-pkg/usr/bin/
+          cp dist/lx-hw-indexer arch-pkg/usr/bin/
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cp dist/lx-hw-detect-gtk arch-pkg/usr/bin/
+          fi
+          
+          cp config/default.toml arch-pkg/etc/lx-hw-db/
+          cp docs/man/*.1 arch-pkg/usr/share/man/man1/
+          cp completions/bash/* arch-pkg/usr/share/bash-completion/completions/
+          cp completions/zsh/* arch-pkg/usr/share/zsh/site-functions/
+          cp completions/fish/* arch-pkg/usr/share/fish/vendor_completions.d/
+          
+          # Create desktop file if GUI is available
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cat > arch-pkg/usr/share/applications/lx-hw-detect.desktop << 'EOF'
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Linux Hardware Database
+          Comment=Privacy-preserving hardware detection and compatibility reporting
+          Exec=lx-hw-detect-gtk
+          Icon=computer-symbolic
+          Terminal=false
+          StartupNotify=true
+          Categories=System;HardwareSettings;
+          EOF
+          fi
+          
+          # Create .PKGINFO
+          cat > arch-pkg/.PKGINFO << EOF
+          pkgname = lx-hw-db
+          pkgver = ${VERSION#v}-1
+          pkgdesc = Privacy-first Linux hardware compatibility database
+          url = https://github.com/lx-hw-db/lx-hw-db
+          arch = ${{ matrix.arch }}
+          license = AGPL3
+          depend = lshw
+          depend = dmidecode
+          depend = pciutils
+          depend = usbutils
+          depend = util-linux
+          EOF
+          
+          # Create package
+          cd arch-pkg
+          tar -czf ../lx-hw-db-${VERSION#v}-1-${{ matrix.arch }}.pkg.tar.gz *
+          cd ..
+        env:
+          VERSION: ${{ needs.prepare-release.outputs.version }}
+      
+      - name: Build AppImage
+        if: matrix.package_type == 'appimage'
+        run: |
+          # Install AppImage tools
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${{ matrix.arch }}.AppImage
+          chmod +x appimagetool-${{ matrix.arch }}.AppImage
+          
+          # Create AppDir structure
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          mkdir -p AppDir/etc/lx-hw-db
+          
+          # Copy binaries
+          cp dist/lx-hw-detect AppDir/usr/bin/
+          cp dist/lx-hw-indexer AppDir/usr/bin/
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cp dist/lx-hw-detect-gtk AppDir/usr/bin/
+          fi
+          cp config/default.toml AppDir/etc/lx-hw-db/
+          
+          # Create desktop file
+          cat > AppDir/usr/share/applications/lx-hw-detect.desktop << 'EOF'
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Linux Hardware Database
+          Comment=Privacy-preserving hardware detection and compatibility reporting
+          Exec=lx-hw-detect-gtk
+          Icon=lx-hw-detect
+          Terminal=false
+          StartupNotify=true
+          Categories=System;HardwareSettings;
+          EOF
+          
+          # Create AppRun
+          if [ -f "dist/lx-hw-detect-gtk" ]; then
+            cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          HERE="$(dirname "$(readlink -f "${0}")")"
+          export PATH="${HERE}/usr/bin:${PATH}"
+          exec "${HERE}/usr/bin/lx-hw-detect-gtk" "$@"
+          EOF
+          else
+            cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          HERE="$(dirname "$(readlink -f "${0}")")"
+          export PATH="${HERE}/usr/bin:${PATH}"
+          exec "${HERE}/usr/bin/lx-hw-detect" "$@"
+          EOF
+          fi
+          chmod +x AppDir/AppRun
+          
+          # Copy desktop file to root
+          cp AppDir/usr/share/applications/lx-hw-detect.desktop AppDir/
+          
+          # Create icon (simple placeholder)
+          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==" | base64 -d > AppDir/lx-hw-detect.png
+          
+          # Build AppImage
+          ./appimagetool-${{ matrix.arch }}.AppImage AppDir lx-hw-db-${VERSION#v}-${{ matrix.arch }}.AppImage
+        env:
+          VERSION: ${{ needs.prepare-release.outputs.version }}
+      
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.package_type }}-${{ matrix.arch }}
+          path: |
+            *.deb
+            *.rpm
+            *.pkg.tar.gz
+            *.AppImage
+
+  build-web-bundle:
+    name: Build Web Interface Bundle
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create web bundle
+        run: |
+          mkdir -p dist/lx-hw-db-web-${{ needs.prepare-release.outputs.version }}
+          
+          # Copy web interface files
+          cp -r web/* dist/lx-hw-db-web-${{ needs.prepare-release.outputs.version }}/
+          
+          # Copy documentation
+          cp README.md LICENSE CHANGELOG.md dist/lx-hw-db-web-${{ needs.prepare-release.outputs.version }}/
+          
+          # Create installation script
+          cat > dist/lx-hw-db-web-${{ needs.prepare-release.outputs.version }}/install.sh << 'EOF'
+          #!/bin/bash
+          # Linux Hardware Database Web Interface Installation Script
+          
+          set -e
+          
+          INSTALL_DIR="/var/www/lx-hw-db"
+          SERVICE_NAME="lx-hw-db-web"
+          
+          echo "Installing Linux Hardware Database Web Interface..."
+          
+          # Create installation directory
+          sudo mkdir -p "$INSTALL_DIR"
+          
+          # Copy files
+          sudo cp -r . "$INSTALL_DIR/"
+          sudo chown -R www-data:www-data "$INSTALL_DIR" 2>/dev/null || sudo chown -R nginx:nginx "$INSTALL_DIR" 2>/dev/null || true
+          
+          # Create systemd service
+          sudo tee /etc/systemd/system/$SERVICE_NAME.service > /dev/null << 'SERVICE'
+          [Unit]
+          Description=Linux Hardware Database Web Interface
+          After=network.target
+          
+          [Service]
+          Type=simple
+          User=www-data
+          WorkingDirectory=/var/www/lx-hw-db
+          ExecStart=/usr/bin/python3 serve.py
+          Restart=always
+          RestartSec=3
+          
+          [Install]
+          WantedBy=multi-user.target
+          SERVICE
+          
+          # Enable and start service
+          sudo systemctl daemon-reload
+          sudo systemctl enable $SERVICE_NAME
+          sudo systemctl start $SERVICE_NAME
+          
+          echo "Installation complete!"
+          echo "Web interface is running on http://localhost:8000"
+          echo "To manage the service:"
+          echo "  sudo systemctl status $SERVICE_NAME"
+          echo "  sudo systemctl stop $SERVICE_NAME"
+          echo "  sudo systemctl restart $SERVICE_NAME"
+          EOF
+          
+          chmod +x dist/lx-hw-db-web-${{ needs.prepare-release.outputs.version }}/install.sh
+          
+          # Create archive
+          cd dist
+          tar czf lx-hw-db-web-${{ needs.prepare-release.outputs.version }}.tar.gz lx-hw-db-web-${{ needs.prepare-release.outputs.version }}/
+          cd ..
+      
+      - name: Upload web bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-bundle
+          path: dist/lx-hw-db-web-${{ needs.prepare-release.outputs.version }}.tar.gz
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [prepare-release, build-binaries, build-packages, build-web-bundle]
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+      
+      - name: Organize release files
+        run: |
+          mkdir -p release/
+          
+          # Copy binary archives
+          find artifacts/release-* -name "*.tar.gz" -exec cp {} release/ \;
+          find artifacts/release-* -name "*.sha256" -exec cp {} release/ \;
+          
+          # Copy packages
+          find artifacts/package-* -name "*.deb" -exec cp {} release/ \;
+          find artifacts/package-* -name "*.rpm" -exec cp {} release/ \;
+          find artifacts/package-* -name "*.pkg.tar.gz" -exec cp {} release/ \;
+          find artifacts/package-* -name "*.AppImage" -exec cp {} release/ \;
+          
+          # Copy web bundle
+          find artifacts/web-bundle -name "*.tar.gz" -exec cp {} release/ \;
+          
+          # Create master checksum file
+          cd release
+          sha256sum * > checksums.sha256
+          cd ..
+      
+      - name: Generate release notes
+        run: |
+          cat > release_notes.md << 'EOF'
+          ## Release ${{ needs.prepare-release.outputs.version }}
+          
+          ### Binary Downloads
+          
+          **Linux x86_64 (GNU)**
+          - `lx-hw-db-${{ needs.prepare-release.outputs.version }}-x86_64-unknown-linux-gnu.tar.gz`
+          
+          **Linux ARM64 (GNU)**  
+          - `lx-hw-db-${{ needs.prepare-release.outputs.version }}-aarch64-unknown-linux-gnu.tar.gz`
+          
+          **Linux x86_64 (musl)**
+          - `lx-hw-db-${{ needs.prepare-release.outputs.version }}-x86_64-unknown-linux-musl.tar.gz`
+          
+          **Linux ARM64 (musl)**
+          - `lx-hw-db-${{ needs.prepare-release.outputs.version }}-aarch64-unknown-linux-musl.tar.gz`
+          
+          ### Distribution Packages
+          
+          **Ubuntu/Debian**
+          - `lx-hw-db_${VERSION#v}_amd64.deb`
+          - `lx-hw-db_${VERSION#v}_arm64.deb`
+          
+          **RHEL/Fedora/CentOS**
+          - `lx-hw-db-${VERSION#v}-1.x86_64.rpm`
+          - `lx-hw-db-${VERSION#v}-1.aarch64.rpm`
+          
+          **Arch Linux**
+          - `lx-hw-db-${VERSION#v}-1-x86_64.pkg.tar.gz`
+          - `lx-hw-db-${VERSION#v}-1-aarch64.pkg.tar.gz`
+          
+          **AppImage**
+          - `lx-hw-db-${VERSION#v}-x86_64.AppImage`
+          
+          **Web Interface**
+          - `lx-hw-db-web-${{ needs.prepare-release.outputs.version }}.tar.gz`
+          
+          ### Verification
+          
+          All files can be verified using the checksums in `checksums.sha256`.
+          
+          ### Installation
+          
+          See the [Installation Guide](https://github.com/lx-hw-db/lx-hw-db/blob/main/docs/INSTALLATION.md) for detailed installation instructions.
+          EOF
+        env:
+          VERSION: ${{ needs.prepare-release.outputs.version }}
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare-release.outputs.tag }}
+          name: Linux Hardware Database ${{ needs.prepare-release.outputs.version }}
+          body_path: release_notes.md
+          files: release/*
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease || contains(needs.prepare-release.outputs.version, '-') }}
+          make_latest: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Trigger package repository updates
+        if: '!github.event.inputs.prerelease && !contains(needs.prepare-release.outputs.version, ''-'')'
+        run: |
+          echo "Release ${{ needs.prepare-release.outputs.version }} created successfully!"
+          echo "Consider updating downstream package repositories:"
+          echo "- AUR (Arch User Repository)"
+          echo "- Homebrew"
+          echo "- Nix packages"
+          echo "- Flatpak"

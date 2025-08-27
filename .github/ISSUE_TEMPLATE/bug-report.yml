@@ -1,0 +1,220 @@
+name: Bug Report
+description: Report a bug in the Linux Hardware Database tools or website
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! This helps us improve the Linux Hardware Database for everyone.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the system has the bug?
+      options:
+        - CLI Tool (lx-hw-detect)
+        - GTK GUI Application
+        - Qt6 GUI Application  
+        - Web Interface
+        - Hardware Detection
+        - Configuration Generation
+        - Indexer Tool
+        - API Endpoints
+        - Documentation
+        - Installation/Packaging
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version Information
+      description: What version are you using?
+      placeholder: e.g., v0.5.2, latest main branch, built from source
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: Clear description of what the bug is
+      placeholder: |
+        Describe the bug clearly and concisely:
+        - What were you trying to do?
+        - What happened instead?
+        - What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Run command '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: Clear description of what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: |
+        Describe what actually happened:
+        - Error messages (exact text)
+        - Unexpected output
+        - Application crashes
+        - Performance issues
+    validations:
+      required: true
+
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      placeholder: e.g., Ubuntu 22.04, Fedora 38, Arch Linux, NixOS 23.05
+    validations:
+      required: true
+
+  - type: input
+    id: kernel-version
+    attributes:
+      label: Kernel Version
+      description: What kernel version are you running?
+      placeholder: e.g., 6.2.0-26-generic, run `uname -r` to find out
+    validations:
+      required: true
+
+  - type: input
+    id: hardware-relevant
+    attributes:
+      label: Hardware Information
+      description: Relevant hardware info (if the bug is hardware-related)
+      placeholder: e.g., CPU model, GPU, specific hardware that triggers the bug
+    validations:
+      required: false
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: Error Logs and Output
+      description: Please paste any relevant log output or error messages
+      render: shell
+      placeholder: |
+        Paste full error messages, stack traces, or debug output here.
+        Run with verbose flags if available (e.g., --verbose, --debug)
+    validations:
+      required: false
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration Details
+      description: Relevant configuration files or command-line options
+      render: shell
+      placeholder: |
+        Include:
+        - Command-line arguments used
+        - Relevant configuration file contents
+        - Environment variables set
+    validations:
+      required: false
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Bug Frequency
+      description: How often does this bug occur?
+      options:
+        - Always - Happens every time
+        - Often - Happens most of the time
+        - Sometimes - Happens occasionally
+        - Rarely - Happens very infrequently
+        - Once - Happened only once
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Critical - Application crashes or data loss
+        - High - Major functionality broken
+        - Medium - Feature not working as expected
+        - Low - Minor issue or cosmetic problem
+        - Enhancement - Not really a bug, more of an improvement
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Have you found any workaround for this issue?
+      placeholder: |
+        If you've found a way to work around this bug, please describe it:
+        - What steps avoid the problem?
+        - Are there alternative approaches that work?
+        - Any temporary fixes you've applied?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: research-done
+    attributes:
+      label: Research Done
+      description: Have you done the following?
+      options:
+        - label: Searched existing issues for similar bugs
+          required: true
+        - label: Checked the troubleshooting guide
+          required: true
+        - label: Tried with the latest version
+          required: true
+        - label: Removed any personal information from logs
+          required: true
+
+  - type: checkboxes
+    id: testing-willingness
+    attributes:
+      label: Testing Willingness
+      description: Are you willing to help test fixes?
+      options:
+        - label: I can test proposed fixes
+        - label: I can provide additional debugging information
+        - label: I can help reproduce the issue with different configurations
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: |
+        Add any other relevant information:
+        - Screenshots or screen recordings
+        - Links to related issues
+        - Comparison with working scenarios
+        - Impact on your workflow

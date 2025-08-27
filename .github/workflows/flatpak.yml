@@ -1,0 +1,140 @@
+name: Build Flatpak
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  generate-sources:
+    name: Generate Cargo Sources
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Install flatpak-cargo-generator
+        run: |
+          pip3 install --user aiohttp toml
+          git clone https://github.com/flatpak/flatpak-builder-tools.git
+          
+      - name: Generate cargo sources
+        run: |
+          python3 flatpak-builder-tools/cargo/flatpak-cargo-generator.py \
+            Cargo.lock -o packaging/flatpak/generated-sources.json
+            
+      - name: Upload generated sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-sources
+          path: packaging/flatpak/generated-sources.json
+
+  build-flatpak:
+    name: Build Flatpak Package
+    runs-on: ubuntu-latest
+    needs: generate-sources
+    
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:gnome-45
+      options: --privileged
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download generated sources
+        uses: actions/download-artifact@v4
+        with:
+          name: flatpak-sources
+          path: packaging/flatpak/
+          
+      - name: Build Flatpak
+        uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: lx-hw-db.flatpak
+          manifest-path: packaging/flatpak/org.lxhwdb.LxHwDb.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+          
+      - name: Upload Flatpak bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-bundle
+          path: lx-hw-db.flatpak
+          
+  test-flatpak:
+    name: Test Flatpak Bundle
+    runs-on: ubuntu-latest
+    needs: build-flatpak
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Download Flatpak bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: flatpak-bundle
+          path: .
+          
+      - name: Install Flatpak
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y flathub org.gnome.Platform//45
+          
+      - name: Install and test Flatpak
+        run: |
+          # Install the built Flatpak
+          sudo flatpak install --user --bundle lx-hw-db.flatpak -y
+          
+          # Test CLI functionality
+          flatpak run --command=lx-hw-detect org.lxhwdb.LxHwDb --version
+          flatpak run --command=lx-hw-detect org.lxhwdb.LxHwDb --help
+          
+          # Test indexer
+          flatpak run --command=lx-hw-indexer org.lxhwdb.LxHwDb --help
+          
+          echo "Flatpak tests passed!"
+
+  publish-flatpak:
+    name: Publish to Flathub
+    runs-on: ubuntu-latest
+    needs: build-flatpak
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Download Flatpak bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: flatpak-bundle
+          path: .
+          
+      - name: Download generated sources
+        uses: actions/download-artifact@v4
+        with:
+          name: flatpak-sources
+          path: packaging/flatpak/
+          
+      - name: Create Flathub PR
+        run: |
+          echo "To publish to Flathub:"
+          echo "1. Fork https://github.com/flathub/flathub"
+          echo "2. Create a new repository: https://github.com/flathub/org.lxhwdb.LxHwDb"
+          echo "3. Copy the manifest files:"
+          echo "   - packaging/flatpak/org.lxhwdb.LxHwDb.yml"
+          echo "   - packaging/flatpak/org.lxhwdb.LxHwDb.desktop"
+          echo "   - packaging/flatpak/org.lxhwdb.LxHwDb.appdata.xml"
+          echo "   - packaging/flatpak/generated-sources.json"
+          echo "4. Create a pull request to add the app to Flathub"
+          echo "5. Follow Flathub review process"
+          
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: lx-hw-db.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
