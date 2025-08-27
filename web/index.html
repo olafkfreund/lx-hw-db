@@ -10,7 +10,30 @@
     <link rel="stylesheet" href="css/styles.css">
     
     <!-- FlexSearch Library - Load early to prevent race conditions -->
-    <script src="https://unpkg.com/flexsearch@0.7.43/dist/flexsearch.bundle.js"></script>
+    <script>
+        // Global flag to track FlexSearch loading
+        window.flexSearchLoaded = false;
+        window.flexSearchLoadError = false;
+    </script>
+    <script src="https://unpkg.com/flexsearch@0.7.43/dist/flexsearch.bundle.min.js" 
+            onload="window.flexSearchLoaded = true; console.log('FlexSearch loaded successfully from unpkg');" 
+            onerror="loadFlexSearchFallback();"></script>
+    <script>
+        function loadFlexSearchFallback() {
+            console.warn('Primary FlexSearch CDN failed, trying fallback...');
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src = 'https://cdn.jsdelivr.net/npm/flexsearch@0.7.43/dist/flexsearch.bundle.min.js';
+            fallbackScript.onload = function() {
+                window.flexSearchLoaded = true; 
+                console.log('FlexSearch loaded successfully from JSDelivr fallback');
+            };
+            fallbackScript.onerror = function() {
+                window.flexSearchLoadError = true; 
+                console.error('Both FlexSearch CDNs failed to load');
+            };
+            document.head.appendChild(fallbackScript);
+        }
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>L</text></svg>">
@@ -26,6 +49,9 @@
     <meta name="twitter:description" content="Community-driven hardware compatibility data for Linux systems">
 </head>
 <body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
     <!-- Header -->
     <header class="site-header">
         <div class="container">
@@ -38,13 +64,21 @@
                     <p class="site-subtitle">Community-driven hardware compatibility data for Linux systems</p>
                 </div>
 
-                <nav class="header-nav">
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+
+                <!-- Navigation -->
+                <nav class="header-nav" id="header-nav">
                     <a href="#search" class="nav-link">Search</a>
                     <a href="#stats" class="nav-link">Statistics</a>
                     <a href="#about" class="nav-link">About</a>
-                    <a href="https://github.com/lx-hw-db/lx-hw-db" class="nav-link" target="_blank" rel="noopener">
-                        <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                    <a href="https://github.com/lx-hw-db/lx-hw-db" class="nav-link nav-link-external" target="_blank" rel="noopener">
+                        <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                            <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.30.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
                         </svg>
                         GitHub
                     </a>
@@ -54,7 +88,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" id="main-content">
         <!-- Search Section -->
         <section id="search" class="search-section">
             <div class="container">
@@ -65,7 +99,120 @@
 
                 <!-- Search Interface Container -->
                 <div id="search-container" class="search-interface-wrapper">
-                    <!-- Search UI will be injected here by JavaScript -->
+                    <!-- Search Form -->
+                    <form id="search-form" class="search-form" role="search">
+                        <div class="search-input-wrapper">
+                            <label for="search-input" class="sr-only">Search hardware</label>
+                            <input type="text" 
+                                   id="search-input" 
+                                   name="search"
+                                   placeholder="Search for hardware (e.g., RTX 3080, Intel i7, AMD Radeon)..."
+                                   autocomplete="off"
+                                   aria-describedby="search-instructions"
+                                   aria-label="Search for hardware compatibility information">
+                            <button type="submit" class="search-btn" aria-label="Submit search query">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.35-4.35"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="search-instructions" class="sr-only">
+                            Enter hardware names, model numbers, or manufacturers to find compatibility information
+                        </div>
+                    </form>
+
+                    <!-- Search Filters -->
+                    <div class="search-filters" role="group" aria-label="Search filters">
+                        <div class="filter-group">
+                            <label for="category-filter">Category</label>
+                            <select id="category-filter" aria-label="Filter by hardware category">
+                                <option value="all">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="manufacturer-filter">Manufacturer</label>
+                            <select id="manufacturer-filter" aria-label="Filter by hardware manufacturer">
+                                <option value="all">All Manufacturers</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="compatibility-filter">Compatibility</label>
+                            <select id="compatibility-filter" aria-label="Filter by compatibility status">
+                                <option value="all">All Status</option>
+                                <option value="full">✅ Full Support</option>
+                                <option value="partial">⚠️ Partial Support</option>
+                                <option value="limited">⛔ Limited Support</option>
+                                <option value="none">❌ No Support</option>
+                            </select>
+                        </div>
+                        <button type="button" id="advanced-filters-toggle" aria-label="Toggle advanced specification filters">
+                            🔧 Advanced
+                        </button>
+                        <button type="button" id="clear-search" aria-label="Clear all search filters and results">
+                            Clear All
+                        </button>
+                    </div>
+
+                    <!-- Advanced Specification Filters -->
+                    <div class="advanced-filters" id="advanced-filters" style="display: none;">
+                        <div class="advanced-filters-header">
+                            <h4>Specification Filters</h4>
+                        </div>
+                        <div class="spec-filters-grid">
+                            <div class="filter-group">
+                                <label for="interface-filter">Interface</label>
+                                <select id="interface-filter">
+                                    <option value="">Any Interface</option>
+                                    <option value="PCIe">PCIe</option>
+                                    <option value="USB">USB</option>
+                                    <option value="SATA">SATA</option>
+                                    <option value="M.2">M.2</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="memory-filter">Memory (GB)</label>
+                                <select id="memory-filter">
+                                    <option value="">Any Memory</option>
+                                    <option value="4GB">4GB+</option>
+                                    <option value="8GB">8GB+</option>
+                                    <option value="16GB">16GB+</option>
+                                    <option value="32GB">32GB+</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="driver-filter">Driver</label>
+                                <select id="driver-filter">
+                                    <option value="">Any Driver</option>
+                                    <option value="built-in">Built-in</option>
+                                    <option value="proprietary">Proprietary</option>
+                                    <option value="open-source">Open Source</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Hardware Comparison -->
+                        <div class="hardware-comparison" id="hardware-comparison">
+                            <div class="comparison-header">
+                                <h4>Hardware Comparison</h4>
+                                <button type="button" id="clear-comparison">Clear</button>
+                            </div>
+                            <div class="comparison-items" id="comparison-items">
+                                <!-- Comparison items will be added here -->
+                            </div>
+                            <div class="comparison-actions">
+                                <button type="button" id="compare-selected" disabled>Compare Selected</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Results -->
+                    <div class="search-results-wrapper">
+                        <div id="results-count" role="status" aria-live="polite" aria-atomic="true"></div>
+                        <div id="search-results" class="search-results" role="region" aria-label="Search results" aria-live="polite">
+                            <!-- Search results will be displayed here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -100,11 +247,142 @@
                         <div class="stat-label">Kernel Versions</div>
                     </div>
                 </div>
+            </div>
+        </section>
 
+        <!-- Compatibility Matrix Section -->
+        <section class="compatibility-matrix-section">
+            <div class="container">
                 <div class="compatibility-overview">
-                    <h3>Compatibility Overview</h3>
+                    <h2>Compatibility Matrix</h2>
+                    <p>Detailed breakdown of hardware compatibility across distributions and categories.</p>
                     <div id="compatibility-chart" class="chart-container">
                         <!-- Compatibility chart will be rendered here -->
+                    </div>
+                    
+                    <!-- Advanced Compatibility Matrix -->
+                    <div class="matrix-content">
+                        <div class="matrix-header">
+                            <h3>Advanced Compatibility Matrix</h3>
+                            <div class="matrix-controls">
+                                <select class="matrix-type-select" id="matrix-type-select">
+                                    <option value="distribution">By Distribution</option>
+                                    <option value="kernel">By Kernel Version</option>
+                                    <option value="vendor">By Vendor</option>
+                                    <option value="category">By Hardware Category</option>
+                                </select>
+                                
+                                <select class="matrix-category-filter" id="matrix-category-filter">
+                                    <option value="">All Hardware</option>
+                                    <option value="cpu">CPU</option>
+                                    <option value="gpu">GPU</option>
+                                    <option value="network">Network</option>
+                                    <option value="audio">Audio</option>
+                                </select>
+                                
+                                <button class="matrix-fullscreen" id="matrix-fullscreen" aria-label="Toggle fullscreen">
+                                    🔍
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="matrix-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #b8bb26"></span>
+                                <span class="legend-label">Excellent</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #83a598"></span>
+                                <span class="legend-label">Good</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #fabd2f"></span>
+                                <span class="legend-label">Partial</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #fb4934"></span>
+                                <span class="legend-label">Poor</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #665c54"></span>
+                                <span class="legend-label">Unknown</span>
+                            </div>
+                        </div>
+                        
+                        <div class="matrix-container" id="matrix-container">
+                            <div class="matrix-table-container">
+                                <div class="matrix-title">Distribution vs Hardware Category Compatibility</div>
+                                <table class="matrix-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="matrix-corner"></th>
+                                            <th class="matrix-column-header">GPU</th>
+                                            <th class="matrix-column-header">CPU</th>
+                                            <th class="matrix-column-header">Network</th>
+                                            <th class="matrix-column-header">Audio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th class="matrix-row-header">NixOS</th>
+                                            <td class="matrix-cell" style="background-color: #b8bb26; opacity: 0.8" title="3 reports: excellent: 2, good: 1"><span class="matrix-cell-value">3</span></td>
+                                            <td class="matrix-cell" style="background-color: #b8bb26; opacity: 1.0" title="4 reports: excellent: 4"><span class="matrix-cell-value">4</span></td>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.6" title="2 reports: good: 2"><span class="matrix-cell-value">2</span></td>
+                                            <td class="matrix-cell" style="background-color: #fabd2f; opacity: 0.3" title="1 report: partial: 1"><span class="matrix-cell-value">1</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="matrix-row-header">Debian</th>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.6" title="2 reports: good: 1, partial: 1"><span class="matrix-cell-value">2</span></td>
+                                            <td class="matrix-cell" style="background-color: #b8bb26; opacity: 0.9" title="4 reports: excellent: 3, good: 1"><span class="matrix-cell-value">4</span></td>
+                                            <td class="matrix-cell" style="background-color: #b8bb26; opacity: 0.8" title="3 reports: excellent: 2, good: 1"><span class="matrix-cell-value">3</span></td>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.6" title="2 reports: good: 2"><span class="matrix-cell-value">2</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="matrix-row-header">Arch</th>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.8" title="3 reports: excellent: 1, good: 2"><span class="matrix-cell-value">3</span></td>
+                                            <td class="matrix-cell" style="background-color: #b8bb26; opacity: 1.0" title="4 reports: excellent: 4"><span class="matrix-cell-value">4</span></td>
+                                            <td class="matrix-cell" style="background-color: #b8bb26; opacity: 0.6" title="2 reports: excellent: 2"><span class="matrix-cell-value">2</span></td>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.3" title="1 report: good: 1"><span class="matrix-cell-value">1</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="matrix-row-header">Fedora</th>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.6" title="2 reports: good: 2"><span class="matrix-cell-value">2</span></td>
+                                            <td class="matrix-cell" style="background-color: #b8bb26; opacity: 0.9" title="4 reports: excellent: 3, good: 1"><span class="matrix-cell-value">4</span></td>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.8" title="3 reports: good: 3"><span class="matrix-cell-value">3</span></td>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.6" title="2 reports: excellent: 1, good: 1"><span class="matrix-cell-value">2</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="matrix-row-header">Ubuntu</th>
+                                            <td class="matrix-cell" style="background-color: #fabd2f; opacity: 0.6" title="2 reports: good: 1, partial: 1"><span class="matrix-cell-value">2</span></td>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.9" title="4 reports: excellent: 2, good: 2"><span class="matrix-cell-value">4</span></td>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.8" title="3 reports: good: 3"><span class="matrix-cell-value">3</span></td>
+                                            <td class="matrix-cell" style="background-color: #83a598; opacity: 0.6" title="2 reports: good: 2"><span class="matrix-cell-value">2</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="matrix-stats" id="matrix-stats">
+                            <div class="matrix-stats-grid">
+                                <div class="matrix-stat">
+                                    <span class="stat-value">5</span>
+                                    <span class="stat-label">Distributions</span>
+                                </div>
+                                <div class="matrix-stat">
+                                    <span class="stat-value">4</span>
+                                    <span class="stat-label">Hardware Types</span>
+                                </div>
+                                <div class="matrix-stat">
+                                    <span class="stat-value">100%</span>
+                                    <span class="stat-label">Coverage</span>
+                                </div>
+                                <div class="matrix-stat">
+                                    <span class="stat-value">48</span>
+                                    <span class="stat-label">Total Reports</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -9,6 +9,7 @@ class TipSearchSystem {
         this.searchIndex = null;
         this.allTips = [];
         this.filteredTips = [];
+        this.useFallbackSearch = false;
         this.searchFilters = {
             query: '',
             distributions: [],
@@ -76,11 +77,17 @@ class TipSearchSystem {
     /**
      * Initialize FlexSearch index for tips
      */
-    initializeSearchIndex() {
+    initializeSearchIndex(retryCount = 0) {
         if (typeof FlexSearch === 'undefined') {
-            console.warn('FlexSearch not loaded yet, retrying...');
-            setTimeout(() => this.initializeSearchIndex(), 100);
-            return;
+            if (retryCount < 50) { // Max 5 seconds of retrying
+                console.warn(`FlexSearch not loaded yet, retrying... (${retryCount + 1}/50)`);
+                setTimeout(() => this.initializeSearchIndex(retryCount + 1), 100);
+                return;
+            } else {
+                console.error('FlexSearch failed to load after 5 seconds. Tip search will use fallback text search.');
+                this.useFallbackSearch = true;
+                return;
+            }
         }
         
         this.searchIndex = new FlexSearch.Document({
@@ -162,6 +169,12 @@ class TipSearchSystem {
      * Build the search index
      */
     buildSearchIndex() {
+        if (!this.searchIndex) {
+            console.log('Search index not available, using fallback search');
+            this.useFallbackSearch = true;
+            return;
+        }
+        
         this.allTips.forEach(tip => {
             this.searchIndex.add(tip);
         });
@@ -481,19 +494,32 @@ class TipSearchSystem {
 
         // Text search
         if (this.searchFilters.query) {
-            const searchResults = this.searchIndex.search(this.searchFilters.query, {
-                limit: 1000,
-                enrich: true
-            });
-            
-            const resultIds = new Set();
-            searchResults.forEach(result => {
-                result.result.forEach(item => {
-                    resultIds.add(item.id);
+            if (this.useFallbackSearch || !this.searchIndex) {
+                // Fallback text search
+                console.log('Using fallback text search');
+                const query = this.searchFilters.query.toLowerCase();
+                results = results.filter(tip => 
+                    tip.title.toLowerCase().includes(query) ||
+                    tip.description.toLowerCase().includes(query) ||
+                    tip.content.toLowerCase().includes(query) ||
+                    (tip.tags && tip.tags.some(tag => tag.toLowerCase().includes(query)))
+                );
+            } else {
+                // FlexSearch
+                const searchResults = this.searchIndex.search(this.searchFilters.query, {
+                    limit: 1000,
+                    enrich: true
                 });
-            });
+                
+                const resultIds = new Set();
+                searchResults.forEach(result => {
+                    result.result.forEach(item => {
+                        resultIds.add(item.id);
+                    });
+                });
 
-            results = results.filter(tip => resultIds.has(tip.id));
+                results = results.filter(tip => resultIds.has(tip.id));
+            }
         }
 
         // Category filter
@@ -828,14 +854,57 @@ class TipSearchSystem {
     }
 }
 
-// Global instance
-window.tipSearchSystem = new TipSearchSystem();
+// Global instance - delay initialization until FlexSearch is ready
+window.tipSearchSystem = null;
 
-// Auto-initialize when configuration tips are ready
-document.addEventListener('DOMContentLoaded', async () => {
-    // Wait for configuration tips to be loaded
+// Function to create and initialize TipSearchSystem when FlexSearch is ready
+function initializeTipSearchWhenReady(retryCount = 0) {
+    const MAX_RETRIES = 100; // 10 seconds max wait
+    
+    // Check if FlexSearch failed to load
+    if (window.flexSearchLoadError) {
+        console.error('FlexSearch failed to load from CDN. Tip search will use fallback functionality.');
+        // Create TipSearchSystem with fallback mode
+        if (!window.tipSearchSystem) {
+            window.tipSearchSystem = new TipSearchSystem();
+            window.tipSearchSystem.useFallbackSearch = true;
+        }
+        initializeIfReady();
+        return;
+    }
+    
+    // Check if FlexSearch is loaded and available
+    if (!window.flexSearchLoaded || typeof FlexSearch === 'undefined') {
+        if (retryCount < MAX_RETRIES) {
+            console.warn(`FlexSearch not available yet, retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+            setTimeout(() => initializeTipSearchWhenReady(retryCount + 1), 100);
+            return;
+        } else {
+            console.error('FlexSearch failed to load within 10 seconds. Using fallback search.');
+            // Create TipSearchSystem with fallback mode
+            if (!window.tipSearchSystem) {
+                window.tipSearchSystem = new TipSearchSystem();
+                window.tipSearchSystem.useFallbackSearch = true;
+            }
+            initializeIfReady();
+            return;
+        }
+    }
+    
+    if (!window.tipSearchSystem) {
+        window.tipSearchSystem = new TipSearchSystem();
+    }
+    
+    initializeIfReady();
+}
+
+// Helper function to initialize when configuration tips are ready
+function initializeIfReady() {
+    // Initialize if configuration tips are ready
     if (window.configurationTips) {
-        await window.tipSearchSystem.initialize();
+        window.tipSearchSystem.initialize().catch(error => {
+            console.error('Failed to initialize tip search:', error);
+        });
     } else {
         // Wait for configuration tips system to initialize
         const checkConfigTips = setInterval(async () => {
@@ -845,6 +914,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, 500);
     }
+}
+
+// Auto-initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initializeTipSearchWhenReady();
 });
 
 // Export for module usage
