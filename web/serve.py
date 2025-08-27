@@ -48,6 +48,25 @@ class LXHWDBHandler(http.server.SimpleHTTPRequestHandler):
         """Handle API GET requests"""
         path = parsed_path.path
         
+        # First check if it's a static API file (like /api/v1/stats/overview.json)
+        if path.startswith('/api/') and path.endswith('.json'):
+            api_file_path = path[1:]  # Remove leading slash
+            if os.path.exists(api_file_path):
+                try:
+                    with open(api_file_path, 'r') as f:
+                        data = f.read()
+                    
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(data.encode('utf-8'))
+                    return
+                except Exception as e:
+                    print(f"Error serving API file {api_file_path}: {e}")
+                    self.send_error(500, "Error loading API file")
+                    return
+        
+        # Handle dynamic API endpoints
         if path == '/api/hardware':
             return self.serve_hardware_database()
         elif path == '/api/tips':

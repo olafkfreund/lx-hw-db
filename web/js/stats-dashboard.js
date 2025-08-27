@@ -88,14 +88,50 @@ class StatsDashboard {
         `;
     }
 
-    updateCompatibilityChart(compatibilityData) {
+    updateCompatibilityChart(compatibilityData, retryCount = 0) {
         console.log('updateCompatibilityChart called with:', compatibilityData);
-        const chartContainer = document.querySelector('#compatibility-chart');
+        console.log('Document ready state:', document.readyState);
+        console.log('All elements with id:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+        
+        // Debug the compatibility section specifically
+        const matrixSection = document.querySelector('.compatibility-matrix-section');
+        console.log('Matrix section found:', matrixSection);
+        if (matrixSection) {
+            console.log('Matrix section innerHTML:', matrixSection.innerHTML);
+            console.log('All elements inside matrix section:', Array.from(matrixSection.querySelectorAll('*')).map(el => `${el.tagName}${el.id ? '#' + el.id : ''}${el.className ? '.' + el.className.replace(/ /g, '.') : ''}`));
+        }
+        
+        let chartContainer = document.querySelector('#compatibility-chart');
         console.log('Chart container found:', chartContainer);
         
         if (!chartContainer) {
-            console.error('Chart container not found!');
-            return;
+            if (retryCount < 5) { // Try 5 times first
+                console.warn(`Chart container not found yet, retrying in 500ms... (${retryCount + 1}/5)`);
+                setTimeout(() => this.updateCompatibilityChart(compatibilityData, retryCount + 1), 500);
+                return;
+            } else {
+                // After retries failed, create our own chart container
+                console.warn('Chart container not found after retries. Creating our own container.');
+                const matrixSection = document.querySelector('.compatibility-matrix-section');
+                if (matrixSection) {
+                    const compatibilityOverview = matrixSection.querySelector('.compatibility-overview');
+                    if (compatibilityOverview) {
+                        // Create and insert the chart container
+                        const newChartContainer = document.createElement('div');
+                        newChartContainer.id = 'compatibility-chart';
+                        newChartContainer.className = 'chart-container';
+                        compatibilityOverview.appendChild(newChartContainer);
+                        chartContainer = newChartContainer;
+                        console.log('Created new chart container:', chartContainer);
+                    }
+                }
+                
+                if (!chartContainer) {
+                    console.error('Could not create chart container. Chart will not be displayed.');
+                    console.error('Available sections:', Array.from(document.querySelectorAll('section')).map(s => s.className || s.id));
+                    return;
+                }
+            }
         }
         
         if (!compatibilityData) {

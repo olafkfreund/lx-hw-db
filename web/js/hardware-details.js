@@ -40,20 +40,30 @@ class HardwareDetails {
         const modal = document.createElement('div');
         modal.id = 'hardware-details-modal';
         modal.className = 'modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-labelledby', 'modal-title');
+        modal.setAttribute('aria-describedby', 'hardware-details-body');
+        modal.setAttribute('aria-modal', 'true');
         modal.innerHTML = `
-            <div class="modal-overlay"></div>
+            <div class="modal-overlay" aria-hidden="true"></div>
             <div class="modal-content hardware-details-content">
-                <button class="modal-close">×</button>
+                <button class="modal-close" aria-label="Close hardware details dialog">×</button>
                 <div class="modal-header">
-                    <h2>Hardware Details</h2>
+                    <h2 id="modal-title">Hardware Details</h2>
                 </div>
                 <div class="modal-body" id="hardware-details-body">
                     <!-- Details will be inserted here -->
                 </div>
                 <div class="modal-footer">
-                    <button class="btn-primary copy-specs-btn">📋 Copy Specifications</button>
-                    <button class="btn-secondary submit-report-btn">📤 Submit Compatibility Report</button>
-                    <button class="btn-secondary close-modal-btn">Close</button>
+                    <button class="btn-primary copy-specs-btn" aria-label="Copy hardware specifications to clipboard">
+                        📋 Copy Specifications
+                    </button>
+                    <button class="btn-secondary submit-report-btn" aria-label="Submit a compatibility report for this hardware">
+                        📤 Submit Compatibility Report
+                    </button>
+                    <button class="btn-secondary close-modal-btn" aria-label="Close hardware details dialog">
+                        Close
+                    </button>
                 </div>
             </div>
         `;
@@ -67,29 +77,130 @@ class HardwareDetails {
         modal.querySelector('.close-modal-btn').addEventListener('click', () => this.hideModal());
         modal.querySelector('.copy-specs-btn').addEventListener('click', () => this.copySpecs());
         modal.querySelector('.submit-report-btn').addEventListener('click', () => this.submitReport());
+        
+        // Add keyboard event listener for ESC key and focus trap
+        modal.addEventListener('keydown', (e) => this.handleKeyDown(e));
     }
     
     async showDetails(hardwareId) {
         console.log('showDetails called with hardwareId:', hardwareId);
         console.log('hardwareId type:', typeof hardwareId);
         
-        // Load hardware data
-        const hardware = await this.getHardwareData(hardwareId);
-        console.log('getHardwareData returned:', hardware);
-        
-        if (!hardware) {
-            console.warn('No hardware data found for ID:', hardwareId);
-            this.showError('Hardware information not found');
+        if (!hardwareId) {
+            this.showError('No hardware ID provided');
             return;
         }
+
+        // Store the currently focused element to restore later
+        this.previouslyFocusedElement = document.activeElement;
         
-        // Populate modal with hardware details
+        // Show modal with loading state first
+        this.showLoadingState();
+        
+        try {
+            // Load hardware data
+            const hardware = await this.getHardwareData(hardwareId);
+            console.log('getHardwareData returned:', hardware);
+            
+            if (!hardware) {
+                console.warn('No hardware data found for ID:', hardwareId);
+                this.showError('Hardware information not found for ID: ' + hardwareId);
+                return;
+            }
+            
+            // Populate modal with hardware details
+            const body = document.getElementById('hardware-details-body');
+            body.innerHTML = this.renderHardwareDetails(hardware);
+            
+            // Update modal header with hardware name
+            const header = this.modal.querySelector('.modal-header h2');
+            if (header && hardware.name) {
+                header.textContent = hardware.name;
+            }
+            
+        } catch (error) {
+            console.error('Error loading hardware details:', error);
+            this.showError('Failed to load hardware information. Please try again.');
+        }
+    }
+
+    showLoadingState() {
         const body = document.getElementById('hardware-details-body');
-        body.innerHTML = this.renderHardwareDetails(hardware);
+        body.innerHTML = `
+            <div class="modal-loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading hardware details...</p>
+            </div>
+        `;
+        
+        // Reset header
+        const header = this.modal.querySelector('.modal-header h2');
+        if (header) {
+            header.textContent = 'Hardware Details';
+        }
         
         // Show modal
         this.modal.classList.add('show');
         document.body.style.overflow = 'hidden';
+    }
+
+    showError(message) {
+        const body = document.getElementById('hardware-details-body');
+        body.innerHTML = `
+            <div class="modal-error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Error Loading Details</h3>
+                <p>${message}</p>
+                <button class="btn-primary retry-btn" onclick="this.closest('.modal').style.display='none'">
+                    Close
+                </button>
+            </div>
+        `;
+        
+        // Show modal if not already shown
+        if (!this.modal.classList.contains('show')) {
+            this.modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            this.setFocus();
+        }
+    }
+
+    handleKeyDown(e) {
+        if (e.key === 'Escape') {
+            this.hideModal();
+        } else if (e.key === 'Tab') {
+            this.trapFocus(e);
+        }
+    }
+
+    trapFocus(e) {
+        const focusableElements = this.modal.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+            // Shift + Tab
+            if (document.activeElement === firstFocusable) {
+                e.preventDefault();
+                lastFocusable.focus();
+            }
+        } else {
+            // Tab
+            if (document.activeElement === lastFocusable) {
+                e.preventDefault();
+                firstFocusable.focus();
+            }
+        }
+    }
+
+    setFocus() {
+        // Focus on the close button by default for better accessibility
+        const closeButton = this.modal.querySelector('.modal-close');
+        if (closeButton) {
+            closeButton.focus();
+        }
     }
     
     async getHardwareData(hardwareId) {
@@ -431,6 +542,12 @@ class HardwareDetails {
     hideModal() {
         this.modal.classList.remove('show');
         document.body.style.overflow = '';
+        
+        // Restore focus to the element that opened the modal
+        if (this.previouslyFocusedElement) {
+            this.previouslyFocusedElement.focus();
+            this.previouslyFocusedElement = null;
+        }
     }
     
     copySpecs() {

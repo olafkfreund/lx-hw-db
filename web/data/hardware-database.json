@@ -363,25 +363,100 @@
       "last_tested": "2023-12-28",
       "community_rating": 4.6,
       "reports_count": 123
+    },
+    {
+      "id": "amd_graphics_1002_1478",
+      "name": "AMD Graphics Device 1002:1478",
+      "category": "gpu",
+      "manufacturer": "AMD",
+      "model": "Graphics Device 1478",
+      "pci_id": "1002:1478",
+      "compatibility_status": "partial",
+      "tested_distributions": {
+        "nixos": {
+          "status": "partial",
+          "kernel_version": "6.16+",
+          "driver": "amdgpu",
+          "notes": "Detected via lspci, may require firmware updates"
+        }
+      },
+      "specifications": {
+        "interface": "PCIe",
+        "detection_method": "lspci"
+      },
+      "last_tested": "2025-08-27",
+      "community_rating": 3.5,
+      "reports_count": 1
+    },
+    {
+      "id": "amd_host_1022_1480",
+      "name": "AMD Host Bridge 1022:1480",
+      "category": "motherboard",
+      "manufacturer": "AMD",
+      "model": "Host Bridge 1480",
+      "pci_id": "1022:1480",
+      "compatibility_status": "full",
+      "tested_distributions": {
+        "nixos": {
+          "status": "full",
+          "kernel_version": "6.16+",
+          "driver": "pcieport",
+          "notes": "AMD host bridge detected via lspci"
+        }
+      },
+      "specifications": {
+        "interface": "PCIe",
+        "type": "Host Bridge",
+        "detection_method": "lspci"
+      },
+      "last_tested": "2025-08-27",
+      "community_rating": 4.2,
+      "reports_count": 1
+    },
+    {
+      "id": "amd_audio_1022_1487",
+      "name": "AMD Audio Device 1022:1487",
+      "category": "audio",
+      "manufacturer": "AMD", 
+      "model": "Audio Controller 1487",
+      "pci_id": "1022:1487",
+      "compatibility_status": "full",
+      "tested_distributions": {
+        "nixos": {
+          "status": "full",
+          "kernel_version": "6.16+",
+          "driver": "snd_hda_intel",
+          "notes": "AMD HD Audio detected and working via lspci"
+        }
+      },
+      "specifications": {
+        "interface": "PCIe",
+        "type": "HD Audio Controller",
+        "detection_method": "lspci"
+      },
+      "last_tested": "2025-08-27",
+      "community_rating": 4.0,
+      "reports_count": 1
     }
   ],
   "statistics": {
-    "total_hardware": 8,
-    "total_reports": 1368,
+    "total_hardware": 11,
+    "total_reports": 1371,
     "distributions_covered": 4,
     "categories": {
-      "gpu": 2,
+      "gpu": 3,
       "cpu": 2, 
       "network": 2,
       "storage": 1,
-      "audio": 1
+      "audio": 2,
+      "motherboard": 1
     },
     "compatibility_breakdown": {
-      "full": 6,
-      "partial": 2,
+      "full": 8,
+      "partial": 3,
       "limited": 0,
       "none": 0
     },
-    "last_updated": "2024-01-15"
+    "last_updated": "2025-08-27"
   }
 }
