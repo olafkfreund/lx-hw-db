@@ -10,20 +10,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T20:06:17.557593365Z"
-  },
-  "2646": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "NVMe device"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T20:06:17.557601170Z"
+    "last_updated": "2025-08-27T21:37:49.524637664Z"
   },
   "1d6a": {
     "total_reports": 1,
@@ -36,23 +23,20 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T20:06:17.557597533Z"
+    "last_updated": "2025-08-27T21:37:49.524641411Z"
   },
-  "1002": {
-    "total_reports": 4,
+  "2646": {
+    "total_reports": 1,
     "components": {
       "PCI Device": [
-        "Device 1002:1478",
-        "Device 1002:1479",
-        "Device 1002:744c",
-        "HDMI"
+        "NVMe device"
       ]
     },
     "recent_reports": [
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T20:06:17.557516792Z"
+    "last_updated": "2025-08-27T21:37:49.524644848Z"
   },
   "1022": {
     "total_reports": 24,
@@ -88,6 +72,22 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T20:06:17.557590339Z"
+    "last_updated": "2025-08-27T21:37:49.524634809Z"
+  },
+  "1002": {
+    "total_reports": 4,
+    "components": {
+      "PCI Device": [
+        "Device 1002:1478",
+        "Device 1002:1479",
+        "Device 1002:744c",
+        "HDMI"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-27T21:37:49.524572833Z"
   }
 }
