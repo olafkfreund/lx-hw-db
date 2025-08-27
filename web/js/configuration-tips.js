@@ -839,6 +839,111 @@ EndSection`
         this.copyToClipboard(commands.join('\n'));
     }
 
+    addConfigTipsToModal(report) {
+        // Add configuration tips to hardware details modal
+        const modal = document.querySelector('#hardware-details-modal');
+        if (!modal) {
+            console.warn('Hardware details modal not found');
+            return;
+        }
+
+        const modalBody = modal.querySelector('#hardware-details-body');
+        if (!modalBody) {
+            console.warn('Hardware details modal body not found');
+            return;
+        }
+
+        // Check if tips section already exists
+        if (modal.querySelector('.config-tips-section')) {
+            return; // Already added
+        }
+
+        // Create configuration tips section
+        const tipsSection = document.createElement('div');
+        tipsSection.className = 'config-tips-section';
+        tipsSection.innerHTML = `
+            <div class="config-tips-header">
+                <h4>💡 Configuration Tips</h4>
+                <p>Community-contributed configuration tips for this hardware</p>
+            </div>
+            <div class="config-tips-content">
+                <p>Loading configuration tips...</p>
+            </div>
+        `;
+
+        // Insert after the hardware details
+        modalBody.appendChild(tipsSection);
+
+        // Load tips for this hardware
+        setTimeout(() => {
+            this.loadTipsForHardware(report, tipsSection.querySelector('.config-tips-content'));
+        }, 100);
+    }
+
+    loadTipsForHardware(report, container) {
+        // Simulate loading configuration tips for the hardware
+        try {
+            const tips = this.getRelevantTips(report);
+            if (tips.length === 0) {
+                container.innerHTML = `
+                    <div class="no-tips">
+                        <p>No configuration tips available for this hardware yet.</p>
+                        <button class="btn-secondary" onclick="configurationTips.showTipSubmissionForm()">
+                            📝 Contribute a Tip
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = tips.map(tip => `
+                <div class="config-tip-card">
+                    <div class="tip-header">
+                        <span class="tip-category">${tip.category}</span>
+                        <span class="tip-rating">⭐ ${tip.rating}/5</span>
+                    </div>
+                    <div class="tip-content">
+                        <h5>${tip.title}</h5>
+                        <p>${tip.description}</p>
+                        ${tip.commands ? `
+                            <div class="command-block">
+                                <code>${tip.commands}</code>
+                                <button class="copy-command-btn" onclick="configurationTips.copyToClipboard('${tip.commands.replace(/'/g, "\\'")}')">📋</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading tips for hardware:', error);
+            container.innerHTML = `
+                <div class="error-tips">
+                    <p>Error loading configuration tips.</p>
+                </div>
+            `;
+        }
+    }
+
+    getRelevantTips(report) {
+        // Return mock tips for demonstration
+        return [
+            {
+                category: 'Performance',
+                rating: 4.5,
+                title: 'Optimize NVMe Performance',
+                description: 'Enable queue depth optimization for better SSD performance',
+                commands: 'echo mq-deadline > /sys/block/nvme0n1/queue/scheduler'
+            },
+            {
+                category: 'Power Management',
+                rating: 4.2,
+                title: 'Enable ASPM Power Saving',
+                description: 'Reduce power consumption while maintaining performance',
+                commands: 'echo powersave > /sys/module/pcie_aspm/parameters/policy'
+            }
+        ];
+    }
+
     createTipSubmissionInterface() {
         // This would create an interface for users to submit their own tips
     }
