@@ -18,12 +18,19 @@ class HardwareDetails {
         // Add event delegation for View Details buttons
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('view-details-btn') || 
+                e.target.classList.contains('view-report-details') ||
                 e.target.textContent === 'View Details') {
                 e.preventDefault();
+                console.log('View Details button clicked:', e.target);
                 const hardwareId = e.target.dataset.hardwareId || 
-                                 e.target.closest('[data-hardware-id]')?.dataset.hardwareId;
+                                 e.target.dataset.reportId ||
+                                 e.target.closest('[data-hardware-id]')?.dataset.hardwareId ||
+                                 e.target.closest('[data-report-id]')?.dataset.reportId;
+                console.log('Hardware/Report ID found:', hardwareId);
                 if (hardwareId) {
                     this.showDetails(hardwareId);
+                } else {
+                    console.warn('No hardware ID found for View Details button');
                 }
             }
         });
