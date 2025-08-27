@@ -77,6 +77,12 @@ class TipSearchSystem {
      * Initialize FlexSearch index for tips
      */
     initializeSearchIndex() {
+        if (typeof FlexSearch === 'undefined') {
+            console.warn('FlexSearch not loaded yet, retrying...');
+            setTimeout(() => this.initializeSearchIndex(), 100);
+            return;
+        }
+        
         this.searchIndex = new FlexSearch.Document({
             document: {
                 id: 'id',

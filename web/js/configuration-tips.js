@@ -10,6 +10,7 @@ class ConfigurationTips {
         this.currentHardware = null;
         this.currentDistribution = null;
         this.tipsDatabase = [];
+        this.categoriesDatabase = [];
         
         this.distributions = {
             'debian': {
@@ -858,6 +859,26 @@ EndSection`
         
         // This method can be expanded to update various UI elements
         // that show configuration tips status or counts
+    }
+
+    setCategoriesData(categoriesData) {
+        // Store configuration tips categories data
+        this.categoriesDatabase = categoriesData || [];
+        console.log('Configuration tips categories loaded:', this.categoriesDatabase.length, 'categories');
+        
+        // If categories data is available, initialize any UI that depends on it
+        if (this.categoriesDatabase.length > 0) {
+            this.updateCategoriesUI();
+        }
+    }
+
+    updateCategoriesUI() {
+        // Update any UI elements that display categories
+        const categoriesCount = this.categoriesDatabase.length;
+        console.log('Updating categories UI with', categoriesCount, 'categories');
+        
+        // This method can be expanded to update various UI elements
+        // that show configuration categories
     }
 
     addConfigTipsToModal(report) {

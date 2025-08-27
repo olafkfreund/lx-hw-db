@@ -95,8 +95,19 @@ class DataLoader {
             
             // Initialize the configuration tips module with the data
             if (window.configurationTips) {
-                window.configurationTips.setTipsData(this.configurationTips.tips);
-                window.configurationTips.setCategoriesData(this.configurationTips.categories);
+                if (typeof window.configurationTips.setTipsData === 'function') {
+                    window.configurationTips.setTipsData(this.configurationTips.tips);
+                } else {
+                    console.warn('configurationTips.setTipsData method not available');
+                }
+                
+                if (typeof window.configurationTips.setCategoriesData === 'function') {
+                    window.configurationTips.setCategoriesData(this.configurationTips.categories);
+                } else {
+                    console.warn('configurationTips.setCategoriesData method not available');
+                }
+            } else {
+                console.warn('configurationTips module not loaded');
             }
             
             // Dispatch event for other modules
