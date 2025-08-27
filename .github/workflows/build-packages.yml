@@ -2,189 +2,412 @@ name: Build Distribution Packages
 
 on:
   push:
-    tags:
-      - 'v*'
-  release:
-    types: [published]
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  build-rust:
+    name: Build Rust Binary
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Cache cargo index
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Cache cargo build
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libgtk-4-dev \
+          libadwaita-1-dev \
+          pkg-config \
+          build-essential \
+          lshw \
+          dmidecode \
+          pciutils \
+          usbutils \
+          util-linux
+
+    - name: Build CLI
+      run: cargo build --release --bin lx-hw-detect
+      
+    - name: Build GTK GUI
+      run: cargo build --release --bin lx-hw-detect-gtk
+      
+    - name: Run tests
+      run: cargo test --release
+      
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: rust-binaries
+        path: |
+          target/release/lx-hw-detect
+          target/release/lx-hw-detect-gtk
+
   build-debian:
     name: Build Debian Package
-    runs-on: ubuntu-22.04
-    container: debian:bookworm
-    
+    runs-on: ubuntu-latest
+    needs: build-rust
     steps:
-      - name: Install build dependencies
-        run: |
-          apt-get update
-          apt-get install -y \
-            build-essential \
-            debhelper \
-            devscripts \
-            cargo \
-            rustc \
-            libssl-dev \
-            pkg-config \
-            lshw \
-            dmidecode \
-            pciutils \
-            usbutils \
-            git \
-            curl
-            
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    
+    - name: Download Rust binaries
+      uses: actions/download-artifact@v4
+      with:
+        name: rust-binaries
+        path: target/release/
         
-      - name: Build Debian package
-        run: |
-          dpkg-buildpackage -us -uc -b
-          
-      - name: Upload Debian package
-        uses: actions/upload-artifact@v4
-        with:
-          name: debian-package
-          path: ../*.deb
+    - name: Make binaries executable
+      run: chmod +x target/release/*
+    
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          debhelper \
+          dh-make \
+          fakeroot \
+          lintian \
+          devscripts
+
+    - name: Build Debian package
+      run: |
+        # Create debian package structure
+        mkdir -p debian-build/usr/bin
+        mkdir -p debian-build/usr/share/applications
+        mkdir -p debian-build/usr/share/man/man1
+        mkdir -p debian-build/etc/lx-hw-db
+        mkdir -p debian-build/DEBIAN
+        
+        # Copy binaries
+        cp target/release/lx-hw-detect debian-build/usr/bin/
+        cp target/release/lx-hw-detect-gtk debian-build/usr/bin/
+        
+        # Copy config
+        cp config/default.toml debian-build/etc/lx-hw-db/
+        
+        # Create desktop file
+        cat > debian-build/usr/share/applications/lx-hw-detect.desktop << 'EOF'
+        [Desktop Entry]
+        Version=1.0
+        Type=Application
+        Name=Linux Hardware Database
+        Comment=Privacy-preserving hardware detection and compatibility reporting
+        Exec=lx-hw-detect-gtk
+        Icon=computer-symbolic
+        Terminal=false
+        StartupNotify=true
+        Categories=System;HardwareSettings;
+        EOF
+        
+        # Create control file
+        cat > debian-build/DEBIAN/control << 'EOF'
+        Package: lx-hw-db
+        Version: 0.1.0
+        Section: utils
+        Priority: optional
+        Architecture: amd64
+        Depends: lshw, dmidecode, pciutils, usbutils, util-linux
+        Maintainer: Linux Hardware Database Team <team@lx-hw-db.org>
+        Description: Privacy-first Linux hardware compatibility database
+         Community-driven hardware detection and configuration tool that helps
+         Linux users ensure optimal hardware compatibility through privacy-preserving
+         hardware detection, automated configuration recommendations, and transparent
+         community-driven validation.
+        EOF
+        
+        # Build package
+        dpkg-deb --build debian-build lx-hw-db_0.1.0_amd64.deb
+        
+    - name: Upload Debian package
+      uses: actions/upload-artifact@v4
+      with:
+        name: debian-package
+        path: lx-hw-db_0.1.0_amd64.deb
+
+  build-rpm:
+    name: Build RPM Package
+    runs-on: ubuntu-latest
+    needs: build-rust
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download Rust binaries
+      uses: actions/download-artifact@v4
+      with:
+        name: rust-binaries
+        path: target/release/
+        
+    - name: Make binaries executable
+      run: chmod +x target/release/*
+    
+    - name: Install RPM build tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y rpm
+
+    - name: Build RPM package
+      run: |
+        # Create RPM build structure
+        mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+        mkdir -p rpm-build/usr/bin
+        mkdir -p rpm-build/usr/share/applications
+        mkdir -p rpm-build/etc/lx-hw-db
+        
+        # Copy binaries
+        cp target/release/lx-hw-detect rpm-build/usr/bin/
+        cp target/release/lx-hw-detect-gtk rpm-build/usr/bin/
+        cp config/default.toml rpm-build/etc/lx-hw-db/
+        
+        # Create desktop file
+        cat > rpm-build/usr/share/applications/lx-hw-detect.desktop << 'EOF'
+        [Desktop Entry]
+        Version=1.0
+        Type=Application
+        Name=Linux Hardware Database
+        Comment=Privacy-preserving hardware detection and compatibility reporting
+        Exec=lx-hw-detect-gtk
+        Icon=computer-symbolic
+        Terminal=false
+        StartupNotify=true
+        Categories=System;HardwareSettings;
+        EOF
+        
+        # Create tarball
+        tar -czf ~/rpmbuild/SOURCES/lx-hw-db-0.1.0.tar.gz -C rpm-build .
+        
+        # Copy spec file
+        cp packaging/fedora/lx-hw-db.spec ~/rpmbuild/SPECS/
+        
+        # Build RPM
+        rpmbuild -ba ~/rpmbuild/SPECS/lx-hw-db.spec
+        
+        # Copy built RPM
+        cp ~/rpmbuild/RPMS/x86_64/lx-hw-db-0.1.0-1.x86_64.rpm .
+        
+    - name: Upload RPM package
+      uses: actions/upload-artifact@v4
+      with:
+        name: rpm-package
+        path: lx-hw-db-0.1.0-1.x86_64.rpm
 
   build-arch:
     name: Build Arch Package
     runs-on: ubuntu-latest
-    container: archlinux:latest
-    
+    needs: build-rust
     steps:
-      - name: Install build dependencies
-        run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm \
-            base-devel \
-            rust \
-            cargo \
-            openssl \
-            pkgconf \
-            lshw \
-            dmidecode \
-            pciutils \
-            usbutils \
-            git
-            
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    
+    - name: Download Rust binaries
+      uses: actions/download-artifact@v4
+      with:
+        name: rust-binaries
+        path: target/release/
         
-      - name: Build Arch package
-        run: |
-          cd packaging/arch
-          # Update PKGBUILD version from git tag
-          if [ -n "$GITHUB_REF_NAME" ]; then
-            sed -i "s/pkgver=.*/pkgver=${GITHUB_REF_NAME#v}/" PKGBUILD
-          fi
-          
-          # Create non-root user for makepkg
-          useradd -m builduser
-          chown -R builduser:builduser /github/workspace
-          sudo -u builduser makepkg --noconfirm
-          
-      - name: Upload Arch package
-        uses: actions/upload-artifact@v4
-        with:
-          name: arch-package
-          path: packaging/arch/*.pkg.tar.zst
+    - name: Make binaries executable
+      run: chmod +x target/release/*
 
-  build-fedora:
-    name: Build Fedora Package
-    runs-on: ubuntu-latest
-    container: fedora:39
-    
-    steps:
-      - name: Install build dependencies
-        run: |
-          dnf update -y
-          dnf install -y \
-            rpm-build \
-            rpm-devel \
-            rpmdevtools \
-            rust \
-            cargo \
-            openssl-devel \
-            pkgconfig \
-            lshw \
-            dmidecode \
-            pciutils \
-            usbutils \
-            systemd-rpm-macros \
-            git
-            
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Build Arch package (manual)
+      run: |
+        # Create package structure
+        mkdir -p arch-pkg/usr/bin
+        mkdir -p arch-pkg/usr/share/applications
+        mkdir -p arch-pkg/etc/lx-hw-db
         
-      - name: Setup RPM build environment
-        run: |
-          rpmdev-setuptree
-          
-      - name: Build Fedora package
-        run: |
-          # Copy source and spec file
-          cp packaging/fedora/lx-hw-db.spec ~/rpmbuild/SPECS/
-          tar czf ~/rpmbuild/SOURCES/lx-hw-db-0.1.0.tar.gz \
-            --exclude='.git' \
-            --exclude='target' \
-            --transform 's,^,lx-hw-db-0.1.0/,' \
-            .
-          
-          # Build RPM
-          rpmbuild -ba ~/rpmbuild/SPECS/lx-hw-db.spec
-          
-      - name: Upload Fedora package
-        uses: actions/upload-artifact@v4
-        with:
-          name: fedora-package
-          path: ~/rpmbuild/RPMS/**/*.rpm
+        # Copy files
+        cp target/release/lx-hw-detect arch-pkg/usr/bin/
+        cp target/release/lx-hw-detect-gtk arch-pkg/usr/bin/
+        cp config/default.toml arch-pkg/etc/lx-hw-db/
+        
+        # Create desktop file
+        cat > arch-pkg/usr/share/applications/lx-hw-detect.desktop << 'EOF'
+        [Desktop Entry]
+        Version=1.0
+        Type=Application
+        Name=Linux Hardware Database
+        Comment=Privacy-preserving hardware detection and compatibility reporting
+        Exec=lx-hw-detect-gtk
+        Icon=computer-symbolic
+        Terminal=false
+        StartupNotify=true
+        Categories=System;HardwareSettings;
+        EOF
+        
+        # Create .PKGINFO
+        cat > arch-pkg/.PKGINFO << 'EOF'
+        pkgname = lx-hw-db
+        pkgver = 0.1.0-1
+        pkgdesc = Privacy-first Linux hardware compatibility database
+        url = https://github.com/lx-hw-db/lx-hw-db
+        arch = x86_64
+        license = AGPL3
+        depend = lshw
+        depend = dmidecode
+        depend = pciutils
+        depend = usbutils
+        depend = util-linux
+        EOF
+        
+        # Create package
+        cd arch-pkg
+        tar -czf ../lx-hw-db-0.1.0-1-x86_64.pkg.tar.gz *
+        cd ..
+        
+    - name: Upload Arch package
+      uses: actions/upload-artifact@v4
+      with:
+        name: arch-package
+        path: lx-hw-db-0.1.0-1-x86_64.pkg.tar.gz
 
-  build-nixos:
-    name: Build NixOS Package
+  build-appimage:
+    name: Build AppImage
     runs-on: ubuntu-latest
-    
+    needs: build-rust
     steps:
-      - name: Install Nix
-        uses: cachix/install-nix-action@v24
-        with:
-          nix_path: nixpkgs=channel:nixos-23.11
-          
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    
+    - name: Download Rust binaries
+      uses: actions/download-artifact@v4
+      with:
+        name: rust-binaries
+        path: target/release/
         
-      - name: Build NixOS package
-        run: |
-          cd packaging/nixos
-          nix-build -E '(import <nixpkgs> {}).callPackage ./default.nix {}'
-          
-      - name: Upload NixOS package
-        uses: actions/upload-artifact@v4
-        with:
-          name: nixos-package
-          path: packaging/nixos/result
+    - name: Make binaries executable
+      run: chmod +x target/release/*
+
+    - name: Install AppImage tools
+      run: |
+        wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+        chmod +x appimagetool-x86_64.AppImage
+
+    - name: Build AppImage
+      run: |
+        # Create AppDir structure
+        mkdir -p AppDir/usr/bin
+        mkdir -p AppDir/usr/share/applications
+        mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+        mkdir -p AppDir/etc/lx-hw-db
+        
+        # Copy binaries
+        cp target/release/lx-hw-detect AppDir/usr/bin/
+        cp target/release/lx-hw-detect-gtk AppDir/usr/bin/
+        cp config/default.toml AppDir/etc/lx-hw-db/
+        
+        # Create desktop file
+        cat > AppDir/usr/share/applications/lx-hw-detect.desktop << 'EOF'
+        [Desktop Entry]
+        Version=1.0
+        Type=Application
+        Name=Linux Hardware Database
+        Comment=Privacy-preserving hardware detection and compatibility reporting
+        Exec=lx-hw-detect-gtk
+        Icon=lx-hw-detect
+        Terminal=false
+        StartupNotify=true
+        Categories=System;HardwareSettings;
+        EOF
+        
+        # Create AppRun
+        cat > AppDir/AppRun << 'EOF'
+        #!/bin/bash
+        HERE="$(dirname "$(readlink -f "${0}")")"
+        export PATH="${HERE}/usr/bin:${PATH}"
+        exec "${HERE}/usr/bin/lx-hw-detect-gtk" "$@"
+        EOF
+        chmod +x AppDir/AppRun
+        
+        # Copy desktop file to root
+        cp AppDir/usr/share/applications/lx-hw-detect.desktop AppDir/
+        
+        # Create icon (simple placeholder)
+        echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==" | base64 -d > AppDir/lx-hw-detect.png
+        
+        # Build AppImage
+        ./appimagetool-x86_64.AppImage AppDir lx-hw-db-0.1.0-x86_64.AppImage
+        
+    - name: Upload AppImage
+      uses: actions/upload-artifact@v4
+      with:
+        name: appimage-package
+        path: lx-hw-db-0.1.0-x86_64.AppImage
+
+  build-nix:
+    name: Build Nix Package
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@main
+      
+    - name: Setup Magic Nix Cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+
+    - name: Build Nix package
+      run: |
+        nix build .#lx-hw-db --impure
+        
+    - name: Copy Nix build result
+      run: |
+        cp -L result/bin/lx-hw-detect lx-hw-detect-nix
+        cp -L result/bin/lx-hw-detect-gtk lx-hw-detect-gtk-nix
+        
+    - name: Upload Nix build
+      uses: actions/upload-artifact@v4
+      with:
+        name: nix-package
+        path: |
+          lx-hw-detect-nix
+          lx-hw-detect-gtk-nix
 
   create-release:
-    name: Create Release with Packages
-    needs: [build-debian, build-arch, build-fedora, build-nixos]
+    name: Create GitHub Release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-debian, build-rpm, build-arch, build-appimage, build-nix]
     steps:
-      - name: Download all packages
-        uses: actions/download-artifact@v4
-        
-      - name: Create release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            debian-package/*.deb
-            arch-package/*.pkg.tar.zst
-            fedora-package/*.rpm
-          generate_release_notes: true
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          debian-package/lx-hw-db_0.1.0_amd64.deb
+          rpm-package/lx-hw-db-0.1.0-1.x86_64.rpm
+          arch-package/lx-hw-db-0.1.0-1-x86_64.pkg.tar.gz
+          appimage-package/lx-hw-db-0.1.0-x86_64.AppImage
+          nix-package/lx-hw-detect-nix
+          nix-package/lx-hw-detect-gtk-nix
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

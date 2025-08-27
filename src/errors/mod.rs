@@ -40,6 +40,9 @@ pub enum LxHwError {
 
     #[error("IO error: {0}")]
     Io(String),
+
+    #[error("GUI error: {0}")]
+    Gui(String),
 }
 
 /// Result type alias for hardware detection operations
