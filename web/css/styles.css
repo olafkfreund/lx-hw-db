@@ -5637,6 +5637,53 @@ section {
     background: var(--success);
 }
 
+/* Compatibility Matrix Section */
+.compatibility-matrix-section {
+    background: var(--bg1);
+    border-radius: var(--border-radius);
+    padding: var(--space-6);
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.compatibility-matrix-section .matrix-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+}
+
+.compatibility-matrix-section .matrix-header h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    margin: 0;
+}
+
+.compatibility-matrix-section .matrix-controls {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+}
+
+.compatibility-matrix-section select,
+.compatibility-matrix-section button {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    background: var(--bg2);
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+
+.compatibility-matrix-section .matrix-container {
+    background: var(--bg2);
+    border-radius: var(--border-radius);
+    padding: var(--space-4);
+    margin-top: var(--space-4);
+    min-height: 300px;
+}
+
 .compatibility-good {
     background: var(--info);
 }

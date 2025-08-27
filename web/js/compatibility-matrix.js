@@ -56,11 +56,6 @@ class CompatibilityMatrix {
      * Create matrix container in stats section
      */
     createMatrixContainer() {
-        // Don't create the matrix automatically to avoid layout conflicts
-        // The user can manually enable it if needed
-        return;
-        
-        /*
         const statsContainer = document.querySelector('#stats-container');
         if (!statsContainer) return;
 
@@ -70,13 +65,18 @@ class CompatibilityMatrix {
             matrixSection = document.createElement('div');
             matrixSection.className = 'compatibility-matrix-section';
             
-            // Insert after existing stats grid
-            const statsGrid = statsContainer.querySelector('.stats-grid') || 
-                             statsContainer.querySelector('#stats-container > div:first-child');
-            if (statsGrid) {
-                statsGrid.insertAdjacentElement('afterend', matrixSection);
+            // Insert after the compatibility overview section for proper vertical stacking
+            const compatibilityOverview = statsContainer.querySelector('.compatibility-overview');
+            if (compatibilityOverview) {
+                compatibilityOverview.insertAdjacentElement('afterend', matrixSection);
             } else {
-                statsContainer.appendChild(matrixSection);
+                // Fallback: insert after stats grid if no compatibility overview found
+                const statsGrid = statsContainer.querySelector('.stats-grid');
+                if (statsGrid) {
+                    statsGrid.insertAdjacentElement('afterend', matrixSection);
+                } else {
+                    statsContainer.appendChild(matrixSection);
+                }
             }
         }
 
@@ -144,7 +144,6 @@ class CompatibilityMatrix {
 
         // Add matrix styles
         this.addMatrixStyles();
-        */
     }
 
     /**
