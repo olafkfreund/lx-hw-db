@@ -52,7 +52,7 @@ impl Application {
         use std::env;
         
         // Get the path to the QML main file
-        let current_dir = env::current_dir().map_err(|e| crate::errors::LxHwError::Io(e))?;
+        let current_dir = env::current_dir().map_err(|e| crate::errors::LxHwError::Io(e.to_string()))?;
         let qml_path = current_dir.join("src/qt6/qml/standalone_main.qml");
         
         if !qml_path.exists() {

@@ -15,6 +15,6 @@ fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     
     // Initialize and run Qt6 application
-    let mut app = Application::new(&args)?;
+    let app = Application::new(&args)?;
     app.run()
 }
