@@ -7,19 +7,6 @@ class StatsDashboard {
     }
 
     async init() {
-        console.log('Initializing StatsDashboard...');
-        
-        // Wait a bit for DOM to be fully ready
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Check if DataLoader has already populated statistics
-        const reportsElement = document.querySelector('[data-stat="reports"]');
-        if (reportsElement && reportsElement.textContent !== 'Loading...' && reportsElement.textContent !== '') {
-            console.log('Statistics already loaded by DataLoader, skipping API calls');
-            this.initializeCompatibilityChart();
-            return;
-        }
-        
         await this.loadOverviewStats();
     }
 
@@ -77,16 +64,7 @@ class StatsDashboard {
     }
 }
 
-// Initialize dashboard when DataLoader has finished loading
-document.addEventListener('app-data-ready', () => {
-    console.log('App data ready, initializing StatsDashboard');
-    window.statsDashboard = new StatsDashboard();
+// Initialize dashboard when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    new StatsDashboard();
 });
-
-// Fallback: Initialize after a delay if DataLoader doesn't fire the event
-setTimeout(() => {
-    if (!window.statsDashboard) {
-        console.log('DataLoader event not received, initializing StatsDashboard anyway');
-        window.statsDashboard = new StatsDashboard();
-    }
-}, 5000);
