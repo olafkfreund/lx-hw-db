@@ -4,11 +4,32 @@
       "common_kernels": [
         "6.16.0"
       ],
-      "distribution": "Unknown",
-      "top_vendors": [],
+      "distribution": "NixOS 25.11 (Xantusia)",
+      "top_vendors": [
+        {
+          "compatibility": 17.5,
+          "vendor": "1d6a"
+        },
+        {
+          "compatibility": 17.5,
+          "vendor": "2646"
+        },
+        {
+          "compatibility": 32.8125,
+          "vendor": "1002"
+        },
+        {
+          "compatibility": 17.5,
+          "vendor": "1b21"
+        },
+        {
+          "compatibility": 34.99999791383743,
+          "vendor": "1022"
+        }
+      ],
       "total_reports": 1
     }
   ],
-  "generated": "2025-08-27T10:01:14.312750947+00:00",
+  "generated": "2025-08-27T17:35:42.818755833+00:00",
   "version": "1.0"
 }

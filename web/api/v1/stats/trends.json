@@ -2,7 +2,7 @@
   "data": {
     "growth_stats": [
       {
-        "date": "2025-08-27T10:01:14.311890794Z",
+        "date": "2025-08-27T17:35:42.817969246Z",
         "new_reports": 1,
         "total_reports": 1
       }
@@ -11,14 +11,45 @@
       {
         "compatibility_percentage": 0,
         "compatibility_stats": {
-          "unknown": 1
+          "poor": 1
         },
         "kernel_version": "6.16.0",
         "total_reports": 1
       }
     ],
-    "vendor_growth": []
+    "vendor_growth": [
+      {
+        "compatibility_score": 35.0,
+        "component_diversity": 1,
+        "total_reports": 24,
+        "vendor": "1022"
+      },
+      {
+        "compatibility_score": 35.0,
+        "component_diversity": 1,
+        "total_reports": 4,
+        "vendor": "1002"
+      },
+      {
+        "compatibility_score": 35.0,
+        "component_diversity": 1,
+        "total_reports": 1,
+        "vendor": "1d6a"
+      },
+      {
+        "compatibility_score": 35.0,
+        "component_diversity": 1,
+        "total_reports": 1,
+        "vendor": "2646"
+      },
+      {
+        "compatibility_score": 35.0,
+        "component_diversity": 1,
+        "total_reports": 1,
+        "vendor": "1b21"
+      }
+    ]
   },
-  "generated": "2025-08-27T10:01:14.313037537+00:00",
+  "generated": "2025-08-27T17:35:42.819005222+00:00",
   "version": "1.0"
 }

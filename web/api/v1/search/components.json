@@ -1,5 +1,94 @@
 {
-  "data": [],
-  "generated": "2025-08-27T10:01:14.312569995+00:00",
+  "data": [
+    {
+      "component_type": "PCI Device",
+      "popular_models": [
+        {
+          "avg_compatibility": 17.5,
+          "model": "Unknown Device 1022:1485",
+          "report_count": 1,
+          "vendor": "1022"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "NVMe device",
+          "report_count": 1,
+          "vendor": "2646"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Unknown Device 1022:1486",
+          "report_count": 1,
+          "vendor": "1022"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "HDMI",
+          "report_count": 1,
+          "vendor": "1002"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Device 1022:57a3",
+          "report_count": 1,
+          "vendor": "1022"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Ethernet interface",
+          "report_count": 1,
+          "vendor": "1d6a"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Device 1022:1484",
+          "report_count": 1,
+          "vendor": "1022"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Unknown Device 1022:149c",
+          "report_count": 1,
+          "vendor": "1022"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Device 1022:1494",
+          "report_count": 1,
+          "vendor": "1022"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Device 1022:1493",
+          "report_count": 1,
+          "vendor": "1022"
+        }
+      ],
+      "top_vendors": [
+        {
+          "count": 1,
+          "vendor": "1b21"
+        },
+        {
+          "count": 24,
+          "vendor": "1022"
+        },
+        {
+          "count": 4,
+          "vendor": "1002"
+        },
+        {
+          "count": 1,
+          "vendor": "1d6a"
+        },
+        {
+          "count": 1,
+          "vendor": "2646"
+        }
+      ],
+      "total_reports": 31
+    }
+  ],
+  "generated": "2025-08-27T17:35:42.818609839+00:00",
   "version": "1.0"
 }

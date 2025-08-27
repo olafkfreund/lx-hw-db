@@ -1,1 +1,93 @@
-{}
+{
+  "1d6a": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Ethernet interface"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-27T17:35:42.817790020Z"
+  },
+  "2646": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "NVMe device"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-27T17:35:42.817792144Z"
+  },
+  "1b21": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Unknown Device 1b21:2142"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-27T17:35:42.817787545Z"
+  },
+  "1002": {
+    "total_reports": 4,
+    "components": {
+      "PCI Device": [
+        "Device 1002:1478",
+        "Device 1002:1479",
+        "Device 1002:744c",
+        "HDMI"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-27T17:35:42.817740687Z"
+  },
+  "1022": {
+    "total_reports": 24,
+    "components": {
+      "PCI Device": [
+        "Device 1022:1480",
+        "Device 1022:1482",
+        "Device 1022:1483",
+        "Device 1022:1484",
+        "Device 1022:1490",
+        "Device 1022:1491",
+        "Device 1022:1492",
+        "Device 1022:1493",
+        "Device 1022:1494",
+        "Device 1022:1495",
+        "Device 1022:1496",
+        "Device 1022:1497",
+        "Device 1022:57a3",
+        "Device 1022:57a4",
+        "Device 1022:57ad",
+        "Device 1022:7901",
+        "Device 1022:790e",
+        "Unknown Device 1022:1481",
+        "Unknown Device 1022:1485",
+        "Unknown Device 1022:1486",
+        "Unknown Device 1022:148a",
+        "Unknown Device 1022:148c",
+        "Unknown Device 1022:149c",
+        "Unknown Device 1022:790b"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-27T17:35:42.817785872Z"
+  }
+}
