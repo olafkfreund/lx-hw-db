@@ -70,9 +70,15 @@ class HardwareDetails {
     }
     
     async showDetails(hardwareId) {
+        console.log('showDetails called with hardwareId:', hardwareId);
+        console.log('hardwareId type:', typeof hardwareId);
+        
         // Load hardware data
         const hardware = await this.getHardwareData(hardwareId);
+        console.log('getHardwareData returned:', hardware);
+        
         if (!hardware) {
+            console.warn('No hardware data found for ID:', hardwareId);
             this.showError('Hardware information not found');
             return;
         }
@@ -87,25 +93,45 @@ class HardwareDetails {
     }
     
     async getHardwareData(hardwareId) {
+        console.log('getHardwareData called with:', hardwareId);
+        
         try {
             // Try to get data from the loaded database
             if (window.dataLoader && window.dataLoader.hardwareData) {
+                console.log('Checking dataLoader...');
                 const hardware = window.dataLoader.hardwareData.hardware.find(h => h.id === hardwareId);
-                if (hardware) return hardware;
+                if (hardware) {
+                    console.log('Found hardware in dataLoader:', hardware);
+                    return hardware;
+                }
+                console.log('Hardware not found in dataLoader');
+            } else {
+                console.log('No dataLoader available');
             }
             
             // Fallback: load from file
+            console.log('Trying to fetch hardware-database.json...');
             const response = await fetch('./data/hardware-database.json');
             if (response.ok) {
                 const data = await response.json();
-                return data.hardware.find(h => h.id === hardwareId);
+                const hardware = data.hardware.find(h => h.id === hardwareId);
+                if (hardware) {
+                    console.log('Found hardware in file:', hardware);
+                    return hardware;
+                }
+                console.log('Hardware not found in file');
+            } else {
+                console.log('Could not fetch hardware-database.json, status:', response.status);
             }
         } catch (error) {
             console.error('Error loading hardware data:', error);
         }
         
         // Return mock data if nothing found (for demonstration)
-        return this.getMockHardware(hardwareId);
+        console.log('Falling back to mock data...');
+        const mockData = this.getMockHardware(hardwareId);
+        console.log('Mock data result:', mockData);
+        return mockData;
     }
     
     getMockHardware(hardwareId) {
