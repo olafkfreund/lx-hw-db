@@ -32,17 +32,143 @@ impl Application {
     pub fn run(self) -> Result<()> {
         log::info!("Starting Qt6 QML application...");
         
-        // Try to launch the actual QML application
-        match self.launch_qml_app() {
+        // Try to launch the actual QML application with real hardware detection
+        match self.launch_qml_app_with_real_detection() {
             Ok(_) => {
                 log::info!("Qt6 QML application completed successfully");
                 Ok(())
             }
             Err(e) => {
-                log::warn!("Could not launch QML application: {}", e);
-                log::info!("Falling back to demo mode");
-                self.run_demo_mode()
+                log::warn!("Could not launch QML application with real detection: {}", e);
+                log::info!("Trying standalone QML application");
+                match self.launch_qml_app() {
+                    Ok(_) => {
+                        log::info!("Qt6 QML application completed successfully");
+                        Ok(())
+                    }
+                    Err(e2) => {
+                        log::warn!("Could not launch QML application: {}", e2);
+                        log::info!("Falling back to demo mode");
+                        self.run_demo_mode()
+                    }
+                }
             }
+        }
+    }
+    
+    /// Try to launch the QML application with real hardware detection integration
+    fn launch_qml_app_with_real_detection(&self) -> Result<()> {
+        use std::process::{Command, Stdio};
+        use std::env;
+        use std::thread;
+        use std::time::Duration;
+        use crate::hardware::PrivacyLevel;
+        
+        // Check if QML file exists
+        let current_dir = env::current_dir().map_err(|e| crate::errors::LxHwError::Io(e.to_string()))?;
+        let qml_path = current_dir.join("src/qt6/qml/standalone_main.qml");
+        
+        if !qml_path.exists() {
+            return Err(crate::errors::LxHwError::Gui("QML file not found".to_string()));
+        }
+        
+        log::info!("Starting Qt6 QML application with real hardware detection");
+        
+        // Create a hardware manager for detection
+        let mut hardware_manager = HardwareManager::new();
+        
+        // Start background thread for hardware detection
+        let detection_handle = thread::spawn(move || {
+            // Use async runtime for hardware detection
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                log::info!("Starting real hardware detection...");
+                match hardware_manager.detect_hardware(PrivacyLevel::Basic).await {
+                    Ok(_) => {
+                        log::info!("Hardware detection completed successfully");
+                        log::info!("Found {} devices across {} categories", 
+                                 hardware_manager.device_count,
+                                 hardware_manager.devices_by_category.len());
+                        Ok(())
+                    }
+                    Err(e) => {
+                        log::error!("Hardware detection failed: {}", e);
+                        Err(e)
+                    }
+                }
+            })
+        });
+        
+        // Launch QML application
+        let mut cmd = Command::new("qml");
+        cmd.arg(qml_path.to_string_lossy().to_string());
+        cmd.stdout(Stdio::piped());
+        cmd.stderr(Stdio::piped());
+        
+        log::info!("Launching QML application with real hardware backend: {}", qml_path.display());
+        
+        // Start QML process
+        let mut child = cmd.spawn()
+            .map_err(|e| crate::errors::LxHwError::Gui(format!("Failed to spawn QML application: {}", e)))?;
+        
+        // Wait briefly for QML to initialize
+        thread::sleep(Duration::from_millis(500));
+        
+        // Check if the process is still running
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                let stderr = child.stderr.take().map(|mut stderr| {
+                    use std::io::Read;
+                    let mut buf = String::new();
+                    stderr.read_to_string(&mut buf).unwrap_or_default();
+                    buf
+                }).unwrap_or_default();
+                
+                return Err(crate::errors::LxHwError::Gui(format!(
+                    "QML application exited early with status: {}. Error: {}", 
+                    status, stderr
+                )));
+            }
+            Ok(None) => {
+                log::info!("QML application started successfully");
+            }
+            Err(e) => {
+                log::warn!("Could not check QML application status: {}", e);
+            }
+        }
+        
+        // Wait for hardware detection to complete
+        match detection_handle.join() {
+            Ok(Ok(_)) => {
+                log::info!("Hardware detection thread completed successfully");
+            }
+            Ok(Err(e)) => {
+                log::warn!("Hardware detection failed: {}", e);
+            }
+            Err(_) => {
+                log::error!("Hardware detection thread panicked");
+            }
+        }
+        
+        // Wait for QML application to complete
+        let status = child.wait()
+            .map_err(|e| crate::errors::LxHwError::Gui(format!("Failed to wait for QML application: {}", e)))?;
+        
+        if status.success() {
+            log::info!("Qt6 QML application with real hardware detection completed successfully");
+            Ok(())
+        } else {
+            let stderr = child.stderr.take().map(|mut stderr| {
+                use std::io::Read;
+                let mut buf = String::new();
+                stderr.read_to_string(&mut buf).unwrap_or_default();
+                buf
+            }).unwrap_or_default();
+            
+            Err(crate::errors::LxHwError::Gui(format!(
+                "QML application failed with status: {}. Error: {}", 
+                status, stderr
+            )))
         }
     }
     

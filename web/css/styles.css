@@ -7010,3 +7010,441 @@ section {
         padding: calc(var(--space-1) * 0.8) var(--space-2);
     }
 }
+
+/* === Hardware Bridge Styles === */
+
+/* Bridge Container */
+.hardware-bridge-container {
+    background: var(--bg0-soft);
+    border: 1px solid var(--bg2);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 24px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.bridge-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.bridge-header h3 {
+    color: var(--primary);
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.bridge-header p {
+    color: var(--fg2);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Detection Methods Grid */
+.detection-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.detection-method {
+    background: var(--bg1);
+    border: 2px solid var(--bg3);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.detection-method.available {
+    border-color: var(--green);
+}
+
+.detection-method.unavailable {
+    border-color: var(--bg4);
+    opacity: 0.6;
+}
+
+.detection-method.available:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 12px rgba(215, 153, 33, 0.3);
+    transform: translateY(-2px);
+}
+
+.method-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.method-header h4 {
+    color: var(--fg);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.availability-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.availability-badge.available {
+    background: var(--green);
+    color: var(--bg0);
+}
+
+.availability-badge.unavailable {
+    background: var(--bg4);
+    color: var(--fg4);
+}
+
+.detection-method p {
+    color: var(--fg2);
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+.detection-button {
+    background: var(--primary);
+    color: var(--bg0);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.detection-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+/* Hardware Results */
+.hardware-results-container {
+    background: var(--bg0);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid var(--bg2);
+}
+
+.hardware-summary {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.hardware-summary h4 {
+    color: var(--primary);
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+}
+
+.summary-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.stat-label {
+    display: block;
+    color: var(--fg2);
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+
+
+
+/* === Enhanced CLI Integration Styles === */
+.cli-integration-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.cli-tools-status {
+    background: var(--bg1);
+    border: 1px solid var(--bg3);
+    border-radius: var(--border-radius);
+    padding: var(--space-4);
+}
+
+.cli-tools-status h5 {
+    color: var(--primary);
+    margin-bottom: var(--space-3);
+    font-size: 1.1rem;
+}
+
+.tool-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-3);
+}
+
+.tool-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--bg0);
+    border: 1px solid var(--bg2);
+    border-radius: var(--border-radius);
+    padding: var(--space-3);
+    transition: var(--transition-fast);
+}
+
+.tool-status:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.tool-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.tool-name {
+    font-weight: 600;
+    color: var(--fg0);
+    font-family: var(--font-mono);
+}
+
+.tool-description {
+    color: var(--fg3);
+    font-size: 0.9rem;
+}
+
+.cli-launch-options {
+    background: var(--bg0-soft);
+    border: 1px solid var(--bg3);
+    border-radius: var(--border-radius);
+    padding: var(--space-4);
+}
+
+.cli-launch-options h5 {
+    color: var(--secondary);
+    margin-bottom: var(--space-3);
+    font-size: 1.1rem;
+}
+
+.command-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.command-option {
+    background: var(--bg1);
+    border: 1px solid var(--bg2);
+    border-radius: var(--border-radius);
+    padding: var(--space-4);
+    transition: var(--transition-fast);
+}
+
+.command-option:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.command-option strong {
+    display: block;
+    color: var(--fg0);
+    margin-bottom: var(--space-2);
+    font-size: 1rem;
+}
+
+.command-text {
+    display: block;
+    background: var(--bg0-hard);
+    color: var(--green-bright);
+    border: 1px solid var(--bg3);
+    border-radius: var(--border-radius);
+    padding: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    word-break: break-all;
+    margin: var(--space-2) 0;
+    line-height: 1.4;
+}
+
+.copy-command-btn {
+    background: var(--primary);
+    color: var(--bg0);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-family: var(--font-sans);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.copy-command-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.copy-command-btn:active {
+    transform: translateY(0);
+}
+
+.copy-command-btn.copied {
+    background: var(--success);
+    transform: scale(1.05);
+}
+
+.integration-workflow {
+    background: var(--bg1);
+    border: 1px solid var(--blue);
+    border-radius: var(--border-radius);
+    padding: var(--space-4);
+    border-left: 4px solid var(--blue-bright);
+}
+
+.integration-workflow h5 {
+    color: var(--blue-bright);
+    margin-bottom: var(--space-3);
+}
+
+.integration-workflow ol {
+    color: var(--fg2);
+    margin-left: var(--space-4);
+    line-height: 1.6;
+}
+
+.integration-workflow li {
+    margin-bottom: var(--space-2);
+}
+
+/* Mobile responsiveness for CLI integration */
+@media (max-width: 768px) {
+    .tool-status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .command-text {
+        font-size: 0.8rem;
+        word-break: break-all;
+    }
+    
+    .cli-integration-panel {
+        gap: var(--space-4);
+    }
+    
+    .command-grid {
+        gap: var(--space-3);
+    }
+}
+
+
+/* === GitHub Integration Styles === */
+.github-integration {
+    background: var(--bg1);
+    border: 1px solid var(--purple);
+    border-radius: var(--border-radius);
+    padding: var(--space-4);
+    border-left: 4px solid var(--purple-bright);
+}
+
+.github-integration h5 {
+    color: var(--purple-bright);
+    margin-bottom: var(--space-3);
+}
+
+.github-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+}
+
+.github-action-btn {
+    background: var(--bg2);
+    color: var(--fg0);
+    border: 1px solid var(--bg3);
+    border-radius: var(--border-radius);
+    padding: var(--space-3) var(--space-4);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.github-action-btn:not(:disabled):hover {
+    background: var(--purple);
+    color: var(--fg0);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.github-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg2);
+}
+
+.github-login-btn:not(:disabled) {
+    background: var(--purple-bright);
+    color: var(--bg0);
+}
+
+.github-login-btn:not(:disabled):hover {
+    background: var(--purple);
+}
+
+.github-status {
+    background: var(--bg0);
+    border: 1px solid var(--bg3);
+    border-radius: var(--border-radius);
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.github-status #github-user-status {
+    color: var(--fg2);
+    font-size: 0.9rem;
+}
+
+.github-help {
+    color: var(--fg3);
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* Mobile responsiveness for GitHub integration */
+@media (max-width: 768px) {
+    .github-actions {
+        gap: var(--space-2);
+    }
+    
+    .github-action-btn {
+        padding: var(--space-2) var(--space-3);
+        font-size: 0.85rem;
+    }
+}

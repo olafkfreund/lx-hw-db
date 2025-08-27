@@ -22,9 +22,308 @@ class ConfigurationEngine {
         this.initManualSelection();
         this.initConfigurationGeneration();
         this.initResultsTabs();
+        this.initHardwareBridgeIntegration();
         
         // Load hardware options for manual selection
         this.loadHardwareOptions();
+    }
+    
+    /**
+     * Initialize integration with hardware bridge
+     */
+    initHardwareBridgeIntegration() {
+        // Listen for hardware detection events from the bridge
+        document.addEventListener('hardwareDetected', (event) => {
+            console.log('Hardware bridge detected hardware:', event.detail);
+            this.loadHardwareFromBridge(event.detail.data);
+        });
+        
+        // Make this instance globally available for bridge integration
+        window.configEngine = this;
+    }
+    
+    /**
+     * Load hardware data from the hardware bridge
+     */
+    loadHardwareFromBridge(hardwareData) {
+        console.log('Loading hardware data from bridge:', hardwareData);
+        
+        // Store the hardware data
+        this.currentHardware = hardwareData;
+        this.currentMethod = 'bridge-detected';
+        
+        // Update the UI to show that hardware was detected via bridge
+        const methodSwitcher = document.querySelector('.method-switcher');
+        if (methodSwitcher) {
+            // Add a bridge-detected option if it doesn't exist
+            let bridgeOption = methodSwitcher.querySelector('[data-method="bridge-detected"]');
+            if (!bridgeOption) {
+                bridgeOption = document.createElement('button');
+                bridgeOption.className = 'method-option active';
+                bridgeOption.dataset.method = 'bridge-detected';
+                bridgeOption.innerHTML = '🔗 Bridge Detected';
+                methodSwitcher.appendChild(bridgeOption);
+            }
+            
+            // Set as active method
+            methodSwitcher.querySelectorAll('.method-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            bridgeOption.classList.add('active');
+        }
+        
+        // Show detected hardware in the interface
+        this.displayBridgeHardware(hardwareData);
+        
+        // Enable configuration generation
+        this.enableConfigurationGeneration();
+    }
+    
+    /**
+     * Display hardware detected by the bridge
+     */
+    displayBridgeHardware(hardwareData) {
+        const container = document.querySelector('.bridge-hardware-display') || 
+                         this.createBridgeHardwareContainer();
+        
+        const deviceCount = this.countBridgeDevices(hardwareData);
+        
+        container.innerHTML = `
+            <div class="bridge-hardware-summary">
+                <h4>🔗 Hardware Detected via Bridge</h4>
+                <p>${deviceCount} devices detected from hardware report</p>
+                <div class="detection-info">
+                    <span class="info-badge">Privacy: ${hardwareData.metadata?.privacy_level || 'Basic'}</span>
+                    <span class="info-badge">Generated: ${this.formatBridgeDate(hardwareData.metadata?.generated_at)}</span>
+                </div>
+            </div>
+            
+            <div class="bridge-hardware-details">
+                ${this.renderBridgeHardwareDetails(hardwareData)}
+            </div>
+            
+            <div class="bridge-actions">
+                <button class="view-full-report-btn">📋 View Full Report</button>
+                <button class="reconfigure-btn">🔧 Reconfigure</button>
+            </div>
+        `;
+        
+        // Add event listeners
+        container.querySelector('.view-full-report-btn')?.addEventListener('click', () => {
+            this.showFullHardwareReport(hardwareData);
+        });
+        
+        container.querySelector('.reconfigure-btn')?.addEventListener('click', () => {
+            this.reconfigureHardware();
+        });
+    }
+    
+    /**
+     * Create container for bridge hardware display
+     */
+    createBridgeHardwareContainer() {
+        const container = document.createElement('div');
+        container.className = 'bridge-hardware-display';
+        
+        // Insert after method switcher or at the beginning of config engine
+        const configEngine = document.querySelector('.config-engine-container');
+        const methodSwitcher = document.querySelector('.method-switcher');
+        
+        if (methodSwitcher && configEngine) {
+            methodSwitcher.parentNode.insertBefore(container, methodSwitcher.nextSibling);
+        } else if (configEngine) {
+            configEngine.insertBefore(container, configEngine.firstChild);
+        }
+        
+        return container;
+    }
+    
+    /**
+     * Render hardware details from bridge data
+     */
+    renderBridgeHardwareDetails(data) {
+        const categories = [];
+        
+        if (data.system) {
+            categories.push({
+                name: '🖥️ System',
+                details: `${data.system.distribution || 'Unknown'} • ${data.system.architecture || 'Unknown'}`
+            });
+        }
+        
+        if (data.cpu) {
+            categories.push({
+                name: '🧠 CPU',
+                details: `${data.cpu.vendor || 'Unknown'} • ${data.cpu.cores || 0} cores`
+            });
+        }
+        
+        if (data.memory) {
+            const memoryGB = Math.round(data.memory.total_bytes / (1024 * 1024 * 1024));
+            categories.push({
+                name: '💾 Memory',
+                details: `${memoryGB} GB • ${data.memory.dimms?.length || 0} DIMMs`
+            });
+        }
+        
+        if (data.graphics && data.graphics.length > 0) {
+            categories.push({
+                name: '🎮 Graphics',
+                details: `${data.graphics.length} device${data.graphics.length !== 1 ? 's' : ''} • ${data.graphics[0]?.vendor || 'Unknown'}`
+            });
+        }
+        
+        if (data.storage && data.storage.length > 0) {
+            const totalStorage = data.storage.reduce((sum, s) => sum + (s.size_bytes || 0), 0);
+            const storageGB = Math.round(totalStorage / (1024 * 1024 * 1024));
+            categories.push({
+                name: '💿 Storage',
+                details: `${data.storage.length} device${data.storage.length !== 1 ? 's' : ''} • ${storageGB} GB total`
+            });
+        }
+        
+        if (data.network && data.network.length > 0) {
+            categories.push({
+                name: '🌐 Network',
+                details: `${data.network.length} adapter${data.network.length !== 1 ? 's' : ''}`
+            });
+        }
+        
+        return categories.map(cat => `
+            <div class="bridge-hardware-category">
+                <span class="category-name">${cat.name}</span>
+                <span class="category-details">${cat.details}</span>
+            </div>
+        `).join('');
+    }
+    
+    /**
+     * Count devices in bridge hardware data
+     */
+    countBridgeDevices(data) {
+        let count = 0;
+        if (data.system) count++;
+        if (data.cpu) count++;
+        if (data.memory) count++;
+        if (data.graphics) count += data.graphics.length;
+        if (data.storage) count += data.storage.length;
+        if (data.network) count += data.network.length;
+        if (data.audio) count += data.audio.length;
+        if (data.usb) count += data.usb.length;
+        return count;
+    }
+    
+    /**
+     * Format date from bridge metadata
+     */
+    formatBridgeDate(dateString) {
+        if (!dateString) return 'Unknown';
+        return new Date(dateString).toLocaleDateString();
+    }
+    
+    /**
+     * Show full hardware report in a modal
+     */
+    showFullHardwareReport(hardwareData) {
+        const modal = document.createElement('div');
+        modal.className = 'hardware-report-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📋 Full Hardware Report</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <pre class="hardware-report-json">${JSON.stringify(hardwareData, null, 2)}</pre>
+                </div>
+            </div>
+        `;
+        
+        // Add styles
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        const modalContent = modal.querySelector('.modal-content');
+        modalContent.style.cssText = `
+            background: var(--bg0);
+            border-radius: 8px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        `;
+        
+        const modalHeader = modal.querySelector('.modal-header');
+        modalHeader.style.cssText = `
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--bg2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+        
+        const modalBody = modal.querySelector('.modal-body');
+        modalBody.style.cssText = `
+            padding: 24px;
+            overflow: auto;
+            flex: 1;
+        `;
+        
+        const jsonPre = modal.querySelector('.hardware-report-json');
+        jsonPre.style.cssText = `
+            background: var(--bg0-hard);
+            color: var(--fg);
+            padding: 16px;
+            border-radius: 4px;
+            font-family: Monaco, monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            overflow: auto;
+            margin: 0;
+        `;
+        
+        // Close modal functionality
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        });
+        
+        document.body.appendChild(modal);
+    }
+    
+    /**
+     * Enable configuration generation with bridge hardware
+     */
+    enableConfigurationGeneration() {
+        // Update the generate button state
+        const generateBtn = document.getElementById('generate-configuration-btn');
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generate Configuration';
+            generateBtn.style.opacity = '1';
+        }
+        
+        // Show configuration options
+        const configOptions = document.querySelector('.configuration-options');
+        if (configOptions) {
+            configOptions.style.display = 'block';
+        }
     }
 
     initMethodSwitcher() {

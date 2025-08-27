@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "version": "0.1.0",
+    "generated_at": "2025-08-27T15:30:00Z",
+    "privacy_level": "basic",
+    "tools_used": ["lshw", "dmidecode", "lspci", "lsusb"],
+    "anonymized_system_id": "sha256:a1b2c3d4e5f6..."
+  },
+  "system": {
+    "anonymized_hostname": "linux-workstation-hash",
+    "kernel_version": "6.16.3",
+    "distribution": "NixOS 25.11 (Xantusia)",
+    "architecture": "x86_64",
+    "boot_time": "2025-08-27T10:00:00Z"
+  },
+  "cpu": {
+    "model": "AMD Ryzen Threadripper PRO 3995WX 64-Cores",
+    "vendor": "Advanced Micro Devices [AMD]",
+    "cores": 64,
+    "threads": 64,
+    "base_frequency": 2701000.0,
+    "max_frequency": 3200000.0,
+    "cache_l1": 4194304,
+    "cache_l2": 33554432,
+    "cache_l3": 268435456,
+    "flags": ["ssse3", "avx", "avx2", "fma"]
+  },
+  "memory": {
+    "total_bytes": 242723577856,
+    "available_bytes": 218629644288,
+    "dimms": [
+      {
+        "size_bytes": 34359738368,
+        "speed_mhz": 3200,
+        "memory_type": "DDR4",
+        "manufacturer": "Samsung"
+      }
+    ]
+  },
+  "graphics": [
+    {
+      "vendor": "Advanced Micro Devices, Inc.",
+      "model": "Graphics Device 1002:744c",
+      "driver": "amdgpu",
+      "memory_bytes": 17179869184,
+      "pci_id": "1002:744c"
+    }
+  ],
+  "storage": [
+    {
+      "anonymized_serial": "sha256:storage123...",
+      "device_type": "NVMe SSD",
+      "size_bytes": 1000204886016,
+      "model": "KINGSTON SNV2S1000G",
+      "vendor": "Kingston",
+      "interface": "NVMe"
+    }
+  ],
+  "network": [
+    {
+      "device_type": "ethernet",
+      "vendor": "Aquantia Corp.",
+      "model": "AQC107 NBase-T/IEEE 802.3an Ethernet Controller",
+      "driver": "atlantic",
+      "anonymized_mac": "sha256:mac123..."
+    }
+  ],
+  "usb": [
+    {
+      "vendor_id": "1d6b",
+      "product_id": "0002",
+      "vendor_name": "Linux Foundation",
+      "product_name": "2.0 root hub",
+      "usb_version": "2.0"
+    },
+    {
+      "vendor_id": "1532",
+      "product_id": "007b",
+      "vendor_name": "Razer USA, Ltd",
+      "product_name": "Gaming Mouse Dongle [Viper Ultimate]",
+      "usb_version": "2.0"
+    }
+  ],
+  "audio": [
+    {
+      "vendor": "Advanced Micro Devices, Inc.",
+      "model": "Starship/Matisse HD Audio Controller",
+      "driver": "snd_hda_intel",
+      "device_type": "audio"
+    }
+  ]
+}
