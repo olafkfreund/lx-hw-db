@@ -74,7 +74,8 @@ jobs:
       - name: Validate hardware reports
         run: |
           echo "Validating hardware report JSON files..."
-          find hardware-reports -name "*.json" -type f | head -5 | while read file; do
+          find hardware-reports -name "*.json" -type f | head -5 | \
+            while read file; do
             echo "Validating: $file"
             if ! jq empty "$file" 2>/dev/null; then
               echo "Error Invalid JSON in $file"
@@ -116,7 +117,8 @@ jobs:
         run: |
           echo "Validating generated indices..."
 
-          # Run validation but don't fail the build if validation fails with sparse data
+          # Run validation but don't fail the build if validation
+          # fails with sparse data
           if ./target/release/lx-hw-indexer validate \
             --indices indices \
             --reports hardware-reports \

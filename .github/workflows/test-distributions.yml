@@ -2,9 +2,9 @@ name: Test Distribution Packages
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   schedule:
     # Test weekly to catch distribution changes
     - cron: '0 6 * * 1'

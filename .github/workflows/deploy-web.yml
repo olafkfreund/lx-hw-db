@@ -2,7 +2,7 @@ name: Deploy Web Interface to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'web/**'
   workflow_dispatch:

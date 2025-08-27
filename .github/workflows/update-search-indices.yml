@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - 'hardware/**/*.yaml'
-      - 'hardware/**/*.yml' 
+      - 'hardware/**/*.yml'
       - 'hardware/**/*.json'
       - 'web/data/**/*.json'
   pull_request:
@@ -53,7 +53,8 @@ jobs:
         
     - name: Count hardware reports
       run: |
-        TOTAL_REPORTS=$(find hardware -name "*.yaml" -o -name "*.yml" -o -name "*.json" | wc -l)
+        TOTAL_REPORTS=$(find hardware -name "*.yaml" \
+          -o -name "*.yml" -o -name "*.json" | wc -l)
         echo "Found $TOTAL_REPORTS hardware reports"
         echo "TOTAL_REPORTS=$TOTAL_REPORTS" >> $GITHUB_ENV
         
@@ -86,7 +87,7 @@ jobs:
           --format api \
           --endpoints components,vendors,distributions,kernels
           
-        # Generate statistics endpoints  
+        # Generate statistics endpoints
         ./target/release/lx-hw-indexer \
           --input-dir hardware \
           --output-dir web/api/v1/stats \
@@ -99,11 +100,13 @@ jobs:
         
         # Merge generated data with existing web data
         if [ -f web/data/generated/hardware-database.json ]; then
-          cp web/data/generated/hardware-database.json web/data/hardware-database.json
+          cp web/data/generated/hardware-database.json \
+            web/data/hardware-database.json
         fi
         
         if [ -f web/data/generated/search-indices.json ]; then
-          cp web/data/generated/search-indices.json web/data/search-indices.json
+          cp web/data/generated/search-indices.json \
+            web/data/search-indices.json
         fi
         
     - name: Generate usage statistics

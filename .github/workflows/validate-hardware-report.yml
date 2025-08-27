@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'hardware/**/*.yaml'
-      - 'hardware/**/*.yml' 
+      - 'hardware/**/*.yml'
       - 'hardware/**/*.json'
   workflow_dispatch:
 
