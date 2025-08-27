@@ -472,6 +472,7 @@ a:hover {
 .stat-label {
     font-size: 0.9rem;
     color: var(--fg3);
+    text-align: center;
 }
 
 /* === Section Styles === */
@@ -604,19 +605,27 @@ section {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
     gap: var(--space-6);
     margin-bottom: var(--space-16);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .stat-card {
     background: var(--bg1);
     border: var(--border-width) solid var(--bg2);
     border-radius: var(--border-radius-lg);
-    padding: var(--space-6);
+    padding: var(--space-8);
     transition: all var(--transition-fast);
     position: relative;
     overflow: hidden;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .stat-card::before {
@@ -654,11 +663,13 @@ section {
 }
 
 .stat-value {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 700;
     color: var(--primary);
     font-family: var(--font-mono);
     margin-bottom: var(--space-2);
+    line-height: 1;
+    text-align: center;
 }
 
 .stat-trend {
@@ -1072,6 +1083,15 @@ section {
 }
 
 /* === Responsive Design === */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        max-width: 500px;
+        gap: var(--space-4);
+    }
+}
+
 @media (max-width: 768px) {
     :root {
         --space-16: 2rem;
@@ -1085,6 +1105,7 @@ section {
     
     .stats-grid {
         grid-template-columns: 1fr;
+        max-width: 400px;
     }
     
     .about-grid {
