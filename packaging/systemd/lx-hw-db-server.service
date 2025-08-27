@@ -1,0 +1,45 @@
+[Unit]
+Description=Linux Hardware Database Web Server
+Documentation=https://github.com/lx-hw-db/lx-hw-db
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=lx-hw-db
+Group=lx-hw-db
+WorkingDirectory=/var/lib/lx-hw-db
+ExecStart=/usr/bin/lx-hw-detect server --config /etc/lx-hw-db/config.toml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# Security settings
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# Resource limits
+LimitNOFILE=1024
+MemoryMax=512M
+TasksMax=100
+
+# Environment
+Environment=RUST_LOG=info
+Environment=LX_HW_DB_CONFIG=/etc/lx-hw-db/config.toml
+
+[Install]
+WantedBy=multi-user.target

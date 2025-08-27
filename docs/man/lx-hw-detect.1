@@ -1,0 +1,140 @@
+.TH lx-hw-detect 1 "August 2025" "lx-hw-db 0.1.0" "User Commands"
+.SH NAME
+lx-hw-detect \- Privacy-first Linux hardware detection and compatibility analysis tool
+
+.SH SYNOPSIS
+.B lx-hw-detect
+.RI [ OPTIONS ]
+.I COMMAND
+
+.SH DESCRIPTION
+.B lx-hw-detect
+is a privacy-first hardware detection tool that collects system information using multiple Linux utilities while implementing comprehensive anonymization and privacy protection. It generates hardware compatibility reports and configuration recommendations for optimal Linux system performance.
+
+.SH COMMANDS
+.TP
+.B detect
+Detect hardware and generate compatibility report
+.TP
+.B check
+Check which detection tools are available on the system
+.TP
+.B validate
+Validate existing hardware report files for schema compliance
+.TP
+.B analyze
+Analyze kernel support and provide upgrade recommendations
+.TP
+.B config
+Generate configuration templates for detected hardware
+.TP
+.B recommend
+Generate system configuration recommendations based on hardware
+.TP
+.B submit
+Submit hardware report directly to GitHub for community database
+
+.SH OPTIONS
+.TP
+.BR \-v ", " \-\-verbose
+Enable verbose logging output
+.TP
+.BR \-q ", " \-\-quiet
+Suppress all output except errors
+.TP
+.BR \-p ", " \-\-privacy " " \fIPRIVACY\fR
+Set privacy level for data collection. Options: basic (24h salt rotation), enhanced (12h rotation), strict (1h rotation). Default: basic
+.TP
+.BR \-c ", " \-\-config " " \fICONFIG\fR
+Specify path to configuration file
+.TP
+.BR \-h ", " \-\-help
+Display help information
+.TP
+.BR \-V ", " \-\-version
+Display version information
+
+.SH PRIVACY LEVELS
+.TP
+.B basic
+Basic privacy with 24-hour cryptographic salt rotation. Suitable for most users.
+.TP
+.B enhanced
+Enhanced privacy with 12-hour salt rotation. Recommended for privacy-conscious users.
+.TP
+.B strict
+Strict privacy with 1-hour salt rotation. Maximum privacy protection.
+
+.SH FILES
+.TP
+.I /etc/lx-hw-db/config.toml
+System-wide configuration file
+.TP
+.I ~/.config/lx-hw-db/config.toml
+User-specific configuration file
+.TP
+.I ~/.local/share/lx-hw-db/
+User data directory for hardware reports
+
+.SH EXAMPLES
+.TP
+Detect hardware with basic privacy:
+.B lx-hw-detect detect
+.TP
+Generate configuration recommendations for Ubuntu:
+.B lx-hw-detect recommend --distribution Ubuntu
+.TP
+Validate a hardware report file:
+.B lx-hw-detect validate hardware-report.yaml
+.TP
+Check available detection tools:
+.B lx-hw-detect check
+
+.SH EXIT STATUS
+.TP
+.B 0
+Success
+.TP
+.B 1
+General error
+.TP
+.B 2
+Invalid arguments or configuration
+.TP
+.B 3
+Permission denied (requires root/sudo for some operations)
+.TP
+.B 4
+Required tools not available
+
+.SH SECURITY
+lx-hw-db implements comprehensive privacy protection:
+.IP \(bu 2
+Hardware identifiers are cryptographically hashed using HMAC-SHA256
+.IP \(bu 2
+Time-rotating salts prevent cross-temporal correlation
+.IP \(bu 2
+Differential privacy with calibrated noise injection
+.IP \(bu 2
+K-anonymity principles ensure individual configurations cannot be isolated
+.IP \(bu 2
+No raw serial numbers, MAC addresses, or UUIDs are collected
+
+.SH SEE ALSO
+.BR lx-hw-indexer (1),
+.BR lshw (1),
+.BR dmidecode (8),
+.BR lspci (8),
+.BR lsusb (8)
+
+.SH BUGS
+Report bugs at: https://github.com/lx-hw-db/lx-hw-db/issues
+
+.SH AUTHORS
+Linux Hardware Database Project <maintainers@lx-hw-db.org>
+
+.SH COPYRIGHT
+Copyright © 2025 Linux Hardware Database Project.
+License AGPLv3+: GNU Affero GPL version 3 or later <https://gnu.org/licenses/agpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

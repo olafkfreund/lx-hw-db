@@ -1,0 +1,81 @@
+# Bash completion for lx-hw-detect
+_lx_hw_detect() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    
+    # Main commands
+    local commands="detect check validate analyze config recommend submit help"
+    
+    # Global options
+    local global_opts="-v --verbose -q --quiet -p --privacy -c --config -h --help -V --version"
+    
+    # Privacy levels
+    local privacy_levels="basic enhanced strict"
+    
+    # Output formats
+    local formats="yaml json markdown"
+    
+    # Distributions
+    local distributions="Ubuntu Debian Fedora Arch NixOS openSUSE Gentoo"
+    
+    case ${prev} in
+        lx-hw-detect)
+            COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
+            return 0
+            ;;
+        -p|--privacy)
+            COMPREPLY=( $(compgen -W "${privacy_levels}" -- ${cur}) )
+            return 0
+            ;;
+        -f|--format)
+            COMPREPLY=( $(compgen -W "${formats}" -- ${cur}) )
+            return 0
+            ;;
+        -d|--distribution)
+            COMPREPLY=( $(compgen -W "${distributions}" -- ${cur}) )
+            return 0
+            ;;
+        -c|--config|-r|--report|-o|--output)
+            COMPREPLY=( $(compgen -f -- ${cur}) )
+            return 0
+            ;;
+        detect)
+            local detect_opts="--output --format --privacy --no-anonymization --include-kernel --include-modules"
+            COMPREPLY=( $(compgen -W "${detect_opts}" -- ${cur}) )
+            return 0
+            ;;
+        recommend)
+            local recommend_opts="--distribution --report --format --output --script --dkms --performance"
+            COMPREPLY=( $(compgen -W "${recommend_opts}" -- ${cur}) )
+            return 0
+            ;;
+        validate)
+            local validate_opts="--schema --strict --fix-errors"
+            COMPREPLY=( $(compgen -W "${validate_opts}" -- ${cur}) )
+            return 0
+            ;;
+        analyze)
+            local analyze_opts="--kernel-version --distribution --detailed --compare"
+            COMPREPLY=( $(compgen -W "${analyze_opts}" -- ${cur}) )
+            return 0
+            ;;
+        config)
+            local config_opts="--generate --template --distribution --validate"
+            COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur}) )
+            return 0
+            ;;
+        submit)
+            local submit_opts="--repository --branch --title --description --labels"
+            COMPREPLY=( $(compgen -W "${submit_opts}" -- ${cur}) )
+            return 0
+            ;;
+        *)
+            COMPREPLY=( $(compgen -W "${global_opts}" -- ${cur}) )
+            return 0
+            ;;
+    esac
+}
+
+complete -F _lx_hw_detect lx-hw-detect

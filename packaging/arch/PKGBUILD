@@ -1,0 +1,83 @@
+# Maintainer: Linux Hardware Database Project <maintainers@lx-hw-db.org>
+pkgname=lx-hw-db
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Privacy-first Linux hardware compatibility database tool"
+arch=('x86_64' 'aarch64')
+url="https://github.com/lx-hw-db/lx-hw-db"
+license=('AGPL-3.0-or-later')
+depends=(
+    'lshw'
+    'dmidecode' 
+    'pciutils'
+    'usbutils'
+    'util-linux'
+)
+makedepends=(
+    'rust'
+    'cargo'
+    'gcc'
+    'pkgconf'
+    'openssl'
+)
+optdepends=(
+    'inxi: Enhanced hardware detection'
+    'python: Web interface support'
+    'curl: Hardware report submission'
+    'git: Development and contribution'
+)
+source=(
+    "$pkgname-$pkgver.tar.gz::https://github.com/lx-hw-db/lx-hw-db/archive/v$pkgver.tar.gz"
+)
+sha256sums=('SKIP')  # Will be updated when we create releases
+
+prepare() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    cargo build --frozen --release --bins
+}
+
+check() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo test --frozen --release
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    
+    # Install binaries
+    install -Dm755 target/release/lx-hw-detect "$pkgdir/usr/bin/lx-hw-detect"
+    install -Dm755 target/release/lx-hw-indexer "$pkgdir/usr/bin/lx-hw-indexer"
+    
+    # Install configuration
+    install -Dm644 config/default.toml "$pkgdir/etc/lx-hw-db/config.toml"
+    
+    # Install documentation
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    
+    # Install man pages
+    install -Dm644 docs/man/lx-hw-detect.1 "$pkgdir/usr/share/man/man1/lx-hw-detect.1"
+    install -Dm644 docs/man/lx-hw-indexer.1 "$pkgdir/usr/share/man/man1/lx-hw-indexer.1"
+    
+    # Install web interface
+    mkdir -p "$pkgdir/usr/share/lx-hw-db"
+    cp -r web "$pkgdir/usr/share/lx-hw-db/"
+    
+    # Install systemd service
+    install -Dm644 packaging/systemd/lx-hw-db-server.service \
+        "$pkgdir/usr/lib/systemd/system/lx-hw-db-server.service"
+    
+    # Install shell completions
+    install -Dm644 completions/bash/lx-hw-detect "$pkgdir/usr/share/bash-completion/completions/lx-hw-detect"
+    install -Dm644 completions/zsh/_lx-hw-detect "$pkgdir/usr/share/zsh/site-functions/_lx-hw-detect"
+    install -Dm644 completions/fish/lx-hw-detect.fish "$pkgdir/usr/share/fish/vendor_completions.d/lx-hw-detect.fish"
+}

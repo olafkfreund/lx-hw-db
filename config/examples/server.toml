@@ -1,0 +1,44 @@
+# Server Configuration Example
+# For running lx-hw-db as a web service
+
+[detection]
+privacy_level = "basic"
+enable_kernel_analysis = true
+
+[detection.tools]
+lshw_enabled = true
+dmidecode_enabled = true
+lspci_enabled = true
+lsusb_enabled = true
+inxi_enabled = true
+
+[web]
+enabled = true
+host = "0.0.0.0"  # Bind to all interfaces
+port = 8080
+serve_static_files = true
+
+[recommendations]
+enabled = true
+supported_distributions = [
+    "Ubuntu", "Debian", "Fedora", "Arch Linux", 
+    "NixOS", "openSUSE", "Gentoo"
+]
+include_dkms = true
+include_kernel_params = true
+include_performance_tuning = true
+
+[privacy]
+salt_rotation_hours = 12
+anonymization_level = "enhanced"
+enable_differential_privacy = true
+
+[logging]
+level = "info"
+log_to_file = true
+log_file = "/var/log/lx-hw-db/server.log"
+
+[cache]
+enabled = true
+expiration_hours = 24
+max_size_mb = 500

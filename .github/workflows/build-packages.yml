@@ -1,0 +1,190 @@
+name: Build Distribution Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-debian:
+    name: Build Debian Package
+    runs-on: ubuntu-22.04
+    container: debian:bookworm
+    
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential \
+            debhelper \
+            devscripts \
+            cargo \
+            rustc \
+            libssl-dev \
+            pkg-config \
+            lshw \
+            dmidecode \
+            pciutils \
+            usbutils \
+            git \
+            curl
+            
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Build Debian package
+        run: |
+          dpkg-buildpackage -us -uc -b
+          
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-package
+          path: ../*.deb
+
+  build-arch:
+    name: Build Arch Package
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    
+    steps:
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm \
+            base-devel \
+            rust \
+            cargo \
+            openssl \
+            pkgconf \
+            lshw \
+            dmidecode \
+            pciutils \
+            usbutils \
+            git
+            
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Build Arch package
+        run: |
+          cd packaging/arch
+          # Update PKGBUILD version from git tag
+          if [ -n "$GITHUB_REF_NAME" ]; then
+            sed -i "s/pkgver=.*/pkgver=${GITHUB_REF_NAME#v}/" PKGBUILD
+          fi
+          
+          # Create non-root user for makepkg
+          useradd -m builduser
+          chown -R builduser:builduser /github/workspace
+          sudo -u builduser makepkg --noconfirm
+          
+      - name: Upload Arch package
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-package
+          path: packaging/arch/*.pkg.tar.zst
+
+  build-fedora:
+    name: Build Fedora Package
+    runs-on: ubuntu-latest
+    container: fedora:39
+    
+    steps:
+      - name: Install build dependencies
+        run: |
+          dnf update -y
+          dnf install -y \
+            rpm-build \
+            rpm-devel \
+            rpmdevtools \
+            rust \
+            cargo \
+            openssl-devel \
+            pkgconfig \
+            lshw \
+            dmidecode \
+            pciutils \
+            usbutils \
+            systemd-rpm-macros \
+            git
+            
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup RPM build environment
+        run: |
+          rpmdev-setuptree
+          
+      - name: Build Fedora package
+        run: |
+          # Copy source and spec file
+          cp packaging/fedora/lx-hw-db.spec ~/rpmbuild/SPECS/
+          tar czf ~/rpmbuild/SOURCES/lx-hw-db-0.1.0.tar.gz \
+            --exclude='.git' \
+            --exclude='target' \
+            --transform 's,^,lx-hw-db-0.1.0/,' \
+            .
+          
+          # Build RPM
+          rpmbuild -ba ~/rpmbuild/SPECS/lx-hw-db.spec
+          
+      - name: Upload Fedora package
+        uses: actions/upload-artifact@v4
+        with:
+          name: fedora-package
+          path: ~/rpmbuild/RPMS/**/*.rpm
+
+  build-nixos:
+    name: Build NixOS Package
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-23.11
+          
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Build NixOS package
+        run: |
+          cd packaging/nixos
+          nix-build -E '(import <nixpkgs> {}).callPackage ./default.nix {}'
+          
+      - name: Upload NixOS package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nixos-package
+          path: packaging/nixos/result
+
+  create-release:
+    name: Create Release with Packages
+    needs: [build-debian, build-arch, build-fedora, build-nixos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: Download all packages
+        uses: actions/download-artifact@v4
+        
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            debian-package/*.deb
+            arch-package/*.pkg.tar.zst
+            fedora-package/*.rpm
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,129 @@
+# lx-hw-db Configuration File
+# Privacy-first Linux hardware detection and compatibility analysis
+
+[detection]
+# Privacy level for data collection
+# Options: basic (24h salt rotation), enhanced (12h), strict (1h)
+privacy_level = "basic"
+
+# Enable kernel compatibility analysis
+enable_kernel_analysis = true
+
+# Hardware detection tools configuration
+[detection.tools]
+# Primary detection tools (required)
+lshw_enabled = true
+dmidecode_enabled = true
+
+# Extended detection tools (optional)
+lspci_enabled = true
+lsusb_enabled = true
+inxi_enabled = true
+
+# Tool-specific options
+[detection.tools.lshw]
+use_json_output = true
+require_root = false
+timeout_seconds = 30
+
+[detection.tools.dmidecode]
+require_root = true
+timeout_seconds = 15
+
+[detection.tools.lspci]
+show_kernel_modules = true
+show_verbose_info = false
+
+[output]
+# Default output format: yaml, json, markdown
+default_format = "yaml"
+
+# Output directory (relative to user home or absolute path)
+output_directory = "~/.local/share/lx-hw-db"
+
+# Include timestamps in output files
+include_timestamps = true
+
+# Compress output files
+compress_output = false
+
+[privacy]
+# Cryptographic salt rotation period (hours)
+salt_rotation_hours = 24
+
+# Anonymization level: basic, enhanced, strict
+anonymization_level = "basic"
+
+# Enable differential privacy
+enable_differential_privacy = true
+
+# K-anonymity minimum group size
+k_anonymity_threshold = 5
+
+# Hash algorithm for hardware IDs
+hash_algorithm = "HMAC-SHA256"
+
+[web]
+# Web interface configuration (for server mode)
+enabled = false
+host = "127.0.0.1"
+port = 8080
+serve_static_files = true
+
+[recommendations]
+# Configuration recommendation engine
+enabled = true
+
+# Target distributions for package recommendations
+supported_distributions = [
+    "Ubuntu",
+    "Debian", 
+    "Fedora",
+    "Arch Linux",
+    "NixOS",
+    "openSUSE",
+    "Gentoo"
+]
+
+# Include DKMS module recommendations
+include_dkms = true
+
+# Include kernel parameter optimizations
+include_kernel_params = true
+
+# Include performance optimizations
+include_performance_tuning = false
+
+[submission]
+# GitHub submission configuration
+github_enabled = false
+# github_token_file = "~/.config/lx-hw-db/github-token"
+# repository_owner = "lx-hw-db"
+# repository_name = "hardware-database"
+
+# Require user confirmation before submission
+require_confirmation = true
+
+[logging]
+# Logging level: error, warn, info, debug, trace
+level = "info"
+
+# Log to file
+log_to_file = false
+# log_file = "~/.local/share/lx-hw-db/lx-hw-db.log"
+
+# Log format: compact, pretty, json
+format = "compact"
+
+[cache]
+# Enable caching for improved performance
+enabled = true
+
+# Cache directory
+cache_directory = "~/.cache/lx-hw-db"
+
+# Cache expiration time (hours)
+expiration_hours = 168  # 1 week
+
+# Maximum cache size (MB)
+max_size_mb = 100

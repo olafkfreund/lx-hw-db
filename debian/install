@@ -1,0 +1,11 @@
+# Documentation
+README.md usr/share/doc/lx-hw-db/
+LICENSE usr/share/doc/lx-hw-db/
+CLAUDE.md usr/share/doc/lx-hw-db/
+
+# Configuration examples
+config/examples/* usr/share/lx-hw-db/examples/
+
+# Scripts
+scripts/install-deps.sh usr/share/lx-hw-db/scripts/
+scripts/setup-environment.sh usr/share/lx-hw-db/scripts/

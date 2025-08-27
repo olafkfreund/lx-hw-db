@@ -1,0 +1,11 @@
+lx-hw-db (0.1.0-1) unstable; urgency=medium
+
+  * Initial release of Linux Hardware Database tool
+  * Privacy-first hardware detection with cryptographic anonymization
+  * Configuration engine with driver recommendations and kernel parameters
+  * Support for multiple distributions (Ubuntu, Debian, Fedora, Arch, NixOS)
+  * Web interface for hardware configuration and community tips
+  * CLI tools for hardware detection and analysis
+  * DKMS module management and automated installation scripts
+
+ -- Linux Hardware Database Project <maintainers@lx-hw-db.org>  Wed, 27 Aug 2025 12:00:00 +0000

@@ -1,0 +1,93 @@
+#compdef lx-hw-detect
+
+_lx-hw-detect() {
+    local context state line
+    typeset -A opt_args
+
+    _arguments -C \
+        '(-v --verbose)'{-v,--verbose}'[Enable verbose logging]' \
+        '(-q --quiet)'{-q,--quiet}'[Suppress all output except errors]' \
+        '(-p --privacy)'{-p,--privacy}'[Privacy level]:privacy:(basic enhanced strict)' \
+        '(-c --config)'{-c,--config}'[Configuration file path]:file:_files' \
+        '(-h --help)'{-h,--help}'[Print help information]' \
+        '(-V --version)'{-V,--version}'[Print version information]' \
+        '1: :_lx_hw_detect_commands' \
+        '*:: :->args'
+
+    case $state in
+        args)
+            case $words[1] in
+                detect)
+                    _arguments \
+                        '--output[Output file path]:file:_files' \
+                        '(-f --format)'{-f,--format}'[Output format]:format:(yaml json markdown)' \
+                        '--no-anonymization[Disable privacy anonymization]' \
+                        '--include-kernel[Include kernel compatibility analysis]' \
+                        '--include-modules[Include kernel module information]'
+                    ;;
+                recommend)
+                    _arguments \
+                        '(-d --distribution)'{-d,--distribution}'[Target distribution]:distribution:(Ubuntu Debian Fedora Arch NixOS openSUSE Gentoo)' \
+                        '(-r --report)'{-r,--report}'[Hardware report file]:file:_files' \
+                        '(-f --format)'{-f,--format}'[Output format]:format:(yaml json markdown)' \
+                        '(-o --output)'{-o,--output}'[Output file path]:file:_files' \
+                        '--script[Generate installation script]' \
+                        '--dkms[Include DKMS module recommendations]' \
+                        '--performance[Include performance optimizations]'
+                    ;;
+                validate)
+                    _arguments \
+                        '--schema[Schema file to validate against]:file:_files' \
+                        '--strict[Enable strict validation mode]' \
+                        '--fix-errors[Attempt to fix validation errors]' \
+                        '*:file:_files'
+                    ;;
+                analyze)
+                    _arguments \
+                        '--kernel-version[Target kernel version]:version:' \
+                        '--distribution[Target distribution]:distribution:(Ubuntu Debian Fedora Arch NixOS openSUSE Gentoo)' \
+                        '--detailed[Enable detailed analysis]' \
+                        '--compare[Compare with previous reports]' \
+                        '*:file:_files'
+                    ;;
+                config)
+                    _arguments \
+                        '--generate[Generate default configuration]' \
+                        '--template[Configuration template]:template:' \
+                        '--distribution[Target distribution]:distribution:(Ubuntu Debian Fedora Arch NixOS openSUSE Gentoo)' \
+                        '--validate[Validate configuration file]'
+                    ;;
+                submit)
+                    _arguments \
+                        '--repository[GitHub repository]:repository:' \
+                        '--branch[Target branch]:branch:' \
+                        '--title[Pull request title]:title:' \
+                        '--description[Pull request description]:description:' \
+                        '--labels[Labels to add]:labels:' \
+                        '*:file:_files'
+                    ;;
+                check)
+                    _arguments \
+                        '--tools[Check specific tools only]' \
+                        '--system[Check system requirements]'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_lx_hw_detect_commands() {
+    local commands; commands=(
+        'detect:Detect hardware and generate compatibility report'
+        'check:Check which detection tools are available'
+        'validate:Validate hardware report files'
+        'analyze:Analyze kernel support and provide upgrade recommendations'
+        'config:Generate configuration templates'
+        'recommend:Generate system configuration recommendations'
+        'submit:Submit hardware report directly to GitHub'
+        'help:Print help information'
+    )
+    _describe 'commands' commands
+}
+
+_lx-hw-detect "$@"

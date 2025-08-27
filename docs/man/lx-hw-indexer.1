@@ -1,0 +1,114 @@
+.TH lx-hw-indexer 1 "August 2025" "lx-hw-db 0.1.0" "User Commands"
+.SH NAME
+lx-hw-indexer \- Linux hardware database indexing and search utility
+
+.SH SYNOPSIS
+.B lx-hw-indexer
+.RI [ OPTIONS ]
+.I COMMAND
+
+.SH DESCRIPTION
+.B lx-hw-indexer
+is a specialized tool for building and managing search indices for the Linux Hardware Database. It processes hardware reports, creates searchable indices, and generates compatibility matrices for efficient hardware lookup and analysis.
+
+.SH COMMANDS
+.TP
+.B index
+Build search indices from hardware reports
+.TP
+.B search
+Search hardware database by component, vendor, or compatibility
+.TP
+.B matrix
+Generate compatibility matrices for hardware-software combinations
+.TP
+.B validate
+Validate database structure and index integrity
+.TP
+.B stats
+Generate statistics and analytics from hardware database
+
+.SH OPTIONS
+.TP
+.BR \-v ", " \-\-verbose
+Enable verbose logging output
+.TP
+.BR \-q ", " \-\-quiet
+Suppress all output except errors
+.TP
+.BR \-i ", " \-\-input " " \fIDIRECTORY\fR
+Specify input directory containing hardware reports
+.TP
+.BR \-o ", " \-\-output " " \fIDIRECTORY\fR
+Specify output directory for indices and processed data
+.TP
+.BR \-f ", " \-\-format " " \fIFORMAT\fR
+Output format: json, yaml, csv. Default: json
+.TP
+.BR \-c ", " \-\-config " " \fICONFIG\fR
+Specify path to configuration file
+.TP
+.BR \-h ", " \-\-help
+Display help information
+.TP
+.BR \-V ", " \-\-version
+Display version information
+
+.SH FILES
+.TP
+.I /etc/lx-hw-db/indexer.toml
+System-wide indexer configuration file
+.TP
+.I ~/.config/lx-hw-db/indexer.toml
+User-specific indexer configuration file
+.TP
+.I ~/.local/share/lx-hw-db/indices/
+User data directory for search indices
+
+.SH EXAMPLES
+.TP
+Build search indices from hardware reports:
+.B lx-hw-indexer index --input ./hardware-reports --output ./indices
+.TP
+Search for NVIDIA graphics cards:
+.B lx-hw-indexer search --query "nvidia" --category gpu
+.TP
+Generate compatibility matrix:
+.B lx-hw-indexer matrix --output compatibility-matrix.json
+.TP
+Validate database integrity:
+.B lx-hw-indexer validate --input ./hardware-reports
+
+.SH EXIT STATUS
+.TP
+.B 0
+Success
+.TP
+.B 1
+General error
+.TP
+.B 2
+Invalid arguments or configuration
+.TP
+.B 3
+File or directory not found
+.TP
+.B 4
+Index corruption or validation failure
+
+.SH SEE ALSO
+.BR lx-hw-detect (1),
+.BR find (1),
+.BR grep (1)
+
+.SH BUGS
+Report bugs at: https://github.com/lx-hw-db/lx-hw-db/issues
+
+.SH AUTHORS
+Linux Hardware Database Project <maintainers@lx-hw-db.org>
+
+.SH COPYRIGHT
+Copyright © 2025 Linux Hardware Database Project.
+License AGPLv3+: GNU Affero GPL version 3 or later <https://gnu.org/licenses/agpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

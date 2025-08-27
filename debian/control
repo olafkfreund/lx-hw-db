@@ -1,0 +1,44 @@
+Source: lx-hw-db
+Section: utils
+Priority: optional
+Maintainer: Linux Hardware Database Project <maintainers@lx-hw-db.org>
+Build-Depends: debhelper-compat (= 13),
+               cargo,
+               rustc (>= 1.70),
+               libssl-dev,
+               pkg-config,
+               lshw,
+               dmidecode,
+               pciutils,
+               usbutils
+Standards-Version: 4.6.0
+Homepage: https://github.com/lx-hw-db/lx-hw-db
+Vcs-Git: https://github.com/lx-hw-db/lx-hw-db.git
+Vcs-Browser: https://github.com/lx-hw-db/lx-hw-db
+Rules-Requires-Root: no
+
+Package: lx-hw-db
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         lshw,
+         dmidecode,
+         pciutils,
+         usbutils,
+         util-linux
+Recommends: inxi,
+            python3 (>= 3.8)
+Suggests: curl,
+          git
+Description: Privacy-first Linux hardware compatibility database tool
+ lx-hw-db is a community-driven hardware detection and configuration tool
+ that helps Linux users ensure optimal hardware compatibility. It provides:
+ .
+  * Privacy-preserving hardware detection using multiple Linux utilities
+  * Automated configuration recommendations for detected hardware
+  * Driver mapping and kernel parameter optimization
+  * DKMS module management and installation scripts
+  * Community-driven hardware compatibility database
+ .
+ The tool implements comprehensive privacy protection through cryptographic
+ anonymization while maintaining statistical utility for compatibility analysis.

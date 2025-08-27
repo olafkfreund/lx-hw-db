@@ -1,0 +1,40 @@
+# Privacy-Focused Configuration Example
+# Maximum privacy protection for sensitive environments
+
+[detection]
+privacy_level = "strict"
+enable_kernel_analysis = false  # Reduces fingerprinting
+
+[detection.tools]
+lshw_enabled = true
+dmidecode_enabled = false  # Avoid BIOS/motherboard details
+lspci_enabled = true
+lsusb_enabled = false     # Avoid USB device enumeration
+inxi_enabled = false      # Avoid detailed system info
+
+[privacy]
+salt_rotation_hours = 1   # Maximum salt rotation frequency
+anonymization_level = "strict"
+enable_differential_privacy = true
+k_anonymity_threshold = 10  # Higher anonymity threshold
+hash_algorithm = "HMAC-SHA256"
+
+[output]
+default_format = "yaml"
+include_timestamps = false  # Avoid temporal correlation
+compress_output = true
+
+[recommendations]
+enabled = false  # Disable to avoid configuration fingerprinting
+
+[submission]
+github_enabled = false  # Disable automatic submission
+require_confirmation = true
+
+[logging]
+level = "error"  # Minimal logging
+log_to_file = false
+format = "compact"
+
+[cache]
+enabled = false  # Disable caching for security
