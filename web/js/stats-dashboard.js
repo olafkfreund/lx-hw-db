@@ -68,6 +68,12 @@ class StatsDashboard {
         // Update compatibility chart with new data
         console.log('About to update compatibility chart with:', stats.compatibility_overview);
         this.updateCompatibilityChart(stats.compatibility_overview);
+        
+        // Add a test to verify the function works with known data
+        console.log('Testing chart with hardcoded data...');
+        setTimeout(() => {
+            this.updateCompatibilityChart({"Unknown": 1, "Working": 2, "Partial": 1});
+        }, 1000);
     }
 
     initializeCompatibilityChart() {
@@ -97,45 +103,62 @@ class StatsDashboard {
             return;
         }
 
-        // Calculate total and percentages
-        const entries = Object.entries(compatibilityData);
-        console.log('Compatibility entries:', entries);
-        const total = entries.reduce((sum, [, count]) => sum + count, 0);
+        try {
+            // Calculate total and percentages
+            const entries = Object.entries(compatibilityData);
+            console.log('Compatibility entries:', entries);
+            const total = entries.reduce((sum, [, count]) => sum + count, 0);
+            console.log('Total count:', total);
 
-        if (total === 0) {
-            chartContainer.innerHTML = `
-                <div class="compatibility-empty">
-                    <p>No compatibility data available yet.</p>
+            if (total === 0) {
+                chartContainer.innerHTML = `
+                    <div class="compatibility-empty">
+                        <p>No compatibility data available yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Create simple bar chart
+            const maxCount = Math.max(...entries.map(([, count]) => count));
+            console.log('Max count:', maxCount);
+            
+            const chartHTML = `
+                <div class="compatibility-bars">
+                    ${entries.map(([status, count]) => {
+                        const percentage = ((count / total) * 100).toFixed(1);
+                        const barWidth = (count / maxCount) * 100;
+                        const statusClass = status.toLowerCase().replace(/\s+/g, '-');
+                        console.log(`Rendering bar for ${status}: ${count} (${percentage}%, width: ${barWidth}%)`);
+                        
+                        return `
+                            <div class="compatibility-bar-item">
+                                <div class="compatibility-bar-label">
+                                    <span class="status-name">${status}</span>
+                                    <span class="status-stats">${count} (${percentage}%)</span>
+                                </div>
+                                <div class="compatibility-bar-track">
+                                    <div class="compatibility-bar-fill compatibility-${statusClass}" 
+                                         style="width: ${barWidth}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
-            return;
+            
+            console.log('Generated chart HTML:', chartHTML);
+            chartContainer.innerHTML = chartHTML;
+            console.log('Chart HTML inserted successfully');
+            
+        } catch (error) {
+            console.error('Error in updateCompatibilityChart:', error);
+            chartContainer.innerHTML = `
+                <div class="compatibility-error">
+                    <p>Error rendering chart: ${error.message}</p>
+                </div>
+            `;
         }
-
-        // Create simple bar chart
-        const maxCount = Math.max(...entries.map(([, count]) => count));
-        
-        chartContainer.innerHTML = `
-            <div class="compatibility-bars">
-                ${entries.map(([status, count]) => {
-                    const percentage = ((count / total) * 100).toFixed(1);
-                    const barWidth = (count / maxCount) * 100;
-                    const statusClass = status.toLowerCase().replace(/\s+/g, '-');
-                    
-                    return `
-                        <div class="compatibility-bar-item">
-                            <div class="compatibility-bar-label">
-                                <span class="status-name">${status}</span>
-                                <span class="status-stats">${count} (${percentage}%)</span>
-                            </div>
-                            <div class="compatibility-bar-track">
-                                <div class="compatibility-bar-fill compatibility-${statusClass}" 
-                                     style="width: ${barWidth}%"></div>
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `;
     }
 
     displayError(message) {
