@@ -56,6 +56,11 @@ class CompatibilityMatrix {
      * Create matrix container in stats section
      */
     createMatrixContainer() {
+        // Don't create the matrix automatically to avoid layout conflicts
+        // The user can manually enable it if needed
+        return;
+        
+        /*
         const statsContainer = document.querySelector('#stats-container');
         if (!statsContainer) return;
 
@@ -139,6 +144,7 @@ class CompatibilityMatrix {
 
         // Add matrix styles
         this.addMatrixStyles();
+        */
     }
 
     /**
