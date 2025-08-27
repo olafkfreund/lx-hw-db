@@ -1,7 +1,7 @@
-# Hardware Compatibility Database - Build 40
+# Hardware Compatibility Database - Build 41
 
-Built on: Wed Aug 27 07:40:30 UTC 2025
-Commit: 2652d41fac3265dd266c9972846c0db8daddc2f6
+Built on: Wed Aug 27 07:44:40 UTC 2025
+Commit: 7f15cda4720b2549b16e88a21f127f2504503682
 Reports processed: 1
 
 Analyzing hardware reports...
@@ -48,4 +48,4 @@ Linux Distributions: 1
 Compatibility Overview:
   Unknown: 1 (100.0%)
 
-Last Updated: 2025-08-27 07:40:29.293577624 UTC
+Last Updated: 2025-08-27 07:44:40.131592684 UTC
