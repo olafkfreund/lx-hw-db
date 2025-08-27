@@ -9,6 +9,7 @@ class ConfigurationTips {
         this.isInitialized = false;
         this.currentHardware = null;
         this.currentDistribution = null;
+        this.tipsDatabase = [];
         
         this.distributions = {
             'debian': {
@@ -837,6 +838,26 @@ EndSection`
     copyAllCommands() {
         const commands = Array.from(document.querySelectorAll('.command-block code')).map(el => el.textContent);
         this.copyToClipboard(commands.join('\n'));
+    }
+
+    setTipsData(tipsData) {
+        // Store configuration tips data for use throughout the application
+        this.tipsDatabase = tipsData || [];
+        console.log('Configuration tips data loaded:', this.tipsDatabase.length, 'tips');
+        
+        // If tips data is available, initialize any UI that depends on it
+        if (this.tipsDatabase.length > 0) {
+            this.updateTipsUI();
+        }
+    }
+
+    updateTipsUI() {
+        // Update any UI elements that display tips count or status
+        const tipsCount = this.tipsDatabase.length;
+        console.log('Updating tips UI with', tipsCount, 'tips');
+        
+        // This method can be expanded to update various UI elements
+        // that show configuration tips status or counts
     }
 
     addConfigTipsToModal(report) {
