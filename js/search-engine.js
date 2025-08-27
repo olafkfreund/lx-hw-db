@@ -75,13 +75,14 @@ class HardwareSearchEngine {
                 bidirectional: true
             });
 
-            // Load hardware data
-            const response = await fetch('data/hardware-index.json');
-            if (!response.ok) {
-                throw new Error(`Failed to load hardware data: ${response.status}`);
-            }
-            
-            this.documents = await response.json();
+            // Load multiple data sources for enhanced search
+            await Promise.all([
+                this.loadHardwareData(),
+                this.loadSearchTerms(),
+                this.loadVendorIndex(),
+                this.loadComponentIndex()
+            ]);
+
             console.log(`Loaded ${this.documents.length} hardware reports`);
 
             // Index all documents
@@ -100,6 +101,74 @@ class HardwareSearchEngine {
         } catch (error) {
             console.error('Failed to initialize search engine:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Load main hardware data
+     */
+    async loadHardwareData() {
+        try {
+            const response = await fetch('data/hardware-index.json');
+            if (!response.ok) {
+                throw new Error(`Failed to load hardware data: ${response.status}`);
+            }
+            this.documents = await response.json();
+        } catch (error) {
+            console.warn('Could not load hardware-index.json, falling back to hardware-database.json');
+            const response = await fetch('data/hardware-database.json');
+            if (!response.ok) {
+                throw new Error(`Failed to load fallback hardware data: ${response.status}`);
+            }
+            this.documents = await response.json();
+        }
+    }
+
+    /**
+     * Load search terms index for enhanced search
+     */
+    async loadSearchTerms() {
+        try {
+            const response = await fetch('indices/search-terms.json');
+            if (response.ok) {
+                this.searchTerms = await response.json();
+                console.log(`Loaded ${Object.keys(this.searchTerms).length} search terms`);
+            }
+        } catch (error) {
+            console.warn('Could not load search terms index:', error);
+            this.searchTerms = {};
+        }
+    }
+
+    /**
+     * Load vendor index for vendor-specific search
+     */
+    async loadVendorIndex() {
+        try {
+            const response = await fetch('indices/by-vendor.json');
+            if (response.ok) {
+                this.vendorIndex = await response.json();
+                console.log(`Loaded ${Object.keys(this.vendorIndex).length} vendors in index`);
+            }
+        } catch (error) {
+            console.warn('Could not load vendor index:', error);
+            this.vendorIndex = {};
+        }
+    }
+
+    /**
+     * Load component index for component-specific search
+     */
+    async loadComponentIndex() {
+        try {
+            const response = await fetch('indices/by-component.json');
+            if (response.ok) {
+                this.componentIndex = await response.json();
+                console.log(`Loaded ${Object.keys(this.componentIndex).length} component types in index`);
+            }
+        } catch (error) {
+            console.warn('Could not load component index:', error);
+            this.componentIndex = {};
         }
     }
 
@@ -145,7 +214,7 @@ class HardwareSearchEngine {
     }
 
     /**
-     * Search hardware database
+     * Search hardware database with enhanced indexing
      * @param {string} query - Search query
      * @param {Object} filters - Search filters
      * @returns {Array} Search results
@@ -161,30 +230,49 @@ class HardwareSearchEngine {
         }
 
         try {
-            // Perform search
-            const searchResults = this.index.search(query.trim(), {
+            const queryLower = query.trim().toLowerCase();
+            
+            // First, try to find exact matches in search terms index
+            const termMatches = this.searchInTermsIndex(queryLower);
+            
+            // Then perform FlexSearch for fuzzy matching
+            const flexSearchResults = this.index.search(query.trim(), {
                 limit: 50,
                 enrich: true
             });
 
-            // Flatten results from multiple fields
+            // Combine and deduplicate results
+            const allResultIds = new Set();
             const allResults = [];
-            for (const fieldResult of searchResults) {
+
+            // Add term matches (higher priority)
+            termMatches.forEach(docId => {
+                allResultIds.add(docId);
+                allResults.push({ id: docId, source: 'terms' });
+            });
+
+            // Add FlexSearch results
+            for (const fieldResult of flexSearchResults) {
                 for (const result of fieldResult.result) {
-                    if (!allResults.find(r => r.id === result.id)) {
-                        allResults.push(result);
+                    if (!allResultIds.has(result.id)) {
+                        allResultIds.add(result.id);
+                        allResults.push({ id: result.id, source: 'flexsearch' });
                     }
                 }
             }
 
             // Get full document data for results
-            const enrichedResults = allResults.map(result => {
-                const doc = this.documents.find(d => d.id === result.id);
-                return {
-                    ...doc,
-                    _searchScore: this.calculateRelevanceScore(doc, query)
-                };
-            });
+            const enrichedResults = allResults
+                .map(result => {
+                    const doc = this.documents.find(d => d.id === result.id);
+                    if (!doc) return null;
+                    return {
+                        ...doc,
+                        _searchSource: result.source,
+                        _searchScore: this.calculateRelevanceScore(doc, query)
+                    };
+                })
+                .filter(Boolean);
 
             // Apply filters
             let filteredResults = enrichedResults;
@@ -207,8 +295,12 @@ class HardwareSearchEngine {
                 );
             }
 
-            // Sort by relevance score
-            filteredResults.sort((a, b) => b._searchScore - a._searchScore);
+            // Sort by relevance score (term matches get priority boost)
+            filteredResults.sort((a, b) => {
+                const scoreA = a._searchScore + (a._searchSource === 'terms' ? 10 : 0);
+                const scoreB = b._searchScore + (b._searchSource === 'terms' ? 10 : 0);
+                return scoreB - scoreA;
+            });
 
             console.log(`Search for "${query}" returned ${filteredResults.length} results`);
             return filteredResults;
@@ -217,6 +309,33 @@ class HardwareSearchEngine {
             console.error('Search error:', error);
             return [];
         }
+    }
+
+    /**
+     * Search in the terms index for exact matches
+     */
+    searchInTermsIndex(query) {
+        if (!this.searchTerms) return [];
+        
+        const matches = [];
+        const queryTerms = query.split(/\s+/);
+        
+        // Check for exact term matches
+        queryTerms.forEach(term => {
+            if (this.searchTerms[term]) {
+                matches.push(...this.searchTerms[term]);
+            }
+        });
+        
+        // Check for partial matches in term keys
+        Object.keys(this.searchTerms).forEach(term => {
+            if (term.toLowerCase().includes(query) || query.includes(term.toLowerCase())) {
+                matches.push(...this.searchTerms[term]);
+            }
+        });
+        
+        // Return unique document IDs
+        return [...new Set(matches)];
     }
 
     /**
@@ -319,35 +438,90 @@ class HardwareSearchEngine {
     getSuggestions(partialQuery, limit = 5) {
         if (!partialQuery || partialQuery.length < 2) return [];
 
-        const suggestions = new Set();
+        const suggestions = [];
         const queryLower = partialQuery.toLowerCase();
 
-        // Add vendor suggestions
-        this.documents.forEach(doc => {
-            [
-                doc.cpu?.vendor,
-                ...doc.graphics?.map(g => g.vendor) || [],
-                ...doc.network?.map(n => n.vendor) || []
-            ].forEach(vendor => {
-                if (vendor && vendor.toLowerCase().startsWith(queryLower)) {
-                    suggestions.add(vendor);
+        // Add suggestions from search terms index (fast lookup)
+        if (this.searchTerms) {
+            Object.keys(this.searchTerms).forEach(term => {
+                if (term.toLowerCase().includes(queryLower)) {
+                    suggestions.push({
+                        text: term,
+                        type: 'term',
+                        count: this.searchTerms[term].length
+                    });
                 }
             });
-        });
+        }
 
-        // Add model suggestions
+        // Add vendor suggestions from vendor index
+        if (this.vendorIndex) {
+            Object.keys(this.vendorIndex).forEach(vendorId => {
+                const vendor = this.vendorIndex[vendorId];
+                if (vendorId.toLowerCase().includes(queryLower)) {
+                    suggestions.push({
+                        text: vendorId,
+                        type: 'vendor',
+                        count: vendor.total_reports,
+                        details: `${vendor.total_reports} reports`
+                    });
+                }
+            });
+        }
+
+        // Add component type suggestions
+        if (this.componentIndex) {
+            Object.keys(this.componentIndex).forEach(componentType => {
+                const component = this.componentIndex[componentType];
+                if (componentType.toLowerCase().includes(queryLower)) {
+                    suggestions.push({
+                        text: componentType,
+                        type: 'component',
+                        count: component.total_reports,
+                        details: `${component.total_reports} reports`
+                    });
+                }
+            });
+        }
+
+        // Add model suggestions from documents (fallback)
         this.documents.forEach(doc => {
             [
                 doc.cpu?.model,
                 ...doc.graphics?.map(g => g.model) || []
             ].forEach(model => {
                 if (model && model.toLowerCase().includes(queryLower)) {
-                    suggestions.add(model);
+                    suggestions.push({
+                        text: model,
+                        type: 'model',
+                        count: 1
+                    });
                 }
             });
         });
 
-        return Array.from(suggestions).slice(0, limit);
+        // Sort by relevance and count
+        suggestions.sort((a, b) => {
+            // Exact matches first
+            const aExact = a.text.toLowerCase() === queryLower ? 1 : 0;
+            const bExact = b.text.toLowerCase() === queryLower ? 1 : 0;
+            if (aExact !== bExact) return bExact - aExact;
+
+            // Then by count
+            return (b.count || 0) - (a.count || 0);
+        });
+
+        // Remove duplicates and limit
+        const unique = [];
+        const seen = new Set();
+        for (const suggestion of suggestions) {
+            if (!seen.has(suggestion.text) && unique.length < limit) {
+                seen.add(suggestion.text);
+                unique.push(suggestion);
+            }
+        }
+
+        return unique;
     }
 
     /**
@@ -394,11 +568,40 @@ class HardwareSearchEngine {
     }
 
     /**
-     * Get unique values for filter options
+     * Get unique values for filter options using indices for better performance
      */
     getFilterOptions() {
+        // Use indices when available for better performance
+        if (this.vendorIndex && this.componentIndex) {
+            const vendors = Object.keys(this.vendorIndex).sort();
+            const componentTypes = Object.keys(this.componentIndex).sort();
+            
+            // Fallback to documents for other options
+            const architectures = new Set();
+            const distributions = new Set();
+            const compatibility = new Set();
+            
+            this.documents.forEach(doc => {
+                architectures.add(doc.system.architecture);
+                distributions.add(doc.system.distribution);
+                if (doc.compatibility?.overall_status) {
+                    compatibility.add(doc.compatibility.overall_status);
+                }
+            });
+
+            return {
+                vendors,
+                componentTypes,
+                architectures: Array.from(architectures).sort(),
+                distributions: Array.from(distributions).sort(),
+                compatibility: Array.from(compatibility).sort()
+            };
+        }
+
+        // Fallback to document scanning
         const options = {
             vendors: new Set(),
+            componentTypes: new Set(),
             architectures: new Set(), 
             distributions: new Set(),
             compatibility: new Set()
@@ -415,6 +618,14 @@ class HardwareSearchEngine {
                 if (vendor) options.vendors.add(vendor);
             });
 
+            // Add component types
+            if (doc.cpu) options.componentTypes.add('CPU');
+            if (doc.graphics?.length) options.componentTypes.add('Graphics');
+            if (doc.memory) options.componentTypes.add('Memory');
+            if (doc.storage?.length) options.componentTypes.add('Storage');
+            if (doc.network?.length) options.componentTypes.add('Network');
+            if (doc.audio?.length) options.componentTypes.add('Audio');
+
             options.architectures.add(doc.system.architecture);
             options.distributions.add(doc.system.distribution);
             
@@ -425,10 +636,25 @@ class HardwareSearchEngine {
 
         return {
             vendors: Array.from(options.vendors).sort(),
+            componentTypes: Array.from(options.componentTypes).sort(),
             architectures: Array.from(options.architectures).sort(),
             distributions: Array.from(options.distributions).sort(),
             compatibility: Array.from(options.compatibility).sort()
         };
+    }
+
+    /**
+     * Get vendor details from vendor index
+     */
+    getVendorDetails(vendorId) {
+        return this.vendorIndex?.[vendorId] || null;
+    }
+
+    /**
+     * Get component details from component index
+     */
+    getComponentDetails(componentType) {
+        return this.componentIndex?.[componentType] || null;
     }
 }
 

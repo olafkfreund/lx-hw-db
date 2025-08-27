@@ -2,9 +2,41 @@
   "6.16.0": {
     "total_reports": 1,
     "compatibility_stats": {
-      "unknown": 1
+      "poor": 1
     },
-    "problematic_hardware": [],
+    "problematic_hardware": [
+      "1002 Device 1002:1478",
+      "1002 Device 1002:1479",
+      "1002 Device 1002:744c",
+      "1002 HDMI",
+      "1022 Device 1022:1480",
+      "1022 Unknown Device 1022:1481",
+      "1022 Device 1022:1482",
+      "1022 Device 1022:1483",
+      "1022 Device 1022:1484",
+      "1022 Unknown Device 1022:1485",
+      "1022 Unknown Device 1022:1486",
+      "1022 Unknown Device 1022:148a",
+      "1022 Unknown Device 1022:148c",
+      "1022 Device 1022:1490",
+      "1022 Device 1022:1491",
+      "1022 Device 1022:1492",
+      "1022 Device 1022:1493",
+      "1022 Device 1022:1494",
+      "1022 Device 1022:1495",
+      "1022 Device 1022:1496",
+      "1022 Device 1022:1497",
+      "1022 Unknown Device 1022:149c",
+      "1022 Device 1022:57a3",
+      "1022 Device 1022:57a4",
+      "1022 Device 1022:57ad",
+      "1022 Device 1022:7901",
+      "1022 Unknown Device 1022:790b",
+      "1022 Device 1022:790e",
+      "1b21 Unknown Device 1b21:2142",
+      "1d6a Ethernet interface",
+      "2646 NVMe device"
+    ],
     "release_date": null
   }
 }

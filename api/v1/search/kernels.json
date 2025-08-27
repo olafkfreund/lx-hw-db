@@ -2,13 +2,19 @@
   "data": [
     {
       "compatibility_stats": {
-        "unknown": 1
+        "poor": 1
       },
       "kernel_version": "6.16.0",
-      "problematic_hardware": [],
+      "problematic_hardware": [
+        "1002 Device 1002:1478",
+        "1002 Device 1002:1479",
+        "1002 Device 1002:744c",
+        "1002 HDMI",
+        "1022 Device 1022:1480"
+      ],
       "total_reports": 1
     }
   ],
-  "generated": "2025-08-27T10:57:20.142754141+00:00",
+  "generated": "2025-08-27T11:37:16.772443446+00:00",
   "version": "1.0"
 }

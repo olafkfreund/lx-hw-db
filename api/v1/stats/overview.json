@@ -1,16 +1,16 @@
 {
   "data": {
     "compatibility_overview": {
-      "Unknown": 1
+      "Poor": 1
     },
-    "component_types": 0,
+    "component_types": 1,
     "distributions": 1,
     "kernel_versions": 1,
-    "last_updated": "2025-08-27T10:57:20.142021009Z",
+    "last_updated": "2025-08-27T11:37:16.770956742Z",
     "total_reports": 1,
-    "total_vendors": 0,
+    "total_vendors": 5,
     "unique_systems": 1
   },
-  "generated": "2025-08-27T10:57:20.142908708+00:00",
+  "generated": "2025-08-27T11:37:16.772655756+00:00",
   "version": "1.0"
 }

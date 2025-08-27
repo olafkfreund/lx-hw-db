@@ -383,40 +383,309 @@ impl HardwareIndexer {
     }
 
     /// Extract metadata from hardware report
-    fn extract_metadata(&self, _report: &HardwareReport) -> Result<ReportMetadata> {
-        // This would extract metadata from the actual report structure
-        // For now, return a placeholder that matches expected fields
+    fn extract_metadata(&self, report: &HardwareReport) -> Result<ReportMetadata> {
         Ok(ReportMetadata {
-            system_id: "placeholder".to_string(),
-            submission_date: Utc::now(),
-            kernel_version: "6.16.0".to_string(),
-            distribution: "Unknown".to_string(),
-            architecture: "x86_64".to_string(),
-            privacy_level: "Enhanced".to_string(),
+            system_id: report.metadata.anonymized_system_id.clone(),
+            submission_date: report.metadata.generated_at,
+            kernel_version: report.system.kernel_version.clone(),
+            distribution: report.system.distribution.clone().unwrap_or_else(|| "Unknown".to_string()),
+            architecture: report.system.architecture.clone(),
+            privacy_level: format!("{:?}", report.metadata.privacy_level),
         })
     }
 
     /// Extract hardware components from report
-    fn extract_components(&self, _report: &HardwareReport) -> Result<Vec<HardwareComponent>> {
-        // This would parse the actual hardware data from the report
-        // For now, return a placeholder
-        Ok(Vec::new())
+    fn extract_components(&self, report: &HardwareReport) -> Result<Vec<HardwareComponent>> {
+        let mut components = Vec::new();
+
+        // Extract CPU information
+        if let Some(cpu) = &report.cpu {
+            components.push(HardwareComponent {
+                component_type: "CPU".to_string(),
+                vendor: Some(cpu.vendor.clone()),
+                model: Some(cpu.model.clone()),
+                device_id: None,
+                driver: None,
+                driver_version: None,
+                properties: {
+                    let mut props = HashMap::new();
+                    props.insert("cores".to_string(), serde_json::Value::from(cpu.cores));
+                    props.insert("threads".to_string(), serde_json::Value::from(cpu.threads));
+                    props.insert("base_frequency".to_string(), serde_json::to_value(&cpu.base_frequency).unwrap());
+                    props.insert("max_frequency".to_string(), serde_json::to_value(&cpu.max_frequency).unwrap());
+                    props.insert("cache_l1".to_string(), serde_json::to_value(&cpu.cache_l1).unwrap());
+                    props.insert("cache_l2".to_string(), serde_json::to_value(&cpu.cache_l2).unwrap());
+                    props.insert("cache_l3".to_string(), serde_json::to_value(&cpu.cache_l3).unwrap());
+                    props.insert("flags".to_string(), serde_json::to_value(&cpu.flags).unwrap());
+                    props
+                },
+            });
+        }
+
+        // Extract memory information
+        if let Some(memory) = &report.memory {
+            components.push(HardwareComponent {
+                component_type: "Memory".to_string(),
+                vendor: None,
+                model: None,
+                device_id: None,
+                driver: None,
+                driver_version: None,
+                properties: {
+                    let mut props = HashMap::new();
+                    props.insert("total_bytes".to_string(), serde_json::Value::from(memory.total_bytes));
+                    props.insert("available_bytes".to_string(), serde_json::Value::from(memory.available_bytes));
+                    props.insert("dimm_count".to_string(), serde_json::Value::from(memory.dimms.len()));
+                    props
+                },
+            });
+
+            // Extract individual DIMMs
+            for (i, dimm) in memory.dimms.iter().enumerate() {
+                components.push(HardwareComponent {
+                    component_type: "MemoryDIMM".to_string(),
+                    vendor: dimm.manufacturer.clone(),
+                    model: dimm.memory_type.clone(),
+                    device_id: Some(format!("dimm_{}", i)),
+                    driver: None,
+                    driver_version: None,
+                    properties: {
+                        let mut props = HashMap::new();
+                        props.insert("size_bytes".to_string(), serde_json::Value::from(dimm.size_bytes));
+                        props.insert("speed_mhz".to_string(), serde_json::to_value(&dimm.speed_mhz).unwrap());
+                        props.insert("slot".to_string(), serde_json::Value::from(i));
+                        props
+                    },
+                });
+            }
+        }
+
+        // Extract graphics devices
+        for gpu in &report.graphics {
+            components.push(HardwareComponent {
+                component_type: "GPU".to_string(),
+                vendor: Some(gpu.vendor.clone()),
+                model: Some(gpu.model.clone()),
+                device_id: Some(gpu.pci_id.clone()),
+                driver: gpu.driver.clone(),
+                driver_version: None,
+                properties: {
+                    let mut props = HashMap::new();
+                    props.insert("memory_bytes".to_string(), serde_json::to_value(&gpu.memory_bytes).unwrap());
+                    props.insert("pci_id".to_string(), serde_json::Value::from(gpu.pci_id.clone()));
+                    props
+                },
+            });
+        }
+
+        // Extract network devices
+        for net in &report.network {
+            components.push(HardwareComponent {
+                component_type: "Network".to_string(),
+                vendor: Some(net.vendor.clone()),
+                model: Some(net.model.clone()),
+                device_id: None,
+                driver: net.driver.clone(),
+                driver_version: None,
+                properties: {
+                    let mut props = HashMap::new();
+                    props.insert("device_type".to_string(), serde_json::Value::from(net.device_type.clone()));
+                    props.insert("anonymized_mac".to_string(), serde_json::Value::from(net.anonymized_mac.clone()));
+                    props
+                },
+            });
+        }
+
+        // Extract storage devices
+        for storage in &report.storage {
+            components.push(HardwareComponent {
+                component_type: "Storage".to_string(),
+                vendor: storage.vendor.clone(),
+                model: Some(storage.model.clone()),
+                device_id: None,
+                driver: None,
+                driver_version: None,
+                properties: {
+                    let mut props = HashMap::new();
+                    props.insert("device_type".to_string(), serde_json::Value::from(storage.device_type.clone()));
+                    props.insert("size_bytes".to_string(), serde_json::Value::from(storage.size_bytes));
+                    props.insert("interface".to_string(), serde_json::to_value(&storage.interface).unwrap());
+                    props.insert("anonymized_serial".to_string(), serde_json::Value::from(storage.anonymized_serial.clone()));
+                    props
+                },
+            });
+        }
+
+        // Extract USB devices
+        for usb in &report.usb {
+            components.push(HardwareComponent {
+                component_type: "USB".to_string(),
+                vendor: usb.vendor_name.clone(),
+                model: usb.product_name.clone(),
+                device_id: Some(format!("{}:{}", usb.vendor_id, usb.product_id)),
+                driver: None,
+                driver_version: None,
+                properties: {
+                    let mut props = HashMap::new();
+                    props.insert("vendor_id".to_string(), serde_json::Value::from(usb.vendor_id.clone()));
+                    props.insert("product_id".to_string(), serde_json::Value::from(usb.product_id.clone()));
+                    props.insert("usb_version".to_string(), serde_json::to_value(&usb.usb_version).unwrap());
+                    props
+                },
+            });
+        }
+
+        // Extract audio devices
+        for audio in &report.audio {
+            components.push(HardwareComponent {
+                component_type: "Audio".to_string(),
+                vendor: Some(audio.vendor.clone()),
+                model: Some(audio.model.clone()),
+                device_id: None,
+                driver: audio.driver.clone(),
+                driver_version: None,
+                properties: {
+                    let mut props = HashMap::new();
+                    props.insert("device_type".to_string(), serde_json::Value::from(audio.device_type.clone()));
+                    props
+                },
+            });
+        }
+
+        // Extract devices from kernel support information
+        if let Some(kernel_support) = &report.kernel_support {
+            for device in &kernel_support.device_support_details {
+                // Extract vendor from device_id (format: vendor:device)
+                let (vendor_id, device_id) = if device.device_id.contains(':') {
+                    let parts: Vec<&str> = device.device_id.split(':').collect();
+                    (Some(parts[0].to_string()), Some(device.device_id.clone()))
+                } else {
+                    (None, Some(device.device_id.clone()))
+                };
+
+                components.push(HardwareComponent {
+                    component_type: "PCI Device".to_string(),
+                    vendor: vendor_id,
+                    model: Some(device.device_name.clone()),
+                    device_id,
+                    driver: if device.driver_module != "none" {
+                        Some(device.driver_module.clone())
+                    } else {
+                        None
+                    },
+                    driver_version: None,
+                    properties: {
+                        let mut props = HashMap::new();
+                        props.insert("support_status".to_string(), serde_json::Value::from(device.support_status.clone()));
+                        props.insert("since_kernel_version".to_string(), serde_json::to_value(&device.since_kernel_version).unwrap());
+                        props.insert("config_dependencies".to_string(), serde_json::to_value(&device.config_dependencies).unwrap());
+                        props.insert("notes".to_string(), serde_json::to_value(&device.notes).unwrap());
+                        props
+                    },
+                });
+            }
+        }
+
+        Ok(components)
     }
 
     /// Analyze compatibility from report and components
     fn analyze_compatibility(
         &self,
-        _report: &HardwareReport,
-        _components: &[HardwareComponent],
+        report: &HardwareReport,
+        components: &[HardwareComponent],
     ) -> Result<CompatibilityInfo> {
-        // This would analyze the hardware and determine compatibility
-        // For now, return a placeholder
+        let mut component_compatibility = HashMap::new();
+        let mut issues = Vec::new();
+        let mut workarounds = Vec::new();
+
+        // Analyze kernel support data
+        let (supported, unsupported, experimental) = if let Some(kernel_support) = &report.kernel_support {
+            for device in &kernel_support.device_support_details {
+                let working = match device.support_status.as_str() {
+                    "supported" => true,
+                    "experimental" => true,
+                    "unsupported" => false,
+                    _ => false,
+                };
+
+                let mut device_issues = Vec::new();
+                let mut device_workarounds = Vec::new();
+
+                if !working {
+                    device_issues.push(format!("No driver available for device {}", device.device_name));
+                    if let Some(notes) = &device.notes {
+                        device_workarounds.push(notes.clone());
+                    }
+                }
+
+                component_compatibility.insert(
+                    device.device_id.clone(),
+                    ComponentCompatibility {
+                        working,
+                        performance: None,
+                        issues: device_issues,
+                        workarounds: device_workarounds,
+                    },
+                );
+            }
+
+            (
+                kernel_support.supported_devices,
+                kernel_support.unsupported_devices,
+                kernel_support.experimental_devices,
+            )
+        } else {
+            (0, 0, 0)
+        };
+
+        // Collect system-wide issues and workarounds
+        if unsupported > 0 {
+            issues.push(format!("{} devices lack kernel driver support", unsupported));
+            workarounds.push("Check vendor websites for proprietary drivers or newer kernel versions".to_string());
+        }
+
+        if experimental > 0 {
+            issues.push(format!("{} devices have experimental support only", experimental));
+            workarounds.push("Monitor kernel updates and community forums for stability improvements".to_string());
+        }
+
+        // Determine overall compatibility status
+        let total_devices = supported + unsupported + experimental;
+        let working_devices = supported + experimental;
+        
+        let status = if total_devices == 0 {
+            CompatibilityStatus::Unknown
+        } else {
+            let working_percentage = (working_devices as f64 / total_devices as f64) * 100.0;
+            match working_percentage {
+                p if p >= 95.0 => CompatibilityStatus::Excellent,
+                p if p >= 80.0 => CompatibilityStatus::Good,
+                p if p >= 60.0 => CompatibilityStatus::Fair,
+                _ => CompatibilityStatus::Poor,
+            }
+        };
+
+        // Calculate confidence based on data completeness
+        let confidence = if total_devices == 0 {
+            10 // Very low confidence with no device data
+        } else if components.is_empty() {
+            40 // Moderate confidence with kernel data only
+        } else {
+            let has_cpu = report.cpu.is_some();
+            let has_gpu = !report.graphics.is_empty();
+            let has_network = !report.network.is_empty();
+            
+            let completeness_score = [has_cpu, has_gpu, has_network].iter().map(|&b| if b { 1 } else { 0 }).sum::<i32>();
+            70 + (completeness_score * 10) // 70-100 based on data completeness
+        };
+
         Ok(CompatibilityInfo {
-            status: CompatibilityStatus::Unknown,
-            components: HashMap::new(),
-            issues: Vec::new(),
-            workarounds: Vec::new(),
-            confidence: 50,
+            status,
+            components: component_compatibility,
+            issues,
+            workarounds,
+            confidence: confidence as u8,
         })
     }
 

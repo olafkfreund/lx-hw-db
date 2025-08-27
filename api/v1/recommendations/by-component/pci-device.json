@@ -1,0 +1,38 @@
+{
+  "component_type": "PCI Device",
+  "data": {
+    "budget_options": [],
+    "component_overview": {
+      "compatibility_distribution": {
+        "Poor": 31
+      },
+      "top_vendors": [
+        {
+          "count": 1,
+          "vendor": "1d6a"
+        },
+        {
+          "count": 24,
+          "vendor": "1022"
+        },
+        {
+          "count": 1,
+          "vendor": "2646"
+        },
+        {
+          "count": 4,
+          "vendor": "1002"
+        },
+        {
+          "count": 1,
+          "vendor": "1b21"
+        }
+      ],
+      "total_reports": 31
+    },
+    "performance_leaders": [],
+    "recommended_models": []
+  },
+  "generated": "2025-08-27T11:37:16.773650492+00:00",
+  "version": "1.0"
+}

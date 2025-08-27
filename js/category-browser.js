@@ -11,42 +11,60 @@ class CategoryBrowser {
         this.currentFilter = {};
         this.isInitialized = false;
         
+        // Enhanced indices from our indexer
+        this.componentIndex = null;
+        this.vendorIndex = null;
+        this.compatibilityMatrix = null;
+        
         this.categories = {
-            'cpu': {
+            'CPU': {
                 name: 'Processors',
                 icon: '🖥️',
                 description: 'CPU and processor hardware',
-                searchFields: ['cpu.vendor', 'cpu.model']
+                searchFields: ['cpu.vendor', 'cpu.model'],
+                componentType: 'CPU'
             },
-            'gpu': {
+            'GPU': {
                 name: 'Graphics Cards',
                 icon: '🎮',
                 description: 'Graphics cards and display adapters',
-                searchFields: ['graphics:vendor', 'graphics:model']
+                searchFields: ['graphics:vendor', 'graphics:model'],
+                componentType: 'GPU'
             },
-            'memory': {
+            'Memory': {
                 name: 'Memory',
                 icon: '💾',
                 description: 'RAM and memory modules',
-                searchFields: ['memory.type']
+                searchFields: ['memory.type'],
+                componentType: 'Memory'
             },
-            'storage': {
+            'Storage': {
                 name: 'Storage',
                 icon: '💿',
                 description: 'Hard drives, SSDs, and storage devices',
-                searchFields: ['storage:vendor', 'storage:model', 'storage:interface']
+                searchFields: ['storage:vendor', 'storage:model', 'storage:interface'],
+                componentType: 'Storage'
             },
-            'network': {
+            'Network': {
                 name: 'Network',
                 icon: '🌐',
                 description: 'Network cards and wireless adapters',
-                searchFields: ['network:vendor', 'network:model']
+                searchFields: ['network:vendor', 'network:model'],
+                componentType: 'Network'
             },
-            'audio': {
+            'Audio': {
                 name: 'Audio',
                 icon: '🔊',
                 description: 'Sound cards and audio devices',
-                searchFields: ['audio:vendor', 'audio:model']
+                searchFields: ['audio:vendor', 'audio:model'],
+                componentType: 'Audio'
+            },
+            'PCI Device': {
+                name: 'PCI Devices',
+                icon: '🔌',
+                description: 'PCI devices and expansion cards',
+                searchFields: ['pci.vendor', 'pci.model'],
+                componentType: 'PCI Device'
             }
         };
     }
@@ -56,6 +74,9 @@ class CategoryBrowser {
      */
     async initialize() {
         console.log('Initializing category browser...');
+        
+        // Load enhanced indices
+        await this.loadIndices();
         
         // Wait for dependencies
         document.addEventListener('searchEngineReady', (event) => {
@@ -77,8 +98,38 @@ class CategoryBrowser {
             this.databaseIndexer = window.hardwareDatabaseIndexer;
         }
 
-        if (this.searchEngine && this.databaseIndexer) {
-            this.setupCategoryBrowser();
+        this.setupCategoryBrowser();
+    }
+
+    /**
+     * Load enhanced indices for better category browsing
+     */
+    async loadIndices() {
+        try {
+            console.log('Loading category browser indices...');
+            
+            // Load component index
+            const componentResponse = await fetch('indices/by-component.json');
+            if (componentResponse.ok) {
+                this.componentIndex = await componentResponse.json();
+                console.log(`Loaded ${Object.keys(this.componentIndex).length} component types`);
+            }
+            
+            // Load vendor index
+            const vendorResponse = await fetch('indices/by-vendor.json');
+            if (vendorResponse.ok) {
+                this.vendorIndex = await vendorResponse.json();
+                console.log(`Loaded ${Object.keys(this.vendorIndex).length} vendors`);
+            }
+            
+            // Load compatibility matrix
+            const compatResponse = await fetch('indices/compatibility-matrix.json');
+            if (compatResponse.ok) {
+                this.compatibilityMatrix = await compatResponse.json();
+                console.log(`Loaded ${Object.keys(this.compatibilityMatrix).length} hardware/kernel combinations`);
+            }
+        } catch (error) {
+            console.warn('Could not load some category browser indices:', error);
         }
     }
 
@@ -140,13 +191,30 @@ class CategoryBrowser {
     }
 
     /**
-     * Render category cards
+     * Render category cards using enhanced indices
      */
     renderCategoryCards() {
-        const stats = this.databaseIndexer ? this.databaseIndexer.statistics : null;
-        
         return Object.entries(this.categories).map(([key, category]) => {
-            const count = stats?.categories?.[key] || 0;
+            // Get count from component index if available
+            let count = 0;
+            let compatibilityInfo = '';
+            
+            if (this.componentIndex && this.componentIndex[key]) {
+                const componentData = this.componentIndex[key];
+                count = componentData.total_reports;
+                
+                // Add compatibility distribution info
+                const compatDistribution = componentData.compatibility_distribution;
+                if (compatDistribution) {
+                    const goodCount = (compatDistribution.Excellent || 0) + (compatDistribution.Good || 0);
+                    const totalCount = Object.values(compatDistribution).reduce((sum, cnt) => sum + cnt, 0);
+                    if (totalCount > 0) {
+                        const percentage = Math.round((goodCount / totalCount) * 100);
+                        compatibilityInfo = `${percentage}% compatible`;
+                    }
+                }
+            }
+            
             const isActive = this.currentCategory === key;
             
             return `
@@ -159,7 +227,10 @@ class CategoryBrowser {
                     <div class="category-info">
                         <h4 class="category-name">${category.name}</h4>
                         <p class="category-description">${category.description}</p>
-                        <span class="category-count">${count} reports</span>
+                        <div class="category-stats">
+                            <span class="category-count">${count} reports</span>
+                            ${compatibilityInfo ? `<span class="category-compatibility">${compatibilityInfo}</span>` : ''}
+                        </div>
                     </div>
                     <div class="category-arrow">→</div>
                 </div>
@@ -204,11 +275,9 @@ class CategoryBrowser {
     }
 
     /**
-     * Select a category and show filtered results
+     * Select a category and show filtered results using enhanced indices
      */
     async selectCategory(categoryKey) {
-        if (!this.databaseIndexer) return;
-
         this.currentCategory = categoryKey;
         const category = this.categories[categoryKey];
         
@@ -218,8 +287,18 @@ class CategoryBrowser {
             card.setAttribute('aria-pressed', card.dataset.category === categoryKey);
         });
 
-        // Query reports for this category
-        const results = this.databaseIndexer.query({ category: categoryKey });
+        // Get category data from component index
+        let results = [];
+        if (this.componentIndex && this.componentIndex[categoryKey]) {
+            const componentData = this.componentIndex[categoryKey];
+            
+            // For now, simulate results from component data
+            // In a full implementation, we'd map these back to full hardware reports
+            results = this.getReportsForCategory(categoryKey, componentData);
+        } else if (this.searchEngine) {
+            // Fallback to search engine filtering
+            results = await this.searchEngine.search('', { category: categoryKey.toLowerCase() });
+        }
         
         // Show category results
         this.displayCategoryResults(category, results);
@@ -229,6 +308,56 @@ class CategoryBrowser {
         if (resultsContainer) {
             resultsContainer.scrollIntoView({ behavior: 'smooth' });
         }
+    }
+
+    /**
+     * Get hardware reports for a specific category from indices
+     */
+    getReportsForCategory(categoryKey, componentData) {
+        const results = [];
+        
+        // For each vendor in this category, create a summary result
+        Object.entries(componentData.vendors || {}).forEach(([vendorId, count]) => {
+            const vendorData = this.vendorIndex?.[vendorId];
+            if (vendorData) {
+                // Get popular models for this vendor/category
+                const models = componentData.popular_models?.filter(model => 
+                    model.vendor === vendorId
+                ).slice(0, 5) || [];
+                
+                results.push({
+                    id: `${categoryKey}-${vendorId}`,
+                    categoryType: categoryKey,
+                    vendor: vendorId,
+                    vendorData: vendorData,
+                    models: models,
+                    reportCount: count,
+                    compatibility: {
+                        overall_status: this.inferCompatibilityFromScore(models[0]?.avg_compatibility || 50)
+                    },
+                    system: {
+                        distribution: 'Various',
+                        kernel_version: 'Multiple',
+                        architecture: 'x86_64'
+                    },
+                    metadata: {
+                        generated_at: vendorData.last_updated
+                    }
+                });
+            }
+        });
+        
+        return results;
+    }
+
+    /**
+     * Infer compatibility status from numeric score
+     */
+    inferCompatibilityFromScore(score) {
+        if (score >= 90) return 'excellent';
+        if (score >= 75) return 'good';
+        if (score >= 50) return 'partial';
+        return 'poor';
     }
 
     /**
@@ -641,10 +770,23 @@ class CategoryBrowser {
                 line-height: 1.4;
             }
 
+            .category-stats {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
             .category-count {
                 color: var(--fg4, #a89984);
                 font-size: 0.8rem;
                 font-family: monospace;
+            }
+
+            .category-compatibility {
+                color: var(--primary, #fabd2f);
+                font-size: 0.7rem;
+                font-family: monospace;
+                font-weight: bold;
             }
 
             .category-arrow {

@@ -1,0 +1,173 @@
+name: Hardware Compatibility Issue
+description: Report a hardware compatibility problem or request support for specific hardware
+title: "[Hardware] "
+labels: ["hardware", "compatibility"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a hardware compatibility issue! This helps improve Linux hardware support for everyone.
+
+  - type: dropdown
+    id: hardware-category
+    attributes:
+      label: Hardware Category
+      description: What type of hardware are you having issues with?
+      options:
+        - CPU / Processor
+        - GPU / Graphics Card
+        - Motherboard / Chipset
+        - Network Controller
+        - Storage Device
+        - Audio Device
+        - USB Device
+        - Other Hardware
+    validations:
+      required: true
+
+  - type: input
+    id: hardware-model
+    attributes:
+      label: Hardware Model
+      description: What is the specific model of hardware?
+      placeholder: e.g., NVIDIA GeForce RTX 4090, Intel Core i7-13700K
+    validations:
+      required: true
+
+  - type: input
+    id: hardware-id
+    attributes:
+      label: Hardware ID
+      description: PCI ID (vendor:device) or USB ID if known
+      placeholder: e.g., 10de:2684, 8086:a0c1
+    validations:
+      required: false
+
+  - type: dropdown
+    id: compatibility-status
+    attributes:
+      label: Current Compatibility Status
+      description: How well does this hardware work with Linux?
+      options:
+        - Not working at all
+        - Partially working (basic functionality only)
+        - Working with issues (crashes, poor performance)
+        - Working with manual configuration required
+        - Working perfectly
+    validations:
+      required: true
+
+  - type: input
+    id: linux-distro
+    attributes:
+      label: Linux Distribution
+      description: What Linux distribution are you using?
+      placeholder: e.g., Ubuntu 22.04, Fedora 38, Arch Linux
+    validations:
+      required: true
+
+  - type: input
+    id: kernel-version
+    attributes:
+      label: Kernel Version
+      description: What kernel version are you running?
+      placeholder: e.g., 6.2.0-26-generic, 6.4.7-arch1-1
+    validations:
+      required: true
+
+  - type: input
+    id: driver-version
+    attributes:
+      label: Driver Information
+      description: What driver are you using (if any)?
+      placeholder: e.g., nvidia-driver-535, mesa 23.1.4, built-in kernel driver
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: Problem Description
+      description: Describe the compatibility issue in detail
+      placeholder: |
+        - What exactly is not working?
+        - What error messages do you see?
+        - What have you tried to fix it?
+        - When did this problem start?
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration-attempted
+    attributes:
+      label: Configuration Attempted
+      description: What configuration changes or fixes have you tried?
+      placeholder: |
+        - Kernel parameters added
+        - Driver versions tested
+        - Configuration files modified
+        - Commands run
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs-output
+    attributes:
+      label: Relevant Logs or Output
+      description: Please paste any relevant log output, error messages, or command output
+      render: shell
+    validations:
+      required: false
+
+  - type: dropdown
+    id: help-wanted
+    attributes:
+      label: Type of Help Needed
+      description: What kind of assistance are you looking for?
+      options:
+        - Configuration help to make this hardware work
+        - Documentation of working configuration
+        - Request for someone to test this hardware
+        - Reporting broken hardware for awareness
+        - Driver development assistance needed
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: search-existing
+    attributes:
+      label: Due Diligence
+      description: Before submitting, please confirm you have:
+      options:
+        - label: Searched existing issues for this hardware
+          required: true
+        - label: Checked the hardware database for existing reports
+          required: true
+        - label: Tried basic troubleshooting steps
+          required: true
+        - label: Removed any personal information from logs/output
+          required: true
+
+  - type: checkboxes
+    id: contribution-willingness
+    attributes:
+      label: Contribution Interest
+      description: Are you willing to help improve this hardware's support?
+      options:
+        - label: I can test proposed solutions
+        - label: I can provide additional hardware information
+        - label: I can help document working configurations
+        - label: I have technical expertise to help debug
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: |
+        - Similar hardware that does work
+        - Workarounds you've discovered
+        - Links to relevant documentation
+        - Hardware vendor information
