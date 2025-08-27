@@ -143,18 +143,52 @@ jobs:
           # Create minimal templates directory if it doesn't exist
           mkdir -p templates
 
+          # Backup existing custom files before generation
+          if [ -f "web/index.html" ]; then
+            cp web/index.html web/index.html.backup
+            echo "Backed up existing index.html"
+          fi
+          
+          if [ -d "web/js" ]; then
+            cp -r web/js web/js.backup
+            echo "Backed up existing JavaScript files"
+          fi
+          
+          if [ -d "web/css" ]; then
+            cp -r web/css web/css.backup
+            echo "Backed up existing CSS files"
+          fi
+
           ./target/release/lx-hw-indexer generate-site \
             --output web \
             --template-dir templates \
             --indices indices \
             --verbose
 
+          # Restore custom files after generation
+          if [ -f "web/index.html.backup" ]; then
+            mv web/index.html.backup web/index.html
+            echo "Restored custom index.html"
+          fi
+          
+          if [ -d "web/js.backup" ]; then
+            rm -rf web/js
+            mv web/js.backup web/js
+            echo "Restored custom JavaScript files"
+          fi
+          
+          if [ -d "web/css.backup" ]; then
+            rm -rf web/css
+            mv web/css.backup web/css
+            echo "Restored custom CSS files"
+          fi
+
           # Copy generated indices and API to web directory for serving
           cp -r indices web/
           cp -r api web/
           cp -r statistics web/
 
-          echo "Static website generation completed"
+          echo "Static website generation completed with custom files preserved"
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
