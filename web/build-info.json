@@ -1,8 +1,8 @@
 {
-  "build_time": "2025-08-27T07:23:37Z",
-  "commit_sha": "d72926d05d1dff08a4551c34a6817d110dee73db",
+  "build_time": "2025-08-27T07:33:08Z",
+  "commit_sha": "cbdc21f228c7ecf7fd6c90fd6267a35b721d5adb",
   "commit_ref": "refs/heads/main",
-  "workflow_run": "36",
+  "workflow_run": "38",
   "report_count": 1,
   "indices_generated": 6,
   "api_endpoints": 12
