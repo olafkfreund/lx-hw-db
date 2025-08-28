@@ -707,7 +707,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger package repository updates
-        if: '!github.event.inputs.prerelease && !contains(needs.prepare-release.outputs.version, ''-'')'
+        if: "!github.event.inputs.prerelease && !contains(needs.prepare-release.outputs.version, '-')"
         run: |
           echo "Release ${{ needs.prepare-release.outputs.version }} created successfully!"
           echo "Consider updating downstream package repositories:"

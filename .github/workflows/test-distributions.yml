@@ -195,7 +195,7 @@ jobs:
           context: .
           target: ${{ matrix.target }}
           platforms: ${{ matrix.platform }}
-          tags: test:${{ matrix.target }}-${{ strategy.job-index }}
+          tags: test:${{ matrix.target }}-${{ github.run_id }}
           load: true
           cache-from: type=gha
 
@@ -203,11 +203,11 @@ jobs:
         if: matrix.target == 'cli' && matrix.platform == 'linux/amd64'
         run: |
           echo "Testing CLI functionality..."
-          docker run --rm test:${{ matrix.target }}-${{ strategy.job-index }} --version
-          docker run --rm test:${{ matrix.target }}-${{ strategy.job-index }} --help
+          docker run --rm test:${{ matrix.target }}-${{ github.run_id }} --version
+          docker run --rm test:${{ matrix.target }}-${{ github.run_id }} --help
 
           # Test hardware detection help (cannot detect hardware in CI)
-          docker run --rm test:${{ matrix.target }}-${{ strategy.job-index }} detect --help
+          docker run --rm test:${{ matrix.target }}-${{ github.run_id }} detect --help
 
           echo "CLI tests passed!"
 
@@ -217,7 +217,7 @@ jobs:
           echo "Testing Web interface..."
 
           # Start container in background
-          docker run -d --name test-web -p 8080:8000 test:${{ matrix.target }}-${{ strategy.job-index }}
+          docker run -d --name test-web -p 8080:8000 test:${{ matrix.target }}-${{ github.run_id }}
 
           # Wait for service to start
           sleep 15

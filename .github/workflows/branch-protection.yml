@@ -365,17 +365,13 @@ jobs:
               recommendation = 'Perfect size for quick review!';
             } else if (additions + deletions < 500) {
               sizeCategory = '🟡 Medium';
-              recommendation = \
-                'Good size, should be reviewable in reasonable time.';
+              recommendation = 'Good size, should be reviewable in reasonable time.';
             } else if (additions + deletions < 1000) {
               sizeCategory = '🟠 Large';
-              recommendation = \
-                'Consider breaking this into smaller PRs for easier review.';
+              recommendation = 'Consider breaking this into smaller PRs for easier review.';
             } else {
               sizeCategory = '🔴 Very Large';
-              recommendation = \
-                'This PR is quite large. Please consider splitting it into' +
-                ' multiple smaller PRs.';
+              recommendation = 'This PR is quite large. Please consider splitting it into multiple smaller PRs.';
             }
 
             const comment = `## 📊 Pull Request Size Analysis
@@ -391,8 +387,7 @@ jobs:
             **Recommendation:** ${recommendation}
 
             ---
-            *Smaller PRs are easier to review and less likely to* \
-            *introduce bugs.*`;
+            *Smaller PRs are easier to review and less likely to introduce bugs.*`;
 
             // Only comment if PR is large
             if (additions + deletions >= 500) {

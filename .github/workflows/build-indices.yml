@@ -78,7 +78,7 @@ jobs:
             while read file; do
             echo "Validating: $file"
             if ! jq empty "$file" 2>/dev/null; then
-              echo "Error Invalid JSON in $file"
+              echo "Error: Invalid JSON in $file"
               exit 1
             fi
           done
@@ -103,6 +103,9 @@ jobs:
 
           MIN_REPORTS="${{ github.event.inputs.min_reports || '1' }}"
 
+          # Ensure output directories exist
+          mkdir -p indices api statistics
+          
           ./target/release/lx-hw-indexer generate \
             --input hardware-reports \
             --output indices \
@@ -260,7 +263,7 @@ jobs:
             echo "ℹ️ No changes to commit"
           else
             # Create commit with build info
-            git commit -m "Automated Update hardware compatibility indices
+            git commit -m "Update hardware compatibility indices
 
             - Build: ${{ github.run_number }}
             - Commit: ${{ github.sha }}

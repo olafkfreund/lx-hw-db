@@ -41,7 +41,7 @@ jobs:
     needs: generate-sources
 
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-45
+      image: bilelmoussaoui/flatpak-github-actions:gnome-46
       options: --privileged
 
     steps:
@@ -54,7 +54,7 @@ jobs:
           path: packaging/flatpak/
 
       - name: Build Flatpak
-        uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6
+        uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6.3
         with:
           bundle: lx-hw-db.flatpak
           manifest-path: packaging/flatpak/org.lxhwdb.LxHwDb.yml
@@ -84,7 +84,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y flatpak
           sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          sudo flatpak install -y flathub org.gnome.Platform//45
+          sudo flatpak install -y flathub org.gnome.Platform//46
 
       - name: Install and test Flatpak
         run: |

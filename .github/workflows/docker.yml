@@ -70,15 +70,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BUILDTIME=${{ 
-              fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] 
-            }}
-            VERSION=${{ 
-              fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] 
-            }}
-            REVISION=${{ 
-              fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] 
-            }}
+            BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
 
   test-images:
     runs-on: ubuntu-latest
@@ -175,22 +169,15 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ 
-              steps.version.outputs.version 
-            }}-cli
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-cli
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-cli
           labels: |
             org.opencontainers.image.title=Linux Hardware Database CLI
-            org.opencontainers.image.description=Privacy-first Linux \
-              hardware compatibility database CLI
-            org.opencontainers.image.version=${{ 
-              steps.version.outputs.version 
-            }}
+            org.opencontainers.image.description=Privacy-first Linux hardware compatibility database CLI
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.source=${{ github.repositoryUrl }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ 
-              github.event.head_commit.timestamp 
-            }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -202,21 +189,14 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ 
-              steps.version.outputs.version 
-            }}-web
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-web
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-web
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ 
-              steps.version.outputs.version 
-            }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: |
             org.opencontainers.image.title=Linux Hardware Database Web Interface
-            org.opencontainers.image.description=Privacy-first Linux \
-              hardware compatibility database with web interface
-            org.opencontainers.image.version=${{ 
-              steps.version.outputs.version 
-            }}
+            org.opencontainers.image.description=Privacy-first Linux hardware compatibility database with web interface
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.source=${{ github.repositoryUrl }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.created=${{ 
@@ -233,18 +213,12 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ 
-              steps.version.outputs.version 
-            }}-dev
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-dev
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-dev
           labels: |
-            org.opencontainers.image.title=Linux Hardware Database \
-              Development Environment
-            org.opencontainers.image.description=Full development \
-              environment for Linux Hardware Database
-            org.opencontainers.image.version=${{ 
-              steps.version.outputs.version 
-            }}
+            org.opencontainers.image.title=Linux Hardware Database Development Environment
+            org.opencontainers.image.description=Full development environment for Linux Hardware Database
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.source=${{ github.repositoryUrl }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.created=${{ 
