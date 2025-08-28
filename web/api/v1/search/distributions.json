@@ -7,29 +7,29 @@
       "distribution": "NixOS 25.11 (Xantusia)",
       "top_vendors": [
         {
-          "compatibility": 32.8125,
-          "vendor": "1002"
+          "compatibility": 17.5,
+          "vendor": "1b21"
         },
         {
           "compatibility": 17.5,
           "vendor": "1d6a"
         },
         {
-          "compatibility": 34.99999791383743,
-          "vendor": "1022"
-        },
-        {
-          "compatibility": 17.5,
-          "vendor": "1b21"
+          "compatibility": 32.8125,
+          "vendor": "1002"
         },
         {
           "compatibility": 17.5,
           "vendor": "2646"
+        },
+        {
+          "compatibility": 34.99999791383743,
+          "vendor": "1022"
         }
       ],
       "total_reports": 1
     }
   ],
-  "generated": "2025-08-28T07:45:15.895015791+00:00",
+  "generated": "2025-08-28T07:49:49.296510197+00:00",
   "version": "1.0"
 }
