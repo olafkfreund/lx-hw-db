@@ -1,29 +1,16 @@
 {
-  "1d6a": {
+  "2646": {
     "total_reports": 1,
     "components": {
       "PCI Device": [
-        "Ethernet interface"
+        "NVMe device"
       ]
     },
     "recent_reports": [
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:12:47.510017819Z"
-  },
-  "1b21": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Unknown Device 1b21:2142"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:12:47.510015144Z"
+    "last_updated": "2025-08-28T10:20:12.845475193Z"
   },
   "1022": {
     "total_reports": 24,
@@ -59,7 +46,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:12:47.510013251Z"
+    "last_updated": "2025-08-28T10:20:12.845460957Z"
   },
   "1002": {
     "total_reports": 4,
@@ -75,19 +62,32 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:12:47.509955132Z"
+    "last_updated": "2025-08-28T10:20:12.845365128Z"
   },
-  "2646": {
+  "1b21": {
     "total_reports": 1,
     "components": {
       "PCI Device": [
-        "NVMe device"
+        "Unknown Device 1b21:2142"
       ]
     },
     "recent_reports": [
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:12:47.510020054Z"
+    "last_updated": "2025-08-28T10:20:12.845465245Z"
+  },
+  "1d6a": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Ethernet interface"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T10:20:12.845470414Z"
   }
 }

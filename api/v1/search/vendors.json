@@ -6,15 +6,7 @@
         "PCI Device"
       ],
       "total_reports": 1,
-      "vendor": "1d6a"
-    },
-    {
-      "compatibility_score": 35.0,
-      "component_types": [
-        "PCI Device"
-      ],
-      "total_reports": 1,
-      "vendor": "1b21"
+      "vendor": "2646"
     },
     {
       "compatibility_score": 35.0,
@@ -38,9 +30,17 @@
         "PCI Device"
       ],
       "total_reports": 1,
-      "vendor": "2646"
+      "vendor": "1b21"
+    },
+    {
+      "compatibility_score": 35.0,
+      "component_types": [
+        "PCI Device"
+      ],
+      "total_reports": 1,
+      "vendor": "1d6a"
     }
   ],
-  "generated": "2025-08-28T10:12:47.510727329+00:00",
+  "generated": "2025-08-28T10:20:12.846250530+00:00",
   "version": "1.0"
 }
