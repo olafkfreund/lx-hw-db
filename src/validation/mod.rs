@@ -11,8 +11,8 @@
 //!
 //! Basic usage:
 //! ```rust,no_run
-//! use lx_hw_db::validation::{validate_report, ValidationConfig, HardwareReportValidator};
-//! use lx_hw_db::hardware::HardwareReport;
+//! use lx_hw_detect::validation::{validate_report, ValidationConfig, HardwareReportValidator};
+//! use lx_hw_detect::hardware::HardwareReport;
 //!
 //! # fn example(report: &HardwareReport) {
 //! // Quick validation with defaults
