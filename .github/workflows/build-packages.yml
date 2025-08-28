@@ -287,19 +287,35 @@ jobs:
 
     - name: Build RPM package
       run: |
-        # Create RPM build structure
-        mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+        # Create RPM build structure using pre-built binaries (skip source compilation)
         mkdir -p rpm-build/usr/bin
         mkdir -p rpm-build/usr/share/applications
+        mkdir -p rpm-build/usr/share/man/man1
         mkdir -p rpm-build/etc/lx-hw-db
+        mkdir -p rpm-build/usr/lib/systemd/system
 
-        # Copy binaries
+        # Copy pre-built binaries
         cp dist/lx-hw-detect rpm-build/usr/bin/
         cp dist/lx-hw-indexer rpm-build/usr/bin/
         if [ -f "dist/lx-hw-detect-gtk" ]; then
           cp dist/lx-hw-detect-gtk rpm-build/usr/bin/
         fi
+        
+        # Copy configuration and documentation
         cp config/default.toml rpm-build/etc/lx-hw-db/
+        
+        # Copy man pages if they exist
+        if [ -f "docs/man/lx-hw-detect.1" ]; then
+          cp docs/man/lx-hw-detect.1 rpm-build/usr/share/man/man1/
+        fi
+        if [ -f "docs/man/lx-hw-indexer.1" ]; then
+          cp docs/man/lx-hw-indexer.1 rpm-build/usr/share/man/man1/
+        fi
+        
+        # Copy systemd service if it exists
+        if [ -f "packaging/systemd/lx-hw-db-server.service" ]; then
+          cp packaging/systemd/lx-hw-db-server.service rpm-build/usr/lib/systemd/system/
+        fi
 
         # Create desktop file
         cat > rpm-build/usr/share/applications/lx-hw-detect.desktop << 'EOF'
@@ -315,17 +331,28 @@ jobs:
         Categories=System;HardwareSettings;
         EOF
 
-        # Create tarball
-        tar -czf ~/rpmbuild/SOURCES/lx-hw-db-0.1.0.tar.gz -C rpm-build .
-
-        # Copy spec file
-        cp packaging/fedora/lx-hw-db.spec ~/rpmbuild/SPECS/
-
-        # Build RPM
-        rpmbuild -ba ~/rpmbuild/SPECS/lx-hw-db.spec --target ${{ matrix.arch }}
-
-        # Copy built RPM
-        cp ~/rpmbuild/RPMS/${{ matrix.arch }}/lx-hw-db-0.1.0-1.${{ matrix.arch }}.rpm .
+        # Create RPM using fpm (simpler than rpmbuild for binary packages)
+        # First install fpm
+        sudo apt-get install -y ruby-dev build-essential
+        sudo gem install fpm
+        
+        # Build RPM directly from the staged files
+        fpm -s dir -t rpm \
+          -n lx-hw-db \
+          -v 0.1.0 \
+          -a ${{ matrix.arch }} \
+          -d lshw \
+          -d dmidecode \
+          -d pciutils \
+          -d usbutils \
+          -d util-linux \
+          --description "Privacy-first Linux hardware compatibility database tool" \
+          --url "https://github.com/lx-hw-db/lx-hw-db" \
+          --license AGPL-3.0-or-later \
+          --maintainer "Linux Hardware Database Project <maintainers@lx-hw-db.org>" \
+          --config-files /etc/lx-hw-db/config.toml \
+          --rpm-summary "Privacy-first Linux hardware compatibility database tool" \
+          -C rpm-build .
 
     - name: Upload RPM package
       uses: actions/upload-artifact@v4
@@ -441,8 +468,13 @@ jobs:
         tar xzf lx-hw-db-${{ matrix.target }}.tar.gz
         chmod +x *
 
-    - name: Install AppImage tools
+    - name: Install AppImage tools and FUSE
       run: |
+        # Install FUSE library required for AppImage creation
+        sudo apt-get update
+        sudo apt-get install -y fuse libfuse2
+        
+        # Download AppImage tool
         wget https://github.com/AppImage/AppImageKit/releases/download/continuous/${{ matrix.appimage_tool }}
         chmod +x ${{ matrix.appimage_tool }}
 
