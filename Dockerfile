@@ -38,6 +38,7 @@ COPY src/ src/
 COPY config/ config/
 COPY docs/ docs/
 COPY completions/ completions/
+COPY web/ web/
 
 # Build the actual applications
 RUN cargo build --release --bin lx-hw-detect
