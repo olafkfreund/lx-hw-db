@@ -5,7 +5,19 @@
       "popular_models": [
         {
           "avg_compatibility": 17.5,
-          "model": "Unknown Device 1022:1481",
+          "model": "NVMe device",
+          "report_count": 1,
+          "vendor": "2646"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Unknown Device 1022:1486",
+          "report_count": 1,
+          "vendor": "1022"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Device 1022:1497",
           "report_count": 1,
           "vendor": "1022"
         },
@@ -17,25 +29,31 @@
         },
         {
           "avg_compatibility": 17.5,
-          "model": "Device 1022:1491",
+          "model": "Device 1022:1484",
           "report_count": 1,
           "vendor": "1022"
         },
         {
           "avg_compatibility": 17.5,
-          "model": "Device 1022:1494",
+          "model": "Device 1022:57ad",
           "report_count": 1,
           "vendor": "1022"
         },
         {
           "avg_compatibility": 17.5,
-          "model": "Ethernet interface",
+          "model": "Device 1022:1496",
           "report_count": 1,
-          "vendor": "1d6a"
+          "vendor": "1022"
         },
         {
           "avg_compatibility": 17.5,
-          "model": "Device 1022:1490",
+          "model": "Device 1002:1478",
+          "report_count": 1,
+          "vendor": "1002"
+        },
+        {
+          "avg_compatibility": 17.5,
+          "model": "Unknown Device 1022:148c",
           "report_count": 1,
           "vendor": "1022"
         },
@@ -44,51 +62,33 @@
           "model": "Device 1022:57a4",
           "report_count": 1,
           "vendor": "1022"
-        },
-        {
-          "avg_compatibility": 17.5,
-          "model": "Device 1022:1483",
-          "report_count": 1,
-          "vendor": "1022"
-        },
-        {
-          "avg_compatibility": 17.5,
-          "model": "NVMe device",
-          "report_count": 1,
-          "vendor": "2646"
-        },
-        {
-          "avg_compatibility": 17.5,
-          "model": "Device 1022:1480",
-          "report_count": 1,
-          "vendor": "1022"
         }
       ],
       "top_vendors": [
         {
+          "count": 4,
+          "vendor": "1002"
+        },
+        {
           "count": 1,
           "vendor": "2646"
         },
         {
-          "count": 1,
-          "vendor": "1d6a"
+          "count": 24,
+          "vendor": "1022"
         },
         {
           "count": 1,
           "vendor": "1b21"
         },
         {
-          "count": 4,
-          "vendor": "1002"
-        },
-        {
-          "count": 24,
-          "vendor": "1022"
+          "count": 1,
+          "vendor": "1d6a"
         }
       ],
       "total_reports": 31
     }
   ],
-  "generated": "2025-08-28T07:56:51.486138195+00:00",
+  "generated": "2025-08-28T08:39:24.890655064+00:00",
   "version": "1.0"
 }
