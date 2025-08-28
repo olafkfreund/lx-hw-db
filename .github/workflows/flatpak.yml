@@ -56,16 +56,15 @@ jobs:
       - name: Build Flatpak
         uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6.3
         with:
-          bundle: lx-hw-db.flatpak
+          bundle: lxhwdb.flatpak
           manifest-path: packaging/flatpak/org.lxhwdb.LxHwDb.yml
           cache-key: flatpak-builder-${{ github.sha }}
-          upload-artifact: false
 
       - name: Upload Flatpak bundle
         uses: actions/upload-artifact@v4
         with:
           name: flatpak-bundle
-          path: lx-hw-db.flatpak
+          path: lxhwdb.flatpak
 
   test-flatpak:
     name: Test Flatpak Bundle
@@ -90,7 +89,7 @@ jobs:
       - name: Install and test Flatpak
         run: |
           # Install the built Flatpak
-          sudo flatpak install --user --bundle lx-hw-db.flatpak -y
+          sudo flatpak install --user --bundle lxhwdb.flatpak -y
 
           # Test CLI functionality
           flatpak run --command=lx-hw-detect org.lxhwdb.LxHwDb --version
@@ -136,6 +135,6 @@ jobs:
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
         with:
-          files: lx-hw-db.flatpak
+          files: lxhwdb.flatpak
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

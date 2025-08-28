@@ -350,7 +350,7 @@ jobs:
           --url "https://github.com/lx-hw-db/lx-hw-db" \
           --license AGPL-3.0-or-later \
           --maintainer "Linux Hardware Database Project <maintainers@lx-hw-db.org>" \
-          --config-files /etc/lx-hw-db/config.toml \
+          --config-files etc/lx-hw-db/config.toml \
           --rpm-summary "Privacy-first Linux hardware compatibility database tool" \
           -C rpm-build .
 
