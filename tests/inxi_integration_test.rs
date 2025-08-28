@@ -1,5 +1,7 @@
 //! Integration test for inxi with real system execution
 
+#![allow(clippy::excessive_nesting)]
+
 use lx_hw_detect::detectors::inxi::InxiDetector;
 use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 

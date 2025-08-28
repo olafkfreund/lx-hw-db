@@ -1,5 +1,7 @@
 //! Phase 2 integration test verifying lshw + dmidecode detectors work together
 
+#![allow(clippy::excessive_nesting)]
+
 use lx_hw_detect::detectors::{DetectionData, DetectorRegistry};
 
 #[tokio::test]

@@ -1,5 +1,7 @@
 //! Integration test for lshw with real system execution
 
+#![allow(clippy::excessive_nesting)]
+
 use lx_hw_detect::detectors::lshw::LshwDetector;
 use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 
