@@ -61,7 +61,7 @@ coverage.xml
 *.py,cover
 
 # Rust cache
-Cargo.lock
+# Cargo.lock is needed for reproducible Docker builds
 /.cargo
 /target
 

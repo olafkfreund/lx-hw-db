@@ -21,7 +21,7 @@ jobs:
 
       - name: Install flatpak-cargo-generator
         run: |
-          pip3 install --user aiohttp toml
+          pip3 install --user aiohttp toml tomlkit
           git clone https://github.com/flatpak/flatpak-builder-tools.git
 
       - name: Generate cargo sources
