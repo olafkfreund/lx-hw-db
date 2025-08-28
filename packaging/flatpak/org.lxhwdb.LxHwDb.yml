@@ -99,12 +99,6 @@ modules:
         url: https://github.com/gregkh/usbutils/archive/v015.tar.gz
         sha256: 659669e08cbc3961bc085c33f328f950a9570400519c3213b6908f3cc5f44227
         
-  # Rust toolchain
-  - name: rust
-    buildsystem: simple
-    build-commands:
-      - /usr/lib/sdk/rust-stable/install.sh
-    
   # Main application
   - name: lx-hw-db
     buildsystem: simple
