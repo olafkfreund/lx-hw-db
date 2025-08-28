@@ -1,16 +1,19 @@
 {
-  "1d6a": {
-    "total_reports": 1,
+  "1002": {
+    "total_reports": 4,
     "components": {
       "PCI Device": [
-        "Ethernet interface"
+        "Device 1002:1478",
+        "Device 1002:1479",
+        "Device 1002:744c",
+        "HDMI"
       ]
     },
     "recent_reports": [
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:34:25.612476005Z"
+    "last_updated": "2025-08-28T07:45:15.894039439Z"
   },
   "2646": {
     "total_reports": 1,
@@ -23,7 +26,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:34:25.612479792Z"
+    "last_updated": "2025-08-28T07:45:15.894093991Z"
   },
   "1022": {
     "total_reports": 24,
@@ -59,7 +62,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:34:25.612468431Z"
+    "last_updated": "2025-08-28T07:45:15.894087809Z"
   },
   "1b21": {
     "total_reports": 1,
@@ -72,22 +75,19 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:34:25.612471567Z"
+    "last_updated": "2025-08-28T07:45:15.894089562Z"
   },
-  "1002": {
-    "total_reports": 4,
+  "1d6a": {
+    "total_reports": 1,
     "components": {
       "PCI Device": [
-        "Device 1002:1478",
-        "Device 1002:1479",
-        "Device 1002:744c",
-        "HDMI"
+        "Ethernet interface"
       ]
     },
     "recent_reports": [
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:34:25.612394312Z"
+    "last_updated": "2025-08-28T07:45:15.894092067Z"
   }
 }
