@@ -1,6 +1,6 @@
 app-id: org.lxhwdb.LxHwDb
 runtime: org.gnome.Platform
-runtime-version: '45'
+runtime-version: '47'
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
@@ -62,7 +62,7 @@ modules:
     buildsystem: simple
     build-commands:
       - make PREFIX=/app -j${FLATPAK_BUILDER_N_JOBS}
-      - make install PREFIX=/app
+      - make install DESTDIR=/app PREFIX=/usr
     sources:
       - type: archive
         url: https://download.savannah.gnu.org/releases/dmidecode/dmidecode-3.5.tar.xz
