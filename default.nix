@@ -31,6 +31,8 @@ rustPlatform.buildRustPackage rec {
 
   cargoHash = "sha256-bblfiASuPp9PisaIj5wq6EI0HzybELVDEs7MLIAXmEk=";
 
+  buildFeatures = [ "gtk-gui" ];
+
   nativeBuildInputs = [
     pkg-config
     installShellFiles
