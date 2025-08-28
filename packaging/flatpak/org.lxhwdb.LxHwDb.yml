@@ -55,8 +55,8 @@ modules:
       - make install PREFIX=/app
     sources:
       - type: archive
-        url: https://github.com/lyonel/lshw/archive/B.02.19.2.tar.gz
-        sha256: 4fc0a7d8a0d9f7b0a80b6c7d06d3c7c5f5a59e8a5e5e1b5a2a0a2a0a2a0a2a0a
+        url: http://www.ezix.org/software/files/lshw-B.02.19.2.tar.gz
+        sha256: 9bb347ac87142339a366a1759ac845e3dbb337ec000aa1b99b50ac6758a80f80
         
   - name: dmidecode
     buildsystem: simple
@@ -66,7 +66,7 @@ modules:
     sources:
       - type: archive
         url: https://download.savannah.gnu.org/releases/dmidecode/dmidecode-3.5.tar.xz
-        sha256: 79d76735ee8e25196e2a722964cf9683f5a09581503537f7b69c7f4e4b2c8c4e
+        sha256: 79d76735ee8e25196e2a722964cf9683f5a09581503537884b256b01389cc073
         
   - name: pciutils
     buildsystem: simple
@@ -76,7 +76,7 @@ modules:
     sources:
       - type: archive
         url: https://mj.ucw.cz/download/linux/pci/pciutils-3.10.0.tar.gz
-        sha256: 985e8f5e80f5b31a12dda3e7b9e7fe44e7a509c0e5a5a1b5e5a5a5a5a5a5a5a5
+        sha256: 7deabe38ae5fa88a96a8c4947975cf31c591506db546e9665a10dddbf350ead0
         
   - name: usbutils
     buildsystem: autotools
@@ -86,7 +86,7 @@ modules:
     sources:
       - type: archive
         url: https://github.com/gregkh/usbutils/archive/v015.tar.gz
-        sha256: a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5
+        sha256: 659669e08cbc3961bc085c33f328f950a9570400519c3213b6908f3cc5f44227
         
   # Rust toolchain
   - name: rust
