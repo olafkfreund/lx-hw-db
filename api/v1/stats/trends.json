@@ -2,7 +2,7 @@
   "data": {
     "growth_stats": [
       {
-        "date": "2025-08-28T21:34:37.422841526Z",
+        "date": "2025-08-28T21:41:08.941672780Z",
         "new_reports": 1,
         "total_reports": 1
       }
@@ -34,13 +34,13 @@
         "compatibility_score": 35.0,
         "component_diversity": 1,
         "total_reports": 1,
-        "vendor": "1d6a"
+        "vendor": "1b21"
       },
       {
         "compatibility_score": 35.0,
         "component_diversity": 1,
         "total_reports": 1,
-        "vendor": "1b21"
+        "vendor": "1d6a"
       },
       {
         "compatibility_score": 35.0,
@@ -50,6 +50,6 @@
       }
     ]
   },
-  "generated": "2025-08-28T21:34:37.423996860+00:00",
+  "generated": "2025-08-28T21:41:08.942742125+00:00",
   "version": "1.0"
 }
