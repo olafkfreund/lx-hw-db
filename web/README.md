@@ -1,7 +1,7 @@
-# Hardware Compatibility Database - Build 59
+# Hardware Compatibility Database - Build 60
 
-Built on: Thu Aug 28 07:49:50 UTC 2025
-Commit: 12cc6b46b5fcf4e0312748f7e2873f9955451b09
+Built on: Thu Aug 28 07:53:58 UTC 2025
+Commit: 097519bb35b8d640fe9f0aa3d42bd7c048bd59e4
 Reports processed: 1
 
 Analyzing hardware reports...
@@ -49,15 +49,15 @@ Compatibility Overview:
   Poor: 1 (100.0%)
 
 Top Hardware (by report count):
-  1. 1002 Device 1002:744c - 1 reports (compatibility: 17.5)
-  2. 1022 Device 1022:1494 - 1 reports (compatibility: 17.5)
-  3. 1022 Device 1022:1483 - 1 reports (compatibility: 17.5)
-  4. 1022 Device 1022:1482 - 1 reports (compatibility: 17.5)
-  5. 1d6a Ethernet interface - 1 reports (compatibility: 17.5)
-  6. 1002 Device 1002:1478 - 1 reports (compatibility: 17.5)
-  7. 1002 Device 1002:1479 - 1 reports (compatibility: 17.5)
-  8. 1022 Unknown Device 1022:148a - 1 reports (compatibility: 17.5)
-  9. 2646 NVMe device - 1 reports (compatibility: 17.5)
-  10. 1022 Device 1022:57a4 - 1 reports (compatibility: 17.5)
+  1. 1022 Device 1022:1492 - 1 reports (compatibility: 17.5)
+  2. 2646 NVMe device - 1 reports (compatibility: 17.5)
+  3. 1022 Device 1022:1495 - 1 reports (compatibility: 17.5)
+  4. 1002 HDMI - 1 reports (compatibility: 17.5)
+  5. 1002 Device 1002:1479 - 1 reports (compatibility: 17.5)
+  6. 1022 Device 1022:1497 - 1 reports (compatibility: 17.5)
+  7. 1002 Device 1002:1478 - 1 reports (compatibility: 17.5)
+  8. 1022 Device 1022:57a4 - 1 reports (compatibility: 17.5)
+  9. 1022 Device 1022:1494 - 1 reports (compatibility: 17.5)
+  10. 1b21 Unknown Device 1b21:2142 - 1 reports (compatibility: 17.5)
 
-Last Updated: 2025-08-28 07:49:49.323783590 UTC
+Last Updated: 2025-08-28 07:53:57.962069115 UTC

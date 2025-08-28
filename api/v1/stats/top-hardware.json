@@ -3,15 +3,21 @@
     "top_hardware": [
       {
         "avg_compatibility": 17.5,
-        "model": "HDMI",
+        "model": "Device 1022:1491",
+        "report_count": 1,
+        "vendor": "1022"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "Device 1002:744c",
         "report_count": 1,
         "vendor": "1002"
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Device 1002:1479",
+        "model": "Device 1022:1482",
         "report_count": 1,
-        "vendor": "1002"
+        "vendor": "1022"
       },
       {
         "avg_compatibility": 17.5,
@@ -21,7 +27,37 @@
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Device 1022:1491",
+        "model": "Device 1022:7901",
+        "report_count": 1,
+        "vendor": "1022"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "Device 1002:1479",
+        "report_count": 1,
+        "vendor": "1002"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "Device 1022:57a4",
+        "report_count": 1,
+        "vendor": "1022"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "HDMI",
+        "report_count": 1,
+        "vendor": "1002"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "Device 1022:1480",
+        "report_count": 1,
+        "vendor": "1022"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "Unknown Device 1022:1485",
         "report_count": 1,
         "vendor": "1022"
       },
@@ -33,19 +69,37 @@
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Device 1022:1484",
+        "model": "Device 1022:1497",
         "report_count": 1,
         "vendor": "1022"
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Unknown Device 1022:1481",
+        "model": "Device 1022:790e",
         "report_count": 1,
         "vendor": "1022"
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Device 1022:1482",
+        "model": "Unknown Device 1022:149c",
+        "report_count": 1,
+        "vendor": "1022"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "Device 1022:1492",
+        "report_count": 1,
+        "vendor": "1022"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "Device 1022:1483",
+        "report_count": 1,
+        "vendor": "1022"
+      },
+      {
+        "avg_compatibility": 17.5,
+        "model": "Unknown Device 1022:148a",
         "report_count": 1,
         "vendor": "1022"
       },
@@ -54,24 +108,6 @@
         "model": "NVMe device",
         "report_count": 1,
         "vendor": "2646"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Device 1022:1495",
-        "report_count": 1,
-        "vendor": "1022"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Device 1022:57a3",
-        "report_count": 1,
-        "vendor": "1022"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Device 1022:1493",
-        "report_count": 1,
-        "vendor": "1022"
       },
       {
         "avg_compatibility": 17.5,
@@ -87,25 +123,7 @@
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Unknown Device 1022:148c",
-        "report_count": 1,
-        "vendor": "1022"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Device 1022:1494",
-        "report_count": 1,
-        "vendor": "1022"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Device 1022:790e",
-        "report_count": 1,
-        "vendor": "1022"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Unknown Device 1022:1485",
+        "model": "Unknown Device 1022:790b",
         "report_count": 1,
         "vendor": "1022"
       },
@@ -117,42 +135,24 @@
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Unknown Device 1022:148a",
+        "model": "Device 1022:1484",
         "report_count": 1,
         "vendor": "1022"
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Device 1002:744c",
-        "report_count": 1,
-        "vendor": "1002"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Device 1022:1497",
+        "model": "Device 1022:1490",
         "report_count": 1,
         "vendor": "1022"
       },
       {
         "avg_compatibility": 17.5,
-        "model": "Device 1022:1483",
-        "report_count": 1,
-        "vendor": "1022"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Device 1022:1480",
-        "report_count": 1,
-        "vendor": "1022"
-      },
-      {
-        "avg_compatibility": 17.5,
-        "model": "Device 1022:1492",
+        "model": "Device 1022:1493",
         "report_count": 1,
         "vendor": "1022"
       }
     ]
   },
-  "generated": "2025-08-28T07:49:49.296671930+00:00",
+  "generated": "2025-08-28T07:53:57.936789002+00:00",
   "version": "1.0"
 }
