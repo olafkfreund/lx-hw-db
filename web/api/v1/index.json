@@ -22,7 +22,7 @@
       "trends": "/api/v1/stats/trends.json"
     }
   },
-  "generated": "2025-08-28T08:39:24.891736003+00:00",
+  "generated": "2025-08-28T09:19:37.991414750+00:00",
   "name": "Linux Hardware Compatibility Database API",
   "rate_limits": "None (static files)",
   "version": "1.0"
