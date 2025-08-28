@@ -1,20 +1,4 @@
 {
-  "1002": {
-    "total_reports": 4,
-    "components": {
-      "PCI Device": [
-        "Device 1002:1478",
-        "Device 1002:1479",
-        "Device 1002:744c",
-        "HDMI"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T19:53:00.980542486Z"
-  },
   "1d6a": {
     "total_reports": 1,
     "components": {
@@ -26,7 +10,33 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T19:53:00.980592769Z"
+    "last_updated": "2025-08-28T20:55:06.515077606Z"
+  },
+  "2646": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "NVMe device"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T20:55:06.515081333Z"
+  },
+  "1b21": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Unknown Device 1b21:2142"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T20:55:06.515073308Z"
   },
   "1022": {
     "total_reports": 24,
@@ -62,32 +72,22 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T19:53:00.980588582Z"
+    "last_updated": "2025-08-28T20:55:06.515070042Z"
   },
-  "2646": {
-    "total_reports": 1,
+  "1002": {
+    "total_reports": 4,
     "components": {
       "PCI Device": [
-        "NVMe device"
+        "Device 1002:1478",
+        "Device 1002:1479",
+        "Device 1002:744c",
+        "HDMI"
       ]
     },
     "recent_reports": [
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T19:53:00.980594924Z"
-  },
-  "1b21": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Unknown Device 1b21:2142"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T19:53:00.980590275Z"
+    "last_updated": "2025-08-28T20:55:06.514997187Z"
   }
 }
