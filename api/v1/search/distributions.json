@@ -8,11 +8,15 @@
       "top_vendors": [
         {
           "compatibility": 17.5,
-          "vendor": "2646"
+          "vendor": "1b21"
         },
         {
           "compatibility": 17.5,
-          "vendor": "1b21"
+          "vendor": "2646"
+        },
+        {
+          "compatibility": 32.8125,
+          "vendor": "1002"
         },
         {
           "compatibility": 34.99999791383743,
@@ -21,15 +25,11 @@
         {
           "compatibility": 17.5,
           "vendor": "1d6a"
-        },
-        {
-          "compatibility": 32.8125,
-          "vendor": "1002"
         }
       ],
       "total_reports": 1
     }
   ],
-  "generated": "2025-08-28T10:59:35.543147484+00:00",
+  "generated": "2025-08-28T11:21:00.207621508+00:00",
   "version": "1.0"
 }

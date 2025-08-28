@@ -1,17 +1,4 @@
 {
-  "1d6a": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Ethernet interface"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:59:35.542115322Z"
-  },
   "1022": {
     "total_reports": 24,
     "components": {
@@ -46,7 +33,46 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:59:35.542107878Z"
+    "last_updated": "2025-08-28T11:21:00.206580031Z"
+  },
+  "1b21": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Unknown Device 1b21:2142"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T11:21:00.206583207Z"
+  },
+  "1d6a": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Ethernet interface"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T11:21:00.206587705Z"
+  },
+  "2646": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "NVMe device"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T11:21:00.206591332Z"
   },
   "1002": {
     "total_reports": 4,
@@ -62,32 +88,6 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:59:35.542035761Z"
-  },
-  "2646": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "NVMe device"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:59:35.542119129Z"
-  },
-  "1b21": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Unknown Device 1b21:2142"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T10:59:35.542110974Z"
+    "last_updated": "2025-08-28T11:21:00.206515880Z"
   }
 }
