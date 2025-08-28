@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.lxhwdb.LxHwDb</id>
+  
+  <name>Linux Hardware Database</name>
+  <summary>Privacy-first Linux hardware compatibility database</summary>
+  
+  <description>
+    <p>
+      Linux Hardware Database is a community-driven tool that helps Linux users ensure optimal hardware compatibility 
+      through privacy-preserving hardware detection, automated configuration recommendations, and transparent 
+      community-driven validation.
+    </p>
+    <p>
+      Key features:
+    </p>
+    <ul>
+      <li>Privacy-preserving hardware detection using multiple detection tools</li>
+      <li>Automated configuration recommendations for detected hardware</li>
+      <li>Community-driven compatibility database with GitHub integration</li>
+      <li>Support for multiple output formats (JSON, YAML, Markdown)</li>
+      <li>Shell completions for bash, zsh, and fish</li>
+      <li>Cross-platform support with native GUI interface</li>
+    </ul>
+    <p>
+      The application uses advanced privacy techniques including cryptographic anonymization with HMAC-SHA256, 
+      differential privacy with calibrated noise injection, and k-anonymity principles to protect user privacy 
+      while maintaining statistical utility for hardware compatibility analysis.
+    </p>
+  </description>
+  
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0</project_license>
+  
+  <url type="homepage">https://github.com/lx-hw-db/lx-hw-db</url>
+  <url type="bugtracker">https://github.com/lx-hw-db/lx-hw-db/issues</url>
+  <url type="help">https://github.com/lx-hw-db/lx-hw-db/blob/main/docs/USAGE.md</url>
+  <url type="donation">https://github.com/sponsors/lx-hw-db</url>
+  <url type="vcs-browser">https://github.com/lx-hw-db/lx-hw-db</url>
+  <url type="contribute">https://github.com/lx-hw-db/lx-hw-db/blob/main/CONTRIBUTING.md</url>
+  
+  <developer_name>Linux Hardware Database Contributors</developer_name>
+  
+  <launchable type="desktop-id">org.lxhwdb.LxHwDb.desktop</launchable>
+  
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/lx-hw-db/lx-hw-db/main/docs/screenshots/main-window.png</image>
+      <caption>Main hardware detection interface</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/lx-hw-db/lx-hw-db/main/docs/screenshots/detection-progress.png</image>
+      <caption>Hardware detection in progress</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/lx-hw-db/lx-hw-db/main/docs/screenshots/hardware-report.png</image>
+      <caption>Generated hardware compatibility report</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/lx-hw-db/lx-hw-db/main/docs/screenshots/configuration-recommendations.png</image>
+      <caption>Automated configuration recommendations</caption>
+    </screenshot>
+  </screenshots>
+  
+  <provides>
+    <binary>lx-hw-detect</binary>
+    <binary>lx-hw-detect-gtk</binary>
+    <binary>lx-hw-indexer</binary>
+  </provides>
+  
+  <requires>
+    <display_length compare="ge">768</display_length>
+    <memory compare="ge">256</memory>
+  </requires>
+  
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </supports>
+  
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-cartoon">none</content_attribute>
+    <content_attribute id="violence-fantasy">none</content_attribute>
+    <content_attribute id="violence-realistic">none</content_attribute>
+    <content_attribute id="violence-bloodshed">none</content_attribute>
+    <content_attribute id="violence-sexual">none</content_attribute>
+    <content_attribute id="violence-desecration">none</content_attribute>
+    <content_attribute id="violence-slavery">none</content_attribute>
+    <content_attribute id="violence-worship">none</content_attribute>
+    <content_attribute id="drugs-alcohol">none</content_attribute>
+    <content_attribute id="drugs-narcotics">none</content_attribute>
+    <content_attribute id="drugs-tobacco">none</content_attribute>
+    <content_attribute id="sex-nudity">none</content_attribute>
+    <content_attribute id="sex-themes">none</content_attribute>
+    <content_attribute id="sex-homosexuality">none</content_attribute>
+    <content_attribute id="sex-prostitution">none</content_attribute>
+    <content_attribute id="sex-adultery">none</content_attribute>
+    <content_attribute id="sex-appearance">none</content_attribute>
+    <content_attribute id="language-profanity">none</content_attribute>
+    <content_attribute id="language-humor">none</content_attribute>
+    <content_attribute id="language-discrimination">none</content_attribute>
+    <content_attribute id="social-chat">none</content_attribute>
+    <content_attribute id="social-info">mild</content_attribute>
+    <content_attribute id="social-audio">none</content_attribute>
+    <content_attribute id="social-location">none</content_attribute>
+    <content_attribute id="social-contacts">none</content_attribute>
+    <content_attribute id="money-purchasing">none</content_attribute>
+    <content_attribute id="money-gambling">none</content_attribute>
+  </content_rating>
+  
+  <releases>
+    <release version="0.1.0" date="2025-08-27">
+      <description>
+        <p>Initial release of Linux Hardware Database with the following features:</p>
+        <ul>
+          <li>Privacy-preserving hardware detection</li>
+          <li>GTK4 graphical user interface</li>
+          <li>Command-line interface with shell completions</li>
+          <li>Multiple output formats (JSON, YAML, Markdown)</li>
+          <li>Automated configuration recommendations</li>
+          <li>Community-driven compatibility database</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  
+  <categories>
+    <category>System</category>
+    <category>Utility</category>
+  </categories>
+  
+  <keywords>
+    <keyword>hardware</keyword>
+    <keyword>compatibility</keyword>
+    <keyword>detection</keyword>
+    <keyword>linux</keyword>
+    <keyword>privacy</keyword>
+    <keyword>drivers</keyword>
+    <keyword>system</keyword>
+    <keyword>configuration</keyword>
+  </keywords>
+  
+</component>

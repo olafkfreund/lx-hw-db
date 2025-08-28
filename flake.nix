@@ -65,6 +65,11 @@
             makeWrapper
             dpkg
             rpm
+
+            # Development and validation tools
+            yamllint
+            python3Packages.pyyaml
+            jq
           ];
 
           shellHook = ''

@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # Linux Hardware Database CLI
+  lx-hw-db-cli:
+    build:
+      context: .
+      target: cli
+    image: lx-hw-db:cli
+    container_name: lx-hw-db-cli
+    volumes:
+      - type: bind
+        source: ./hardware-reports
+        target: /home/lxhw/reports
+      - type: bind
+        source: ./config
+        target: /home/lxhw/.config/lx-hw-db
+        read_only: true
+    # Privileged mode required for hardware detection
+    privileged: true
+    # Mount host hardware information
+    devices:
+      - /dev:/dev:ro
+    volumes:
+      - /sys:/sys:ro
+      - /proc:/proc:ro
+      - ./hardware-reports:/home/lxhw/reports
+      - ./config:/home/lxhw/.config/lx-hw-db:ro
+    environment:
+      - RUST_LOG=info
+      - LX_HW_DB_CONFIG=/home/lxhw/.config/lx-hw-db/default.toml
+    command: ["detect", "--output", "/home/lxhw/reports", "--format", "json"]
+
+  # Linux Hardware Database Web Interface
+  lx-hw-db-web:
+    build:
+      context: .
+      target: web
+    image: lx-hw-db:web
+    container_name: lx-hw-db-web
+    ports:
+      - "8000:8000"
+    volumes:
+      - type: bind
+        source: ./web/data
+        target: /var/www/lx-hw-db/data
+      - type: bind
+        source: ./hardware-reports
+        target: /var/www/lx-hw-db/hardware-reports
+        read_only: true
+      - type: bind
+        source: ./indices
+        target: /var/www/lx-hw-db/indices
+        read_only: true
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8000
+      - HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Development environment
+  lx-hw-db-dev:
+    build:
+      context: .
+      target: dev
+    image: lx-hw-db:dev
+    container_name: lx-hw-db-dev
+    volumes:
+      - type: bind
+        source: .
+        target: /workspace
+      - type: volume
+        source: cargo_cache
+        target: /usr/local/cargo/registry
+      - type: volume
+        source: target_cache
+        target: /workspace/target
+    working_dir: /workspace
+    environment:
+      - RUST_LOG=debug
+      - CARGO_HOME=/usr/local/cargo
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # Hardware indexer service
+  lx-hw-indexer:
+    build:
+      context: .
+      target: cli
+    image: lx-hw-db:cli
+    container_name: lx-hw-indexer
+    volumes:
+      - type: bind
+        source: ./hardware-reports
+        target: /home/lxhw/hardware-reports
+        read_only: true
+      - type: bind
+        source: ./indices
+        target: /home/lxhw/indices
+      - type: bind
+        source: ./web/data
+        target: /home/lxhw/web-data
+      - type: bind
+        source: ./statistics
+        target: /home/lxhw/statistics
+    environment:
+      - RUST_LOG=info
+    command: ["lx-hw-indexer", "--input", "/home/lxhw/hardware-reports", "--output", "/home/lxhw/indices"]
+    restart: "no"  # Run once
+
+volumes:
+  cargo_cache:
+    name: lx-hw-db-cargo-cache
+  target_cache:
+    name: lx-hw-db-target-cache
+
+networks:
+  default:
+    name: lx-hw-db-network

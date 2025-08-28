@@ -1,0 +1,74 @@
+{
+  "name": "lx-hw-db-web",
+  "version": "0.1.0",
+  "description": "Linux Hardware Database Web Interface",
+  "homepage": "https://lx-hw-db.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lx-hw-db/lx-hw-db.git",
+    "directory": "web"
+  },
+  "bugs": {
+    "url": "https://github.com/lx-hw-db/lx-hw-db/issues"
+  },
+  "license": "AGPL-3.0-or-later",
+  "authors": [
+    "Linux Hardware Database Contributors <team@lx-hw-db.org>"
+  ],
+  "keywords": [
+    "hardware",
+    "compatibility",
+    "linux",
+    "database",
+    "privacy",
+    "web-interface"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "start": "python3 serve.py",
+    "dev": "python3 serve.py --port 3000",
+    "build": "npm run minify",
+    "minify": "npm run minify:css && npm run minify:js",
+    "minify:css": "cleancss -o dist/css/styles.min.css css/styles.css",
+    "minify:js": "terser js/*.js -o dist/js/app.min.js --compress --mangle",
+    "lint": "npm run lint:css && npm run lint:js",
+    "lint:css": "stylelint css/*.css",
+    "lint:js": "eslint js/*.js",
+    "test": "npm run lint",
+    "clean": "rm -rf dist/",
+    "prepare": "mkdir -p dist/css dist/js",
+    "watch": "npm run watch:css & npm run watch:js",
+    "watch:css": "chokidar 'css/**/*.css' -c 'npm run minify:css'",
+    "watch:js": "chokidar 'js/**/*.js' -c 'npm run minify:js'",
+    "serve": "npm run build && npm run start",
+    "deploy": "npm run build && tar -czf ../lx-hw-db-web.tar.gz ."
+  },
+  "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "clean-css-cli": "^5.6.3",
+    "eslint": "^8.57.0",
+    "stylelint": "^15.11.0",
+    "stylelint-config-standard": "^34.0.0",
+    "terser": "^5.26.0"
+  },
+  "optionalDependencies": {
+    "prettier": "^3.1.1"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
+  "files": [
+    "index.html",
+    "css/",
+    "js/",
+    "data/",
+    "api/",
+    "serve.py",
+    "README.md"
+  ]
+}

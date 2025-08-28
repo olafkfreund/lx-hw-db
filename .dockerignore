@@ -1,0 +1,107 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Build artifacts
+target/
+dist/
+build/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+
+# Logs
+*.log
+logs/
+server.log
+
+# Package manager files
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Rust cache
+Cargo.lock
+/.cargo
+/target
+
+# Test artifacts
+test-results/
+coverage/
+
+# Documentation build
+docs/_build/
+site/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Hardware reports (keep only samples)
+hardware-reports/*/*
+!hardware-reports/2024/12/real-system-*.json
+
+# Generated indices
+indices/*
+!indices/.gitkeep
+
+# Statistics
+statistics/*
+!statistics/.gitkeep
+
+# Web data
+web/data/*
+!web/data/*.json
+!web/data/README.md
+
+# Packaging
+packaging/*/build/
+packaging/*/*.deb
+packaging/*/*.rpm
+packaging/*/*.pkg.tar.gz
+*.AppImage
+
+# CI/CD artifacts
+artifacts/
+release/

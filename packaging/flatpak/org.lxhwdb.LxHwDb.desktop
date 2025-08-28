@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Linux Hardware Database
+GenericName=Hardware Compatibility Tool
+Comment=Privacy-preserving hardware detection and compatibility reporting
+Exec=lx-hw-detect-gtk
+Icon=org.lxhwdb.LxHwDb
+Terminal=false
+StartupNotify=true
+Categories=System;HardwareSettings;Utility;
+Keywords=hardware;compatibility;detection;linux;privacy;drivers;system;
+MimeType=application/json;text/yaml;
+
+X-Flatpak-RenamedFrom=lx-hw-detect.desktop;

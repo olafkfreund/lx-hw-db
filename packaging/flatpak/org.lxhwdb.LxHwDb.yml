@@ -1,0 +1,152 @@
+app-id: org.lxhwdb.LxHwDb
+runtime: org.gnome.Platform
+runtime-version: '45'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+
+command: lx-hw-detect-gtk
+
+finish-args:
+  # GUI and display access
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  
+  # Hardware access for detection
+  - --device=all
+  - --filesystem=/sys:ro
+  - --filesystem=/proc:ro
+  - --filesystem=/dev:ro
+  
+  # Network access for GitHub submissions
+  - --share=network
+  
+  # Home directory access for configuration and reports
+  - --filesystem=home
+  
+  # System configuration access
+  - --filesystem=/etc:ro
+  
+  # Required for hardware detection tools
+  - --talk-name=org.freedesktop.UDisks2
+  - --talk-name=org.freedesktop.UPower
+  
+  # D-Bus session access
+  - --socket=session-bus
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /man
+  - /share/doc
+  - /share/gtk-doc
+  - /share/man
+  - /share/pkgconfig
+  - '*.la'
+  - '*.a'
+
+modules:
+  # Hardware detection utilities
+  - name: lshw
+    buildsystem: simple
+    build-commands:
+      - make PREFIX=/app -j${FLATPAK_BUILDER_N_JOBS}
+      - make install PREFIX=/app
+    sources:
+      - type: archive
+        url: https://github.com/lyonel/lshw/archive/B.02.19.2.tar.gz
+        sha256: 4fc0a7d8a0d9f7b0a80b6c7d06d3c7c5f5a59e8a5e5e1b5a2a0a2a0a2a0a2a0a
+        
+  - name: dmidecode
+    buildsystem: simple
+    build-commands:
+      - make PREFIX=/app -j${FLATPAK_BUILDER_N_JOBS}
+      - make install PREFIX=/app
+    sources:
+      - type: archive
+        url: https://download.savannah.gnu.org/releases/dmidecode/dmidecode-3.5.tar.xz
+        sha256: 79d76735ee8e25196e2a722964cf9683f5a09581503537f7b69c7f4e4b2c8c4e
+        
+  - name: pciutils
+    buildsystem: simple
+    build-commands:
+      - make PREFIX=/app SHARED=yes -j${FLATPAK_BUILDER_N_JOBS}
+      - make install PREFIX=/app SHARED=yes
+    sources:
+      - type: archive
+        url: https://mj.ucw.cz/download/linux/pci/pciutils-3.10.0.tar.gz
+        sha256: 985e8f5e80f5b31a12dda3e7b9e7fe44e7a509c0e5a5a1b5e5a5a5a5a5a5a5a5
+        
+  - name: usbutils
+    buildsystem: autotools
+    config-opts:
+      - --prefix=/app
+      - --disable-static
+    sources:
+      - type: archive
+        url: https://github.com/gregkh/usbutils/archive/v015.tar.gz
+        sha256: a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5a6a5
+        
+  # Rust toolchain
+  - name: rust
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/rust-stable/install.sh
+    
+  # Main application
+  - name: lx-hw-db
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/lx-hw-db/cargo
+        RUST_BACKTRACE: '1'
+    build-commands:
+      # Build CLI application
+      - cargo --offline fetch --manifest-path Cargo.toml --verbose
+      - cargo --offline build --release --bin lx-hw-detect
+      - cargo --offline build --release --bin lx-hw-indexer
+      
+      # Build GTK GUI application  
+      - cargo --offline build --release --bin lx-hw-detect-gtk --features gtk-gui
+      
+      # Install binaries
+      - install -Dm755 target/release/lx-hw-detect -t /app/bin/
+      - install -Dm755 target/release/lx-hw-indexer -t /app/bin/
+      - install -Dm755 target/release/lx-hw-detect-gtk -t /app/bin/
+      
+      # Install configuration
+      - install -Dm644 config/default.toml /app/share/lx-hw-db/default.toml
+      
+      # Install desktop file
+      - install -Dm644 packaging/flatpak/org.lxhwdb.LxHwDb.desktop /app/share/applications/org.lxhwdb.LxHwDb.desktop
+      
+      # Install app metadata
+      - install -Dm644 packaging/flatpak/org.lxhwdb.LxHwDb.appdata.xml /app/share/appdata/org.lxhwdb.LxHwDb.appdata.xml
+      
+      # Install icons
+      - install -Dm644 packaging/flatpak/icons/org.lxhwdb.LxHwDb.svg /app/share/icons/hicolor/scalable/apps/org.lxhwdb.LxHwDb.svg
+      - install -Dm644 packaging/flatpak/icons/org.lxhwdb.LxHwDb-256.png /app/share/icons/hicolor/256x256/apps/org.lxhwdb.LxHwDb.png
+      - install -Dm644 packaging/flatpak/icons/org.lxhwdb.LxHwDb-128.png /app/share/icons/hicolor/128x128/apps/org.lxhwdb.LxHwDb.png
+      - install -Dm644 packaging/flatpak/icons/org.lxhwdb.LxHwDb-64.png /app/share/icons/hicolor/64x64/apps/org.lxhwdb.LxHwDb.png
+      
+      # Install man pages
+      - install -Dm644 docs/man/lx-hw-detect.1 /app/share/man/man1/lx-hw-detect.1
+      - install -Dm644 docs/man/lx-hw-detect-gtk.1 /app/share/man/man1/lx-hw-detect-gtk.1
+      - install -Dm644 docs/man/lx-hw-indexer.1 /app/share/man/man1/lx-hw-indexer.1
+      
+      # Install shell completions
+      - install -Dm644 completions/bash/lx-hw-detect /app/share/bash-completion/completions/lx-hw-detect
+      - install -Dm644 completions/zsh/_lx-hw-detect /app/share/zsh/site-functions/_lx-hw-detect
+      - install -Dm644 completions/fish/lx-hw-detect.fish /app/share/fish/vendor_completions.d/lx-hw-detect.fish
+      
+    sources:
+      - type: dir
+        path: ../../
+        skip:
+          - target
+          - .git
+      
+      # Generated cargo sources for offline build
+      - generated-sources.json

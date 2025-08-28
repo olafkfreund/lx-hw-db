@@ -2,33 +2,57 @@
 name = "lx-hw-detect"
 version = "0.1.0"
 edition = "2021"
-authors = ["Linux Hardware Database Contributors"]
-description = "Privacy-preserving Linux hardware detection and compatibility reporting tool with CLI, GTK4, and Qt6 interfaces"
-license = "AGPL-3.0"
+authors = ["Linux Hardware Database Contributors <team@lx-hw-db.org>"]
+description = "Privacy-first Linux hardware detection and compatibility database with CLI, GTK4, and web interfaces"
+license = "AGPL-3.0-or-later"
 repository = "https://github.com/lx-hw-db/lx-hw-db"
+homepage = "https://lx-hw-db.org"
+documentation = "https://docs.rs/lx-hw-detect"
 readme = "README.md"
-keywords = ["linux", "hardware", "compatibility", "privacy", "detection", "gtk4", "qt6"]
+keywords = ["linux", "hardware", "compatibility", "privacy", "detection"]
 categories = ["command-line-utilities", "hardware-support", "gui"]
+rust-version = "1.70"
+exclude = [
+    "target/",
+    ".git/",
+    ".github/",
+    "hardware-reports/",
+    "statistics/",
+    "web/",
+    "*.log",
+    "*.tmp"
+]
+
+[package.metadata.docs.rs]
+all-features = true
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
+
+[badges]
+maintenance = { status = "actively-developed" }
+codecov = { repository = "lx-hw-db/lx-hw-db" }
 
 [dependencies]
 # CLI and configuration
-clap = { version = "4.0", features = ["derive", "env", "color"] }
+clap = { version = "4.4", features = ["derive", "env", "color", "wrap_help"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"
 toml = "0.8"
 
 # Async runtime and concurrency
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.35", features = ["full"] }
 futures = "0.3"
 
-# Error handling
+# Error handling and logging
 anyhow = "1.0"
 thiserror = "1.0"
+log = "0.4"
+env_logger = "0.11"
 
-# GitHub submission
-rpassword = "7.0"
-tempfile = "3.8"
+# GitHub submission and HTTP
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+urlencoding = "2.0"
+rpassword = { version = "7.0", optional = true }
 
 # Cryptography and privacy
 ring = "0.17"
@@ -40,33 +64,25 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["serde", "v4"] }
 
 # System interaction
-nix = "0.29"
+nix = { version = "0.29", features = ["process", "fs"] }
 libc = "0.2"
 
-# Logging
-log = "0.4"
-env_logger = "0.11"
-
 # Text processing and regex
-regex = "1.0"
+regex = "1.10"
 
 # Async traits
 async-trait = "0.1"
 
-# HTTP client and URL encoding
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
-urlencoding = "2.0"
-
 # File system operations
 glob = "0.3"
+tempfile = { version = "3.8", optional = true }
 
-# GUI dependencies (disabled for demo mode)
-# GTK4 with libadwaita - Full integration requires system libraries
-# gtk4 = { version = "0.9", package = "gtk4", features = ["v4_10"], optional = true }
-# libadwaita = { version = "0.7", package = "libadwaita", features = ["v1_6"], optional = true }
-# glib = { version = "0.20", optional = true }
+# GUI dependencies - GTK4 with libadwaita
+gtk4 = { version = "0.9", package = "gtk4", features = ["v4_10"], optional = true }
+libadwaita = { version = "0.7", package = "libadwaita", features = ["v1_6"], optional = true }
+glib = { version = "0.20", optional = true }
 
-# Qt6 dependencies (currently optional for demo mode)
+# Qt6 dependencies (currently optional)
 cxx = { version = "1.0", optional = true }
 cxx-qt = { version = "0.6", optional = true }
 cxx-qt-lib = { version = "0.6", optional = true }
@@ -94,10 +110,21 @@ path = "src/bin/lx-hw-detect-qt6.rs"
 required-features = ["qt6-gui"]
 
 [features]
-default = []
-gtk-gui = []  # Demo mode - GTK4 libraries not required for demonstration
-qt6-gui = []  # Demo mode - no cxx-qt required
+default = ["github-submit"]
+
+# GUI interfaces
+gtk-gui = ["dep:gtk4", "dep:libadwaita", "dep:glib", "dep:fluent", "dep:fluent-templates"]
+qt6-gui = ["dep:cxx", "dep:cxx-qt", "dep:cxx-qt-lib"]
 all-gui = ["gtk-gui", "qt6-gui"]
+
+# GitHub integration
+github-submit = ["dep:rpassword", "dep:tempfile"]
+
+# Privacy features (always enabled for core functionality)
+privacy = []
+
+# Development and testing
+dev = ["all-gui", "github-submit"]
 
 [build-dependencies]
 # cxx-qt-build = { version = "0.6" }  # Disabled for demo mode
