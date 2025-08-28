@@ -23,8 +23,13 @@ WORKDIR /build
 COPY Cargo.toml Cargo.lock ./
 COPY build.rs ./
 
-# Create src directory with a dummy main to build dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs
+# Create src directory with dummy files for dependency caching
+RUN mkdir -p src/bin && \
+    echo "fn main() {}" > src/main.rs && \
+    echo "fn main() {}" > src/bin/lx-hw-detect.rs && \
+    echo "fn main() {}" > src/bin/lx-hw-indexer.rs && \
+    echo "fn main() {}" > src/bin/lx-hw-detect-gtk.rs && \
+    echo "fn main() {}" > src/bin/lx-hw-detect-qt6.rs
 RUN cargo build --release --bins
 RUN rm -rf src
 
