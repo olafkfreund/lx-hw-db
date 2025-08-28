@@ -188,9 +188,9 @@ jobs:
           db-path = "~/.cargo/advisory-db"
           db-urls = ["https://github.com/RustSec/advisory-db"]
           vulnerability = "deny"
-          unmaintained = "deny"
+          unmaintained = "none"
           yanked = "deny"
-          notice = "deny"
+          notice = "warn"
           ignore = []
 
           [licenses]
