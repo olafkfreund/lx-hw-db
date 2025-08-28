@@ -2,9 +2,9 @@
 //!
 //! Note: This is a simplified implementation for demo mode
 
-use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 use crate::errors::LxHwError;
 
@@ -87,25 +87,25 @@ pub struct Configuration {
 pub struct AppState {
     /// Current hardware detection progress (0.0 to 1.0)
     pub detection_progress: f64,
-    
+
     /// Current detection status message
     pub detection_status: String,
-    
+
     /// Whether hardware detection is currently running
     pub is_detecting: bool,
-    
+
     /// Latest hardware report
     pub hardware_report: Option<HardwareReport>,
-    
+
     /// Generated configuration recommendations
     pub configuration: Option<Configuration>,
-    
+
     /// Current privacy level
     pub privacy_level: PrivacyLevel,
-    
+
     /// Available detection tools and their status
     pub available_tools: HashMap<String, ToolStatus>,
-    
+
     /// Application preferences
     pub preferences: AppPreferences,
 }
@@ -140,13 +140,13 @@ pub struct ToolStatus {
 pub struct AppPreferences {
     /// Privacy settings
     pub privacy: PrivacyPreferences,
-    
+
     /// Detection tool settings
     pub tools: ToolPreferences,
-    
+
     /// Export settings
     pub export: ExportPreferences,
-    
+
     /// UI settings
     pub ui: UiPreferences,
 }
@@ -238,12 +238,7 @@ pub struct UiPreferences {
 
 impl Default for UiPreferences {
     fn default() -> Self {
-        Self {
-            window_width: 1000,
-            window_height: 700,
-            sidebar_visible: true,
-            detailed_view: false,
-        }
+        Self { window_width: 1000, window_height: 700, sidebar_visible: true, detailed_view: false }
     }
 }
 
@@ -386,20 +381,27 @@ impl HardwareDeviceDisplay {
     /// Create display model from hardware report data
     pub fn from_hardware_report(report: &HardwareReport) -> Vec<Self> {
         let mut devices = Vec::new();
-        
+
         // Add system information
         devices.push(HardwareDeviceDisplay {
             id: "system".to_string(),
-            name: format!("System - {}", report.system.distribution.clone().unwrap_or("Unknown".to_string())),
+            name: format!(
+                "System - {}",
+                report.system.distribution.clone().unwrap_or("Unknown".to_string())
+            ),
             category: HardwareCategory::System,
             vendor: "System".to_string(),
             model: report.system.distribution.clone().unwrap_or("Unknown".to_string()),
             status: CompatibilityStatus::Supported,
             details: [
-                ("Distribution".to_string(), report.system.distribution.clone().unwrap_or("Unknown".to_string())),
+                (
+                    "Distribution".to_string(),
+                    report.system.distribution.clone().unwrap_or("Unknown".to_string()),
+                ),
                 ("Kernel".to_string(), report.system.kernel_version.clone()),
                 ("Architecture".to_string(), report.system.architecture.clone()),
-            ].into(),
+            ]
+            .into(),
             recommendations: vec![],
         });
 
@@ -415,8 +417,12 @@ impl HardwareDeviceDisplay {
                 details: [
                     ("Cores".to_string(), cpu.cores.to_string()),
                     ("Threads".to_string(), cpu.threads.to_string()),
-                    ("Frequency".to_string(), format!("{:.2} GHz", cpu.base_frequency.unwrap_or(0.0) / 1000.0)),
-                ].into(),
+                    (
+                        "Frequency".to_string(),
+                        format!("{:.2} GHz", cpu.base_frequency.unwrap_or(0.0) / 1000.0),
+                    ),
+                ]
+                .into(),
                 recommendations: vec![],
             });
         }
@@ -437,7 +443,8 @@ impl HardwareDeviceDisplay {
                 details: [
                     ("PCI ID".to_string(), gpu.pci_id.clone()),
                     ("Driver".to_string(), gpu.driver.clone().unwrap_or("Not loaded".to_string())),
-                ].into(),
+                ]
+                .into(),
                 recommendations: if gpu.driver.is_none() {
                     vec!["Install appropriate graphics driver".to_string()]
                 } else {
@@ -462,7 +469,8 @@ impl HardwareDeviceDisplay {
                 details: [
                     ("Type".to_string(), net.device_type.clone()),
                     ("Driver".to_string(), net.driver.clone().unwrap_or("Not loaded".to_string())),
-                ].into(),
+                ]
+                .into(),
                 recommendations: vec![],
             });
         }
@@ -477,9 +485,16 @@ impl HardwareDeviceDisplay {
                 model: storage.model.clone(),
                 status: CompatibilityStatus::Supported,
                 details: [
-                    ("Size".to_string(), format!("{:.1} GB", storage.size_bytes as f64 / (1024.0 * 1024.0 * 1024.0))),
-                    ("Interface".to_string(), storage.interface.clone().unwrap_or("Unknown".to_string())),
-                ].into(),
+                    (
+                        "Size".to_string(),
+                        format!("{:.1} GB", storage.size_bytes as f64 / (1024.0 * 1024.0 * 1024.0)),
+                    ),
+                    (
+                        "Interface".to_string(),
+                        storage.interface.clone().unwrap_or("Unknown".to_string()),
+                    ),
+                ]
+                .into(),
                 recommendations: vec![],
             });
         }
@@ -496,7 +511,8 @@ impl HardwareDeviceDisplay {
                 details: [
                     ("Type".to_string(), audio.device_type.clone()),
                     ("Driver".to_string(), audio.driver.clone().unwrap_or("Built-in".to_string())),
-                ].into(),
+                ]
+                .into(),
                 recommendations: vec![],
             });
         }

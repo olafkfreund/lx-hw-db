@@ -271,13 +271,13 @@ impl CliHandler {
 
         // Create hardware analyzer with privacy settings and configure tools/timeout
         let mut analyzer = HardwareAnalyzer::new(privacy)?;
-        
+
         // Configure tool filtering if specified
         if let Some(tool_names) = &tools {
             analyzer.set_enabled_tools(tool_names.clone())?;
             println!("Using only specified tools: {}", tool_names.join(", "));
         }
-        
+
         // Configure timeout if specified
         analyzer.set_detection_timeout(Duration::from_secs(timeout));
         if timeout != 30 {
@@ -604,8 +604,9 @@ impl CliHandler {
             // Run detection
             let _detection_results = registry.detect_all().await?;
 
-            // Generate hardware report  
-            let mut hardware_analyzer = crate::detectors::integration::HardwareAnalyzer::new(global.privacy)?;
+            // Generate hardware report
+            let mut hardware_analyzer =
+                crate::detectors::integration::HardwareAnalyzer::new(global.privacy)?;
             let hardware_report = hardware_analyzer.analyze_system().await?;
 
             // Write report to temporary file
@@ -630,21 +631,25 @@ impl CliHandler {
             let report: crate::hardware::HardwareReport = serde_json::from_str(&content)
                 .map_err(|e| LxHwError::Validation(format!("Invalid report format: {}", e)))?;
 
-            let cpu_info = report.cpu
+            let cpu_info = report
+                .cpu
                 .as_ref()
                 .map(|cpu| format!("{} {}", cpu.vendor, cpu.model))
                 .unwrap_or_else(|| "Unknown CPU".to_string());
 
-            let gpu_info = report.graphics
+            let gpu_info = report
+                .graphics
                 .first()
                 .map(|gpu| format!("{} {}", gpu.vendor, gpu.model))
                 .unwrap_or_else(|| "Unknown GPU".to_string());
 
-            format!("{} with {} on {} {}",
+            format!(
+                "{} with {} on {} {}",
                 cpu_info,
                 gpu_info,
                 report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string()),
-                report.system.kernel_version)
+                report.system.kernel_version
+            )
         };
 
         // Step 4: Create submission info

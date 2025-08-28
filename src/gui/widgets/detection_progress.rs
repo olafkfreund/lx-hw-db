@@ -1,8 +1,8 @@
 //! Hardware detection progress widget
 
+use adw::prelude::*;
 use gtk4::prelude::*;
 use libadwaita as adw;
-use adw::prelude::*;
 use std::collections::HashMap;
 
 /// Detection progress widget showing real-time progress for each tool
@@ -36,7 +36,7 @@ impl DetectionProgress {
         let tools_group = adw::PreferencesGroup::new();
         tools_group.set_title(&crate::gui::t("Detection Progress"));
         tools_group.set_margin_top(12);
-        
+
         let mut progress_bars = HashMap::new();
 
         // Create progress rows for each detection tool
@@ -84,7 +84,8 @@ impl DetectionProgress {
         devices_label.set_halign(gtk4::Align::Start);
         stats_box.append(&devices_label);
 
-        let privacy_label = gtk4::Label::new(Some(&crate::gui::t("🔒 Privacy level: Basic (24h salt rotation)")));
+        let privacy_label =
+            gtk4::Label::new(Some(&crate::gui::t("🔒 Privacy level: Basic (24h salt rotation)")));
         privacy_label.set_halign(gtk4::Align::Start);
         stats_box.append(&privacy_label);
 
@@ -105,13 +106,7 @@ impl DetectionProgress {
 
         widget.append(&button_box);
 
-        Self {
-            widget,
-            progress_bars,
-            status_label,
-            overall_progress,
-            cancel_button,
-        }
+        Self { widget, progress_bars, status_label, overall_progress, cancel_button }
     }
 
     /// Get the main widget
@@ -135,7 +130,7 @@ impl DetectionProgress {
             if let Some(parent) = progress_bar.parent() {
                 if let Some(row) = parent.parent() {
                     let row = row.downcast_ref::<adw::ActionRow>().unwrap();
-                    
+
                     // Update status icon
                     let icon = match status {
                         ToolStatus::Pending => "emblem-synchronizing-symbolic",
@@ -143,13 +138,13 @@ impl DetectionProgress {
                         ToolStatus::Complete => "emblem-ok-symbolic",
                         ToolStatus::Error => "emblem-important-symbolic",
                     };
-                    
+
                     // Find and update the prefix icon
                     let mut child = row.first_child();
                     while let Some(widget) = child {
                         if let Some(image) = widget.downcast_ref::<gtk4::Image>() {
                             image.set_icon_name(Some(icon));
-                            
+
                             // Add CSS class for status
                             image.remove_css_class("dim-label");
                             match status {
@@ -205,7 +200,8 @@ impl DetectionProgress {
                     if seconds == 0 {
                         label.set_text(&crate::gui::t("⏱️ Completed"));
                     } else {
-                        label.set_text(&format!("⏱️ Estimated time remaining: {} seconds", seconds));
+                        label
+                            .set_text(&format!("⏱️ Estimated time remaining: {} seconds", seconds));
                     }
                 }
             }
@@ -237,17 +233,22 @@ impl DetectionProgress {
     }
 
     /// Set progress by progress bar reference
-    fn set_tool_progress_by_bar(&self, progress_bar: &gtk4::ProgressBar, fraction: f64, status: ToolStatus) {
+    fn set_tool_progress_by_bar(
+        &self,
+        progress_bar: &gtk4::ProgressBar,
+        fraction: f64,
+        status: ToolStatus,
+    ) {
         progress_bar.set_fraction(fraction);
 
         // Update parent row status (same logic as set_tool_progress but with bar reference)
         if let Some(parent) = progress_bar.parent() {
             if let Some(row) = parent.parent() {
                 let row = row.downcast_ref::<adw::ActionRow>().unwrap();
-                
+
                 let icon = match status {
                     ToolStatus::Pending => "emblem-synchronizing-symbolic",
-                    ToolStatus::Running => "emblem-synchronizing-symbolic", 
+                    ToolStatus::Running => "emblem-synchronizing-symbolic",
                     ToolStatus::Complete => "emblem-ok-symbolic",
                     ToolStatus::Error => "emblem-important-symbolic",
                 };
@@ -257,11 +258,11 @@ impl DetectionProgress {
                 while let Some(widget) = child {
                     if let Some(image) = widget.downcast_ref::<gtk4::Image>() {
                         image.set_icon_name(Some(icon));
-                        
+
                         image.remove_css_class("dim-label");
                         image.remove_css_class("success");
                         image.remove_css_class("error");
-                        
+
                         match status {
                             ToolStatus::Complete => image.add_css_class("success"),
                             ToolStatus::Error => image.add_css_class("error"),

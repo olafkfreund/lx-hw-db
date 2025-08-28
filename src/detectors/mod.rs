@@ -77,21 +77,19 @@ impl DetectorRegistry {
             custom_timeout: None,
         }
     }
-    
+
     /// Set specific tools to enable (filters out others)
     pub fn set_enabled_tools(&mut self, tool_names: Vec<String>) -> Result<()> {
         // Validate that all requested tools exist
-        let available_tools: Vec<&str> = self.detectors.iter()
-            .map(|d| d.name())
-            .collect();
-        
+        let available_tools: Vec<&str> = self.detectors.iter().map(|d| d.name()).collect();
+
         let mut invalid_tools = Vec::new();
         for tool in &tool_names {
             if !available_tools.contains(&tool.as_str()) {
                 invalid_tools.push(tool.clone());
             }
         }
-        
+
         if !invalid_tools.is_empty() {
             return Err(crate::errors::LxHwError::ConfigError(format!(
                 "Unknown detection tools: {}. Available tools: {}",
@@ -99,16 +97,16 @@ impl DetectorRegistry {
                 available_tools.join(", ")
             )));
         }
-        
+
         self.enabled_tools = Some(tool_names);
         Ok(())
     }
-    
+
     /// Set custom timeout for all detectors
     pub fn set_detection_timeout(&mut self, timeout: Duration) {
         self.custom_timeout = Some(timeout);
     }
-    
+
     /// Check if a tool is enabled based on filtering configuration
     fn is_tool_enabled(&self, tool_name: &str) -> bool {
         match &self.enabled_tools {
@@ -116,7 +114,7 @@ impl DetectorRegistry {
             None => true, // If no filter is set, all tools are enabled
         }
     }
-    
+
     /// Get the effective timeout for a detector
     fn get_effective_timeout(&self, detector: &dyn HardwareDetector) -> Duration {
         self.custom_timeout.unwrap_or_else(|| detector.timeout())
@@ -158,10 +156,10 @@ impl DetectorRegistry {
 
         for detector in available {
             let timeout = self.get_effective_timeout(detector);
-            
+
             // Execute with timeout
             let execution_result = tokio::time::timeout(timeout, detector.execute()).await;
-            
+
             match execution_result {
                 Ok(Ok(output)) => {
                     // Successful execution within timeout
@@ -176,7 +174,7 @@ impl DetectorRegistry {
                             });
                         }
                     }
-                },
+                }
                 Ok(Err(e)) => {
                     // Execution failed
                     results.push(DetectionResult {
@@ -185,7 +183,7 @@ impl DetectorRegistry {
                         data: Self::default_data_for_detector(detector.name()),
                         errors: vec![e.to_string()],
                     });
-                },
+                }
                 Err(_) => {
                     // Execution timed out
                     results.push(DetectionResult {

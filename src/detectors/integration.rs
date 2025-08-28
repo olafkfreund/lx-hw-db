@@ -30,12 +30,12 @@ impl HardwareAnalyzer {
             privacy_manager: PrivacyManager::new(privacy_level)?,
         })
     }
-    
+
     /// Set specific tools to enable (filters out others)
     pub fn set_enabled_tools(&mut self, tool_names: Vec<String>) -> Result<()> {
         self.detector_registry.set_enabled_tools(tool_names)
     }
-    
+
     /// Set custom timeout for detection tools
     pub fn set_detection_timeout(&mut self, timeout: std::time::Duration) {
         self.detector_registry.set_detection_timeout(timeout);
@@ -343,23 +343,28 @@ impl HardwareAnalyzer {
     }
 
     /// Extract CPU information from detection results
-    async fn extract_cpu_info(&mut self, detection_results: &[DetectionResult]) -> Result<Option<CpuInfo>> {
+    async fn extract_cpu_info(
+        &mut self,
+        detection_results: &[DetectionResult],
+    ) -> Result<Option<CpuInfo>> {
         // First try dmidecode for detailed CPU info
         for result in detection_results {
             if let DetectionData::Dmidecode(dmi_data) = &result.data {
                 if let Some(processor) = dmi_data.processors.first() {
                     // Parse CPU flags from dmidecode
                     let flags = processor.flags.clone();
-                    
+
                     // Get frequency information
                     let base_frequency = processor.current_speed.map(|f| f as f64);
                     let max_frequency = processor.max_speed.map(|f| f as f64);
-                    
+
                     return Ok(Some(CpuInfo {
                         model: processor.version.clone(),
                         vendor: processor.manufacturer.clone(),
                         cores: processor.core_count.unwrap_or(1),
-                        threads: processor.thread_count.unwrap_or(processor.core_count.unwrap_or(1)),
+                        threads: processor
+                            .thread_count
+                            .unwrap_or(processor.core_count.unwrap_or(1)),
                         base_frequency,
                         max_frequency,
                         cache_l1: None, // dmidecode doesn't typically provide cache info
@@ -370,24 +375,24 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         // Fallback: try to extract basic info from lshw
         for result in detection_results {
             if let DetectionData::Lshw(lshw_data) = &result.data {
                 for component in &lshw_data.components {
                     if component.class == "processor" {
-                        let model = component.product.clone().unwrap_or_else(|| 
+                        let model = component.product.clone().unwrap_or_else(|| {
                             component.description.clone().unwrap_or("Unknown CPU".to_string())
-                        );
+                        });
                         let vendor = component.vendor.clone().unwrap_or("Unknown".to_string());
-                        
+
                         // Try to parse width/cores from lshw data
                         let cores = component.width.unwrap_or(1);
                         let threads = cores; // lshw doesn't distinguish cores vs threads
-                        
+
                         // Parse frequency from lshw capacity field
                         let frequency = component.capacity.map(|c| c as f64);
-                        
+
                         return Ok(Some(CpuInfo {
                             model,
                             vendor,
@@ -404,15 +409,18 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         Ok(None)
     }
 
     /// Extract memory information from detection results
-    async fn extract_memory_info(&mut self, detection_results: &[DetectionResult]) -> Result<Option<MemoryInfo>> {
+    async fn extract_memory_info(
+        &mut self,
+        detection_results: &[DetectionResult],
+    ) -> Result<Option<MemoryInfo>> {
         let mut total_bytes = 0u64;
         let mut dimms = Vec::new();
-        
+
         // Extract memory information from dmidecode
         for result in detection_results {
             if let DetectionData::Dmidecode(dmi_data) = &result.data {
@@ -422,7 +430,7 @@ impl HardwareAnalyzer {
                         if size_mb > 0 {
                             let size_bytes = (size_mb as u64) * 1024 * 1024;
                             total_bytes += size_bytes;
-                            
+
                             dimms.push(MemoryDimm {
                                 size_bytes,
                                 speed_mhz: memory_device.speed_mts,
@@ -432,20 +440,16 @@ impl HardwareAnalyzer {
                         }
                     }
                 }
-                
+
                 if !dimms.is_empty() {
                     // Calculate available memory (approximate)
                     let available_bytes = total_bytes.saturating_sub(total_bytes / 10); // Rough estimate
-                    
-                    return Ok(Some(MemoryInfo {
-                        total_bytes,
-                        available_bytes,
-                        dimms,
-                    }));
+
+                    return Ok(Some(MemoryInfo { total_bytes, available_bytes, dimms }));
                 }
             }
         }
-        
+
         // Fallback: try to get total memory from lshw
         for result in detection_results {
             if let DetectionData::Lshw(lshw_data) = &result.data {
@@ -456,7 +460,7 @@ impl HardwareAnalyzer {
                         }
                     }
                 }
-                
+
                 if total_bytes > 0 {
                     let available_bytes = total_bytes.saturating_sub(total_bytes / 10);
                     return Ok(Some(MemoryInfo {
@@ -467,35 +471,39 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         Ok(None)
     }
 
     /// Extract storage devices from detection results
-    async fn extract_storage_devices(&mut self, detection_results: &[DetectionResult]) -> Result<Vec<StorageDevice>> {
+    async fn extract_storage_devices(
+        &mut self,
+        detection_results: &[DetectionResult],
+    ) -> Result<Vec<StorageDevice>> {
         let mut storage_devices = Vec::new();
-        
+
         // Extract storage information from lshw
         for result in detection_results {
             if let DetectionData::Lshw(lshw_data) = &result.data {
                 for component in &lshw_data.components {
                     if component.class == "disk" || component.class == "storage" {
-                        let model = component.product.clone().unwrap_or_else(|| 
+                        let model = component.product.clone().unwrap_or_else(|| {
                             component.description.clone().unwrap_or("Unknown Storage".to_string())
-                        );
+                        });
                         let vendor = component.vendor.clone();
                         let size_bytes = component.size.unwrap_or(0);
-                        
+
                         // Determine device type based on description and model
-                        let device_type = self.classify_storage_device(&model, component.description.as_ref());
-                        
+                        let device_type =
+                            self.classify_storage_device(&model, component.description.as_ref());
+
                         // Anonymize serial number if present
                         let anonymized_serial = if let Some(serial) = &component.serial {
                             self.privacy_manager.anonymize_identifier(serial)?
                         } else {
                             "unknown".to_string()
                         };
-                        
+
                         // Extract interface information from businfo
                         let interface = component.businfo.as_ref().and_then(|businfo| {
                             if businfo.starts_with("scsi@") {
@@ -508,7 +516,7 @@ impl HardwareAnalyzer {
                                 None
                             }
                         });
-                        
+
                         storage_devices.push(StorageDevice {
                             anonymized_serial,
                             device_type,
@@ -521,26 +529,31 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         Ok(storage_devices)
     }
 
     /// Extract graphics devices from detection results
-    async fn extract_graphics_devices(&mut self, detection_results: &[DetectionResult]) -> Result<Vec<GraphicsDevice>> {
+    async fn extract_graphics_devices(
+        &mut self,
+        detection_results: &[DetectionResult],
+    ) -> Result<Vec<GraphicsDevice>> {
         let mut graphics_devices = Vec::new();
-        
+
         // First try lspci for detailed graphics info
         for result in detection_results {
             if let DetectionData::Lspci(lspci_data) = &result.data {
                 for device in &lspci_data.devices {
-                    if device.class_code.starts_with("03") { // VGA/Display class
+                    if device.class_code.starts_with("03") {
+                        // VGA/Display class
                         let pci_id = format!("{}:{}", device.vendor_id, device.device_id);
                         let vendor = device.vendor_name.clone().unwrap_or("Unknown".to_string());
-                        let model = device.device_name.clone().unwrap_or_else(|| 
-                            format!("Graphics Device {}", pci_id)
-                        );
+                        let model = device
+                            .device_name
+                            .clone()
+                            .unwrap_or_else(|| format!("Graphics Device {}", pci_id));
                         let driver = device.kernel_driver.clone();
-                        
+
                         graphics_devices.push(GraphicsDevice {
                             vendor,
                             model,
@@ -552,7 +565,7 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         // Fallback: extract graphics info from lshw
         if graphics_devices.is_empty() {
             for result in detection_results {
@@ -560,16 +573,21 @@ impl HardwareAnalyzer {
                     for component in &lshw_data.components {
                         if component.class == "display" {
                             let vendor = component.vendor.clone().unwrap_or("Unknown".to_string());
-                            let model = component.product.clone().unwrap_or_else(|| 
-                                component.description.clone().unwrap_or("Unknown Graphics".to_string())
-                            );
-                            
+                            let model = component.product.clone().unwrap_or_else(|| {
+                                component
+                                    .description
+                                    .clone()
+                                    .unwrap_or("Unknown Graphics".to_string())
+                            });
+
                             // Extract PCI ID from businfo
-                            let pci_id = component.businfo.as_ref()
+                            let pci_id = component
+                                .businfo
+                                .as_ref()
                                 .and_then(|bus| self.extract_pci_id_from_businfo(bus))
                                 .map(|(v, d)| format!("{}:{}", v, d))
                                 .unwrap_or("unknown".to_string());
-                            
+
                             graphics_devices.push(GraphicsDevice {
                                 vendor,
                                 model,
@@ -582,28 +600,33 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         Ok(graphics_devices)
     }
 
     /// Extract network devices from detection results
-    async fn extract_network_devices(&mut self, detection_results: &[DetectionResult]) -> Result<Vec<NetworkDevice>> {
+    async fn extract_network_devices(
+        &mut self,
+        detection_results: &[DetectionResult],
+    ) -> Result<Vec<NetworkDevice>> {
         let mut network_devices = Vec::new();
-        
+
         // First try lspci for detailed network device info
         for result in detection_results {
             if let DetectionData::Lspci(lspci_data) = &result.data {
                 for device in &lspci_data.devices {
-                    if device.class_code.starts_with("02") { // Network controller class
+                    if device.class_code.starts_with("02") {
+                        // Network controller class
                         let vendor = device.vendor_name.clone().unwrap_or("Unknown".to_string());
-                        let model = device.device_name.clone().unwrap_or_else(|| 
+                        let model = device.device_name.clone().unwrap_or_else(|| {
                             format!("Network Device {}:{}", device.vendor_id, device.device_id)
-                        );
+                        });
                         let driver = device.kernel_driver.clone();
-                        
+
                         // Determine device type from model/description
-                        let device_type = self.classify_network_device(&model, device.class_description.as_str());
-                        
+                        let device_type =
+                            self.classify_network_device(&model, device.class_description.as_str());
+
                         network_devices.push(NetworkDevice {
                             device_type,
                             vendor,
@@ -615,21 +638,23 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         // Extract network devices from lshw
         for result in detection_results {
             if let DetectionData::Lshw(lshw_data) = &result.data {
                 for component in &lshw_data.components {
                     if component.class == "network" {
                         let vendor = component.vendor.clone().unwrap_or("Unknown".to_string());
-                        let model = component.product.clone().unwrap_or_else(|| 
+                        let model = component.product.clone().unwrap_or_else(|| {
                             component.description.clone().unwrap_or("Unknown Network".to_string())
-                        );
-                        
+                        });
+
                         // Determine device type
-                        let device_type = self.classify_network_device(&model, 
-                            component.description.as_deref().unwrap_or(""));
-                        
+                        let device_type = self.classify_network_device(
+                            &model,
+                            component.description.as_deref().unwrap_or(""),
+                        );
+
                         // Anonymize MAC address if available in configuration
                         let anonymized_mac = if let Some(config) = &component.configuration {
                             if let Some(serial_val) = config.get("serial") {
@@ -644,9 +669,12 @@ impl HardwareAnalyzer {
                         } else {
                             "unknown".to_string()
                         };
-                        
+
                         // Check if we already added this device from lspci
-                        if !network_devices.iter().any(|dev| dev.model == model && dev.vendor == vendor) {
+                        if !network_devices
+                            .iter()
+                            .any(|dev| dev.model == model && dev.vendor == vendor)
+                        {
                             network_devices.push(NetworkDevice {
                                 device_type,
                                 vendor,
@@ -659,14 +687,17 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         Ok(network_devices)
     }
 
     /// Extract USB devices from detection results
-    async fn extract_usb_devices(&mut self, detection_results: &[DetectionResult]) -> Result<Vec<UsbDevice>> {
+    async fn extract_usb_devices(
+        &mut self,
+        detection_results: &[DetectionResult],
+    ) -> Result<Vec<UsbDevice>> {
         let mut usb_devices = Vec::new();
-        
+
         // Extract USB device information from lsusb
         for result in detection_results {
             if let DetectionData::Lsusb(lsusb_data) = &result.data {
@@ -681,18 +712,20 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         // Fallback: extract USB info from lshw if available
         if usb_devices.is_empty() {
             for result in detection_results {
                 if let DetectionData::Lshw(lshw_data) = &result.data {
                     for component in &lshw_data.components {
-                        if component.class == "usb" || (component.businfo.is_some() && 
-                            component.businfo.as_ref().unwrap().starts_with("usb@")) {
-                            
+                        if component.class == "usb"
+                            || (component.businfo.is_some()
+                                && component.businfo.as_ref().unwrap().starts_with("usb@"))
+                        {
                             // Extract vendor/product IDs from businfo or configuration
-                            let (vendor_id, product_id) = self.extract_usb_ids_from_component(component);
-                            
+                            let (vendor_id, product_id) =
+                                self.extract_usb_ids_from_component(component);
+
                             usb_devices.push(UsbDevice {
                                 vendor_id,
                                 product_id,
@@ -705,57 +738,60 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         Ok(usb_devices)
     }
 
     /// Extract audio devices from detection results
-    async fn extract_audio_devices(&mut self, detection_results: &[DetectionResult]) -> Result<Vec<AudioDevice>> {
+    async fn extract_audio_devices(
+        &mut self,
+        detection_results: &[DetectionResult],
+    ) -> Result<Vec<AudioDevice>> {
         let mut audio_devices = Vec::new();
-        
+
         // Extract audio devices from lspci
         for result in detection_results {
             if let DetectionData::Lspci(lspci_data) = &result.data {
                 for device in &lspci_data.devices {
                     if device.class_code.starts_with("0401") || // Multimedia audio controller
-                       device.class_code.starts_with("0403") {  // Audio device
-                        
+                       device.class_code.starts_with("0403")
+                    {
+                        // Audio device
+
                         let vendor = device.vendor_name.clone().unwrap_or("Unknown".to_string());
-                        let model = device.device_name.clone().unwrap_or_else(|| 
+                        let model = device.device_name.clone().unwrap_or_else(|| {
                             format!("Audio Device {}:{}", device.vendor_id, device.device_id)
-                        );
+                        });
                         let driver = device.kernel_driver.clone();
-                        
+
                         // Classify audio device type
                         let device_type = if device.class_code.starts_with("0401") {
                             "multimedia_audio".to_string()
                         } else {
                             "audio".to_string()
                         };
-                        
-                        audio_devices.push(AudioDevice {
-                            vendor,
-                            model,
-                            driver,
-                            device_type,
-                        });
+
+                        audio_devices.push(AudioDevice { vendor, model, driver, device_type });
                     }
                 }
             }
         }
-        
+
         // Extract audio devices from lshw
         for result in detection_results {
             if let DetectionData::Lshw(lshw_data) = &result.data {
                 for component in &lshw_data.components {
                     if component.class == "multimedia" || component.class == "sound" {
                         let vendor = component.vendor.clone().unwrap_or("Unknown".to_string());
-                        let model = component.product.clone().unwrap_or_else(|| 
+                        let model = component.product.clone().unwrap_or_else(|| {
                             component.description.clone().unwrap_or("Unknown Audio".to_string())
-                        );
-                        
+                        });
+
                         // Check if we already added this device from lspci
-                        if !audio_devices.iter().any(|dev| dev.model == model && dev.vendor == vendor) {
+                        if !audio_devices
+                            .iter()
+                            .any(|dev| dev.model == model && dev.vendor == vendor)
+                        {
                             audio_devices.push(AudioDevice {
                                 vendor,
                                 model,
@@ -767,24 +803,28 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         Ok(audio_devices)
     }
 
     /// Helper to classify storage device types
     fn classify_storage_device(&self, model: &str, description: Option<&String>) -> String {
-        let combined = format!("{} {}", 
-            model.to_lowercase(), 
+        let combined = format!(
+            "{} {}",
+            model.to_lowercase(),
             description.map(|d| d.to_lowercase()).unwrap_or_default()
         );
-        
+
         if combined.contains("nvme") {
             "NVMe SSD".to_string()
         } else if combined.contains("ssd") {
             "SSD".to_string()
         } else if combined.contains("usb") || combined.contains("removable") {
             "USB Drive".to_string()
-        } else if combined.contains("optical") || combined.contains("dvd") || combined.contains("cd") {
+        } else if combined.contains("optical")
+            || combined.contains("dvd")
+            || combined.contains("cd")
+        {
             "Optical Drive".to_string()
         } else {
             "HDD".to_string() // Default assumption
@@ -794,8 +834,9 @@ impl HardwareAnalyzer {
     /// Helper to classify network device types
     fn classify_network_device(&self, model: &str, description: &str) -> String {
         let combined = format!("{} {}", model.to_lowercase(), description.to_lowercase());
-        
-        if combined.contains("wireless") || combined.contains("wifi") || combined.contains("802.11") {
+
+        if combined.contains("wireless") || combined.contains("wifi") || combined.contains("802.11")
+        {
             "wifi".to_string()
         } else if combined.contains("bluetooth") {
             "bluetooth".to_string()
@@ -807,7 +848,10 @@ impl HardwareAnalyzer {
     }
 
     /// Helper to extract USB vendor/product IDs from lshw component
-    fn extract_usb_ids_from_component(&self, component: &crate::detectors::lshw::LshwComponent) -> (String, String) {
+    fn extract_usb_ids_from_component(
+        &self,
+        component: &crate::detectors::lshw::LshwComponent,
+    ) -> (String, String) {
         // Try to extract from configuration or other fields
         if let Some(config) = &component.configuration {
             // Look for USB IDs in various formats
@@ -822,7 +866,7 @@ impl HardwareAnalyzer {
                 }
             }
         }
-        
+
         // Fallback to unknown IDs
         ("unknown".to_string(), "unknown".to_string())
     }

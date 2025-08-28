@@ -1,13 +1,13 @@
 //! Utility functions and controllers for the GUI
 
-use std::thread;
 use std::sync::mpsc;
+use std::thread;
 use std::time::Duration;
 
-use crate::hardware::PrivacyLevel;
-use crate::errors::{LxHwError, Result};
 use crate::detectors::integration::HardwareAnalyzer;
+use crate::errors::{LxHwError, Result};
 use crate::gui::models::HardwareReport;
+use crate::hardware::PrivacyLevel;
 
 /// Controller for managing hardware detection operations
 pub struct DetectionController {
@@ -19,67 +19,50 @@ pub struct DetectionController {
 /// Commands for the detection controller
 #[derive(Debug)]
 pub enum DetectionCommand {
-    Start {
-        privacy_level: PrivacyLevel,
-    },
+    Start { privacy_level: PrivacyLevel },
     Cancel,
 }
 
 /// Results from hardware detection
 #[derive(Debug, Clone)]
 pub enum DetectionResult {
-    Progress {
-        tool: String,
-        fraction: f64,
-        message: String,
-    },
-    ToolComplete {
-        tool: String,
-        success: bool,
-    },
-    Complete {
-        report: HardwareReport,
-    },
-    Error {
-        message: String,
-    },
+    Progress { tool: String, fraction: f64, message: String },
+    ToolComplete { tool: String, success: bool },
+    Complete { report: HardwareReport },
+    Error { message: String },
 }
 
 impl DetectionController {
     /// Create a new detection controller
     pub fn new() -> Self {
-        Self {
-            sender: None,
-            receiver: None,
-            handle: None,
-        }
+        Self { sender: None, receiver: None, handle: None }
     }
 
     /// Start hardware detection with real backend integration
     pub fn start_detection(
-        &mut self, 
+        &mut self,
         privacy_level: PrivacyLevel,
     ) -> Result<mpsc::Receiver<DetectionResult>> {
         log::info!("Starting hardware detection with privacy level: {:?}", privacy_level);
-        
+
         // Stop any existing detection
         self.stop_detection()?;
-        
+
         // Create channels for communication
         let (cmd_sender, cmd_receiver) = mpsc::channel();
         let (result_sender, result_receiver) = mpsc::channel();
-        
+
         // Store references
         self.sender = Some(cmd_sender);
         self.receiver = Some(result_receiver.clone());
-        
+
         // Spawn detection thread
         let handle = thread::spawn(move || {
             Self::detection_worker(cmd_receiver, result_sender, privacy_level);
         });
-        
+
         self.handle = Some(handle);
-        
+
         Ok(result_receiver)
     }
 
@@ -99,7 +82,7 @@ impl DetectionController {
                 return;
             }
         };
-        
+
         rt.block_on(async {
             // Send initial progress
             let _ = result_sender.send(DetectionResult::Progress {
@@ -107,7 +90,7 @@ impl DetectionController {
                 fraction: 0.0,
                 message: "Initializing hardware analyzer...".to_string(),
             });
-            
+
             // Create hardware analyzer
             let mut analyzer = match HardwareAnalyzer::new(privacy_level) {
                 Ok(analyzer) => analyzer,
@@ -118,18 +101,18 @@ impl DetectionController {
                     return;
                 }
             };
-            
+
             // Send progress for each detection step
             let tools = ["lshw", "dmidecode", "lspci", "lsusb", "inxi"];
             let mut completed_tools = 0;
-            
+
             for (i, tool) in tools.iter().enumerate() {
                 // Check for cancellation
                 if let Ok(DetectionCommand::Cancel) = cmd_receiver.try_recv() {
                     log::info!("Hardware detection cancelled by user");
                     return;
                 }
-                
+
                 // Send progress for current tool
                 let progress = i as f64 / tools.len() as f64;
                 let _ = result_sender.send(DetectionResult::Progress {
@@ -137,42 +120,42 @@ impl DetectionController {
                     fraction: progress,
                     message: format!("Running {} detection...", tool),
                 });
-                
+
                 // Simulate tool execution time
                 tokio::time::sleep(Duration::from_millis(500)).await;
-                
+
                 // Mark tool as complete
-                let _ = result_sender.send(DetectionResult::ToolComplete {
-                    tool: tool.to_string(),
-                    success: true,
-                });
-                
+                let _ = result_sender
+                    .send(DetectionResult::ToolComplete { tool: tool.to_string(), success: true });
+
                 completed_tools += 1;
-                
+
                 // Update overall progress
                 let overall_progress = completed_tools as f64 / tools.len() as f64;
                 let _ = result_sender.send(DetectionResult::Progress {
                     tool: "overall".to_string(),
                     fraction: overall_progress,
-                    message: format!("Completed {}/{} detection tools", completed_tools, tools.len()),
+                    message: format!(
+                        "Completed {}/{} detection tools",
+                        completed_tools,
+                        tools.len()
+                    ),
                 });
             }
-            
+
             // Run actual hardware analysis
             let _ = result_sender.send(DetectionResult::Progress {
                 tool: "analysis".to_string(),
                 fraction: 0.9,
                 message: "Analyzing detected hardware...".to_string(),
             });
-            
+
             match analyzer.analyze_system().await {
                 Ok(hardware_report) => {
                     // Convert to GUI HardwareReport format
                     let gui_report = Self::convert_hardware_report(hardware_report);
-                    
-                    let _ = result_sender.send(DetectionResult::Complete {
-                        report: gui_report,
-                    });
+
+                    let _ = result_sender.send(DetectionResult::Complete { report: gui_report });
                 }
                 Err(e) => {
                     let _ = result_sender.send(DetectionResult::Error {
@@ -182,7 +165,7 @@ impl DetectionController {
             }
         });
     }
-    
+
     /// Convert Rust hardware report to GUI format
     fn convert_hardware_report(report: crate::hardware::HardwareReport) -> HardwareReport {
         HardwareReport {
@@ -198,29 +181,45 @@ impl DetectionController {
                 threads: cpu.threads,
                 base_frequency: cpu.base_frequency,
             }),
-            graphics: report.graphics.into_iter().map(|gpu| crate::gui::models::GraphicsDevice {
-                vendor: gpu.vendor,
-                model: gpu.model,
-                pci_id: gpu.pci_id,
-                driver: gpu.driver,
-            }).collect(),
-            network: report.network.into_iter().map(|net| crate::gui::models::NetworkDevice {
-                vendor: net.vendor,
-                model: net.model,
-                device_type: net.device_type,
-                driver: net.driver,
-            }).collect(),
-            storage: report.storage.into_iter().map(|storage| crate::gui::models::StorageDevice {
-                vendor: storage.vendor,
-                model: storage.model,
-                size_bytes: storage.size_bytes,
-                interface: storage.interface,
-            }).collect(),
-            audio: report.audio.into_iter().map(|audio| crate::gui::models::AudioDevice {
-                vendor: audio.vendor,
-                device_type: audio.device_type,
-                driver: audio.driver,
-            }).collect(),
+            graphics: report
+                .graphics
+                .into_iter()
+                .map(|gpu| crate::gui::models::GraphicsDevice {
+                    vendor: gpu.vendor,
+                    model: gpu.model,
+                    pci_id: gpu.pci_id,
+                    driver: gpu.driver,
+                })
+                .collect(),
+            network: report
+                .network
+                .into_iter()
+                .map(|net| crate::gui::models::NetworkDevice {
+                    vendor: net.vendor,
+                    model: net.model,
+                    device_type: net.device_type,
+                    driver: net.driver,
+                })
+                .collect(),
+            storage: report
+                .storage
+                .into_iter()
+                .map(|storage| crate::gui::models::StorageDevice {
+                    vendor: storage.vendor,
+                    model: storage.model,
+                    size_bytes: storage.size_bytes,
+                    interface: storage.interface,
+                })
+                .collect(),
+            audio: report
+                .audio
+                .into_iter()
+                .map(|audio| crate::gui::models::AudioDevice {
+                    vendor: audio.vendor,
+                    device_type: audio.device_type,
+                    driver: audio.driver,
+                })
+                .collect(),
         }
     }
 
@@ -236,10 +235,10 @@ impl DetectionController {
 
         self.sender = None;
         self.receiver = None;
-        
+
         Ok(())
     }
-    
+
     /// Check if detection is running
     pub fn is_running(&self) -> bool {
         self.handle.is_some() && self.sender.is_some()
@@ -256,17 +255,13 @@ impl Drop for DetectionController {
 
 /// Utility functions for the GUI
 pub mod gui_utils {
+    use adw::prelude::*;
     use gtk4::prelude::*;
     use libadwaita as adw;
-    use adw::prelude::*;
 
     /// Show an error dialog
     pub fn show_error_dialog(parent: &impl IsA<gtk4::Window>, title: &str, message: &str) {
-        let dialog = adw::MessageDialog::new(
-            Some(parent),
-            Some(title),
-            Some(message),
-        );
+        let dialog = adw::MessageDialog::new(Some(parent), Some(title), Some(message));
         dialog.add_response("ok", &crate::gui::t("OK"));
         dialog.present();
     }

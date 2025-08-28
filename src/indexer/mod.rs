@@ -388,7 +388,11 @@ impl HardwareIndexer {
             system_id: report.metadata.anonymized_system_id.clone(),
             submission_date: report.metadata.generated_at,
             kernel_version: report.system.kernel_version.clone(),
-            distribution: report.system.distribution.clone().unwrap_or_else(|| "Unknown".to_string()),
+            distribution: report
+                .system
+                .distribution
+                .clone()
+                .unwrap_or_else(|| "Unknown".to_string()),
             architecture: report.system.architecture.clone(),
             privacy_level: format!("{:?}", report.metadata.privacy_level),
         })
@@ -411,11 +415,26 @@ impl HardwareIndexer {
                     let mut props = HashMap::new();
                     props.insert("cores".to_string(), serde_json::Value::from(cpu.cores));
                     props.insert("threads".to_string(), serde_json::Value::from(cpu.threads));
-                    props.insert("base_frequency".to_string(), serde_json::to_value(&cpu.base_frequency).unwrap());
-                    props.insert("max_frequency".to_string(), serde_json::to_value(&cpu.max_frequency).unwrap());
-                    props.insert("cache_l1".to_string(), serde_json::to_value(&cpu.cache_l1).unwrap());
-                    props.insert("cache_l2".to_string(), serde_json::to_value(&cpu.cache_l2).unwrap());
-                    props.insert("cache_l3".to_string(), serde_json::to_value(&cpu.cache_l3).unwrap());
+                    props.insert(
+                        "base_frequency".to_string(),
+                        serde_json::to_value(&cpu.base_frequency).unwrap(),
+                    );
+                    props.insert(
+                        "max_frequency".to_string(),
+                        serde_json::to_value(&cpu.max_frequency).unwrap(),
+                    );
+                    props.insert(
+                        "cache_l1".to_string(),
+                        serde_json::to_value(&cpu.cache_l1).unwrap(),
+                    );
+                    props.insert(
+                        "cache_l2".to_string(),
+                        serde_json::to_value(&cpu.cache_l2).unwrap(),
+                    );
+                    props.insert(
+                        "cache_l3".to_string(),
+                        serde_json::to_value(&cpu.cache_l3).unwrap(),
+                    );
                     props.insert("flags".to_string(), serde_json::to_value(&cpu.flags).unwrap());
                     props
                 },
@@ -433,9 +452,18 @@ impl HardwareIndexer {
                 driver_version: None,
                 properties: {
                     let mut props = HashMap::new();
-                    props.insert("total_bytes".to_string(), serde_json::Value::from(memory.total_bytes));
-                    props.insert("available_bytes".to_string(), serde_json::Value::from(memory.available_bytes));
-                    props.insert("dimm_count".to_string(), serde_json::Value::from(memory.dimms.len()));
+                    props.insert(
+                        "total_bytes".to_string(),
+                        serde_json::Value::from(memory.total_bytes),
+                    );
+                    props.insert(
+                        "available_bytes".to_string(),
+                        serde_json::Value::from(memory.available_bytes),
+                    );
+                    props.insert(
+                        "dimm_count".to_string(),
+                        serde_json::Value::from(memory.dimms.len()),
+                    );
                     props
                 },
             });
@@ -451,8 +479,14 @@ impl HardwareIndexer {
                     driver_version: None,
                     properties: {
                         let mut props = HashMap::new();
-                        props.insert("size_bytes".to_string(), serde_json::Value::from(dimm.size_bytes));
-                        props.insert("speed_mhz".to_string(), serde_json::to_value(&dimm.speed_mhz).unwrap());
+                        props.insert(
+                            "size_bytes".to_string(),
+                            serde_json::Value::from(dimm.size_bytes),
+                        );
+                        props.insert(
+                            "speed_mhz".to_string(),
+                            serde_json::to_value(&dimm.speed_mhz).unwrap(),
+                        );
                         props.insert("slot".to_string(), serde_json::Value::from(i));
                         props
                     },
@@ -471,7 +505,10 @@ impl HardwareIndexer {
                 driver_version: None,
                 properties: {
                     let mut props = HashMap::new();
-                    props.insert("memory_bytes".to_string(), serde_json::to_value(&gpu.memory_bytes).unwrap());
+                    props.insert(
+                        "memory_bytes".to_string(),
+                        serde_json::to_value(&gpu.memory_bytes).unwrap(),
+                    );
                     props.insert("pci_id".to_string(), serde_json::Value::from(gpu.pci_id.clone()));
                     props
                 },
@@ -489,8 +526,14 @@ impl HardwareIndexer {
                 driver_version: None,
                 properties: {
                     let mut props = HashMap::new();
-                    props.insert("device_type".to_string(), serde_json::Value::from(net.device_type.clone()));
-                    props.insert("anonymized_mac".to_string(), serde_json::Value::from(net.anonymized_mac.clone()));
+                    props.insert(
+                        "device_type".to_string(),
+                        serde_json::Value::from(net.device_type.clone()),
+                    );
+                    props.insert(
+                        "anonymized_mac".to_string(),
+                        serde_json::Value::from(net.anonymized_mac.clone()),
+                    );
                     props
                 },
             });
@@ -507,10 +550,22 @@ impl HardwareIndexer {
                 driver_version: None,
                 properties: {
                     let mut props = HashMap::new();
-                    props.insert("device_type".to_string(), serde_json::Value::from(storage.device_type.clone()));
-                    props.insert("size_bytes".to_string(), serde_json::Value::from(storage.size_bytes));
-                    props.insert("interface".to_string(), serde_json::to_value(&storage.interface).unwrap());
-                    props.insert("anonymized_serial".to_string(), serde_json::Value::from(storage.anonymized_serial.clone()));
+                    props.insert(
+                        "device_type".to_string(),
+                        serde_json::Value::from(storage.device_type.clone()),
+                    );
+                    props.insert(
+                        "size_bytes".to_string(),
+                        serde_json::Value::from(storage.size_bytes),
+                    );
+                    props.insert(
+                        "interface".to_string(),
+                        serde_json::to_value(&storage.interface).unwrap(),
+                    );
+                    props.insert(
+                        "anonymized_serial".to_string(),
+                        serde_json::Value::from(storage.anonymized_serial.clone()),
+                    );
                     props
                 },
             });
@@ -527,9 +582,18 @@ impl HardwareIndexer {
                 driver_version: None,
                 properties: {
                     let mut props = HashMap::new();
-                    props.insert("vendor_id".to_string(), serde_json::Value::from(usb.vendor_id.clone()));
-                    props.insert("product_id".to_string(), serde_json::Value::from(usb.product_id.clone()));
-                    props.insert("usb_version".to_string(), serde_json::to_value(&usb.usb_version).unwrap());
+                    props.insert(
+                        "vendor_id".to_string(),
+                        serde_json::Value::from(usb.vendor_id.clone()),
+                    );
+                    props.insert(
+                        "product_id".to_string(),
+                        serde_json::Value::from(usb.product_id.clone()),
+                    );
+                    props.insert(
+                        "usb_version".to_string(),
+                        serde_json::to_value(&usb.usb_version).unwrap(),
+                    );
                     props
                 },
             });
@@ -546,7 +610,10 @@ impl HardwareIndexer {
                 driver_version: None,
                 properties: {
                     let mut props = HashMap::new();
-                    props.insert("device_type".to_string(), serde_json::Value::from(audio.device_type.clone()));
+                    props.insert(
+                        "device_type".to_string(),
+                        serde_json::Value::from(audio.device_type.clone()),
+                    );
                     props
                 },
             });
@@ -576,10 +643,22 @@ impl HardwareIndexer {
                     driver_version: None,
                     properties: {
                         let mut props = HashMap::new();
-                        props.insert("support_status".to_string(), serde_json::Value::from(device.support_status.clone()));
-                        props.insert("since_kernel_version".to_string(), serde_json::to_value(&device.since_kernel_version).unwrap());
-                        props.insert("config_dependencies".to_string(), serde_json::to_value(&device.config_dependencies).unwrap());
-                        props.insert("notes".to_string(), serde_json::to_value(&device.notes).unwrap());
+                        props.insert(
+                            "support_status".to_string(),
+                            serde_json::Value::from(device.support_status.clone()),
+                        );
+                        props.insert(
+                            "since_kernel_version".to_string(),
+                            serde_json::to_value(&device.since_kernel_version).unwrap(),
+                        );
+                        props.insert(
+                            "config_dependencies".to_string(),
+                            serde_json::to_value(&device.config_dependencies).unwrap(),
+                        );
+                        props.insert(
+                            "notes".to_string(),
+                            serde_json::to_value(&device.notes).unwrap(),
+                        );
                         props
                     },
                 });
@@ -600,60 +679,68 @@ impl HardwareIndexer {
         let mut workarounds = Vec::new();
 
         // Analyze kernel support data
-        let (supported, unsupported, experimental) = if let Some(kernel_support) = &report.kernel_support {
-            for device in &kernel_support.device_support_details {
-                let working = match device.support_status.as_str() {
-                    "supported" => true,
-                    "experimental" => true,
-                    "unsupported" => false,
-                    _ => false,
-                };
+        let (supported, unsupported, experimental) =
+            if let Some(kernel_support) = &report.kernel_support {
+                for device in &kernel_support.device_support_details {
+                    let working = match device.support_status.as_str() {
+                        "supported" => true,
+                        "experimental" => true,
+                        "unsupported" => false,
+                        _ => false,
+                    };
 
-                let mut device_issues = Vec::new();
-                let mut device_workarounds = Vec::new();
+                    let mut device_issues = Vec::new();
+                    let mut device_workarounds = Vec::new();
 
-                if !working {
-                    device_issues.push(format!("No driver available for device {}", device.device_name));
-                    if let Some(notes) = &device.notes {
-                        device_workarounds.push(notes.clone());
+                    if !working {
+                        device_issues
+                            .push(format!("No driver available for device {}", device.device_name));
+                        if let Some(notes) = &device.notes {
+                            device_workarounds.push(notes.clone());
+                        }
                     }
+
+                    component_compatibility.insert(
+                        device.device_id.clone(),
+                        ComponentCompatibility {
+                            working,
+                            performance: None,
+                            issues: device_issues,
+                            workarounds: device_workarounds,
+                        },
+                    );
                 }
 
-                component_compatibility.insert(
-                    device.device_id.clone(),
-                    ComponentCompatibility {
-                        working,
-                        performance: None,
-                        issues: device_issues,
-                        workarounds: device_workarounds,
-                    },
-                );
-            }
-
-            (
-                kernel_support.supported_devices,
-                kernel_support.unsupported_devices,
-                kernel_support.experimental_devices,
-            )
-        } else {
-            (0, 0, 0)
-        };
+                (
+                    kernel_support.supported_devices,
+                    kernel_support.unsupported_devices,
+                    kernel_support.experimental_devices,
+                )
+            } else {
+                (0, 0, 0)
+            };
 
         // Collect system-wide issues and workarounds
         if unsupported > 0 {
             issues.push(format!("{} devices lack kernel driver support", unsupported));
-            workarounds.push("Check vendor websites for proprietary drivers or newer kernel versions".to_string());
+            workarounds.push(
+                "Check vendor websites for proprietary drivers or newer kernel versions"
+                    .to_string(),
+            );
         }
 
         if experimental > 0 {
             issues.push(format!("{} devices have experimental support only", experimental));
-            workarounds.push("Monitor kernel updates and community forums for stability improvements".to_string());
+            workarounds.push(
+                "Monitor kernel updates and community forums for stability improvements"
+                    .to_string(),
+            );
         }
 
         // Determine overall compatibility status
         let total_devices = supported + unsupported + experimental;
         let working_devices = supported + experimental;
-        
+
         let status = if total_devices == 0 {
             CompatibilityStatus::Unknown
         } else {
@@ -675,8 +762,9 @@ impl HardwareIndexer {
             let has_cpu = report.cpu.is_some();
             let has_gpu = !report.graphics.is_empty();
             let has_network = !report.network.is_empty();
-            
-            let completeness_score = [has_cpu, has_gpu, has_network].iter().map(|&b| if b { 1 } else { 0 }).sum::<i32>();
+
+            let completeness_score =
+                [has_cpu, has_gpu, has_network].iter().map(|&b| if b { 1 } else { 0 }).sum::<i32>();
             70 + (completeness_score * 10) // 70-100 based on data completeness
         };
 

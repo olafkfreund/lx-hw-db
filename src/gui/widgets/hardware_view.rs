@@ -1,9 +1,9 @@
 //! Hardware view widget for displaying detected devices
 
+use crate::gui::models::{HardwareCategory, HardwareDeviceDisplay};
+use adw::prelude::*;
 use gtk4::prelude::*;
 use libadwaita as adw;
-use adw::prelude::*;
-use crate::gui::models::{HardwareDeviceDisplay, HardwareCategory};
 
 /// Widget for displaying hardware detection results
 pub struct HardwareView {
@@ -21,11 +21,7 @@ impl HardwareView {
         let content_box = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         widget.set_child(Some(&content_box));
 
-        Self {
-            widget,
-            content_box,
-            device_groups: std::collections::HashMap::new(),
-        }
+        Self { widget, content_box, device_groups: std::collections::HashMap::new() }
     }
 
     /// Get the main widget
@@ -42,9 +38,11 @@ impl HardwareView {
         self.device_groups.clear();
 
         // Group devices by category
-        let mut categories: std::collections::HashMap<HardwareCategory, Vec<HardwareDeviceDisplay>> = 
-            std::collections::HashMap::new();
-        
+        let mut categories: std::collections::HashMap<
+            HardwareCategory,
+            Vec<HardwareDeviceDisplay>,
+        > = std::collections::HashMap::new();
+
         for device in devices {
             categories.entry(device.category).or_insert_with(Vec::new).push(device);
         }
@@ -58,11 +56,15 @@ impl HardwareView {
     }
 
     /// Create an expandable section for a hardware category
-    fn create_category_section(&self, category: &HardwareCategory, devices: Vec<HardwareDeviceDisplay>) -> adw::ExpanderRow {
+    fn create_category_section(
+        &self,
+        category: &HardwareCategory,
+        devices: Vec<HardwareDeviceDisplay>,
+    ) -> adw::ExpanderRow {
         let expander = adw::ExpanderRow::new();
         expander.set_title(&crate::gui::t(category.display_name()));
         expander.set_subtitle(&format!("{} devices", devices.len()));
-        
+
         // Category icon
         let icon = gtk4::Image::from_icon_name(category.icon_name());
         expander.add_prefix(&icon);

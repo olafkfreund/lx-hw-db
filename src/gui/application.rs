@@ -1,10 +1,10 @@
 //! Main GTK4 application implementation
 
-use gtk4::prelude::*;
-use libadwaita as adw;
+use crate::gui::window::MainWindow;
 use adw::prelude::*;
 use gio::prelude::*;
-use crate::gui::window::MainWindow;
+use gtk4::prelude::*;
+use libadwaita as adw;
 
 /// Application ID following reverse domain name convention
 const APP_ID: &str = "org.lx_hw_db.HardwareDetector";
@@ -17,9 +17,7 @@ pub struct HardwareDetectorApp {
 impl HardwareDetectorApp {
     /// Create a new application instance
     pub fn new() -> Self {
-        let app = adw::Application::builder()
-            .application_id(APP_ID)
-            .build();
+        let app = adw::Application::builder().application_id(APP_ID).build();
 
         let app_instance = Self { app };
         app_instance.setup_application();
@@ -50,7 +48,7 @@ impl HardwareDetectorApp {
     fn on_startup(app: &adw::Application) {
         // Load CSS styling
         Self::load_css();
-        
+
         // Set up application menu
         Self::setup_app_menu(app);
     }
@@ -89,7 +87,8 @@ impl HardwareDetectorApp {
     fn load_css() {
         let css_provider = gtk4::CssProvider::new();
         // For now, just load some basic CSS inline
-        css_provider.load_from_data("
+        css_provider.load_from_data(
+            "
             .sidebar { background-color: @sidebar_bg_color; }
             .statusbar { border-top: 1px solid @borders; }
             .privacy-indicator { font-size: smaller; }
@@ -101,8 +100,9 @@ impl HardwareDetectorApp {
             .status-unknown { color: @dim_label; }
             .success { color: @success_color; }
             .error { color: @error_color; }
-        ");
-        
+        ",
+        );
+
         if let Some(display) = gtk4::gdk::Display::default() {
             gtk4::style_context_add_provider_for_display(
                 &display,
@@ -115,7 +115,7 @@ impl HardwareDetectorApp {
     /// Set up application menu
     fn setup_app_menu(app: &adw::Application) {
         let menu = gio::Menu::new();
-        
+
         menu.append(Some(&crate::gui::t("_Preferences")), Some("app.preferences"));
         menu.append(Some(&crate::gui::t("_About Hardware Detector")), Some("app.about"));
         menu.append(Some(&crate::gui::t("_Quit")), Some("app.quit"));
@@ -126,7 +126,7 @@ impl HardwareDetectorApp {
     /// Show about dialog
     fn show_about_dialog(app: &adw::Application) {
         let window = app.active_window().expect("No active window");
-        
+
         let about = adw::AboutDialog::builder()
             .application_name(&crate::gui::t("Linux Hardware Database"))
             .application_icon(APP_ID)
@@ -136,7 +136,9 @@ impl HardwareDetectorApp {
             .issue_url("https://github.com/lx-hw-db/lx-hw-db/issues")
             .copyright("Copyright © 2025 Linux Hardware Database Project")
             .license_type(gtk4::License::Agpl30)
-            .comments(&crate::gui::t("Privacy-preserving Linux hardware detection and compatibility reporting"))
+            .comments(&crate::gui::t(
+                "Privacy-preserving Linux hardware detection and compatibility reporting",
+            ))
             .build();
 
         about.add_credit_section(
@@ -150,15 +152,15 @@ impl HardwareDetectorApp {
     /// Show preferences dialog
     fn show_preferences_dialog(app: &adw::Application) {
         let window = app.active_window().expect("No active window");
-        
+
         // Create preferences window
         let prefs = adw::PreferencesDialog::new();
         prefs.set_title(&crate::gui::t("Preferences"));
-        
+
         // Privacy page
         let privacy_page = Self::create_privacy_preferences_page();
         prefs.add(&privacy_page);
-        
+
         // Detection tools page
         let tools_page = Self::create_tools_preferences_page();
         prefs.add(&tools_page);
@@ -255,7 +257,7 @@ impl HardwareDetectorApp {
 
             // TODO: Add logic to check if tool is actually available
             // and disable the switch if not found
-            
+
             tools_group.add(&switch_row);
         }
 

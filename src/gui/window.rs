@@ -1,16 +1,16 @@
 //! Main application window implementation
 
-use gtk4::prelude::*;
-use libadwaita as adw;
 use adw::prelude::*;
 use gio::prelude::*;
+use gtk4::prelude::*;
+use libadwaita as adw;
 use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::gui::{
-    models::{SharedAppState, create_app_state},
-    widgets::{DetectionProgress},
+    models::{create_app_state, SharedAppState},
     utils::DetectionController,
+    widgets::DetectionProgress,
 };
 
 /// Navigation pages in the sidebar
@@ -38,7 +38,7 @@ impl MainWindow {
     /// Create a new main window
     pub fn new(app: &adw::Application) -> MainWindow {
         let state = create_app_state();
-        
+
         // Create main window
         let window = adw::ApplicationWindow::builder()
             .application(app)
@@ -63,15 +63,13 @@ impl MainWindow {
         let sidebar_box = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         sidebar_box.set_width_request(250);
         sidebar_box.add_css_class("sidebar");
-        
+
         let sidebar = Self::create_sidebar();
         sidebar_box.append(&sidebar);
-        
-        let sidebar_scrolled = gtk4::ScrolledWindow::builder()
-            .child(&sidebar_box)
-            .vexpand(true)
-            .build();
-        
+
+        let sidebar_scrolled =
+            gtk4::ScrolledWindow::builder().child(&sidebar_box).vexpand(true).build();
+
         paned.set_start_child(Some(&sidebar_scrolled));
 
         // Create main content view stack
@@ -108,7 +106,7 @@ impl MainWindow {
     /// Create the header bar
     fn create_header_bar(state: &SharedAppState) -> adw::HeaderBar {
         let header_bar = adw::HeaderBar::new();
-        
+
         // Title
         let title = gtk4::Label::new(Some(&crate::gui::t("Hardware Detector")));
         title.add_css_class("title");
@@ -116,7 +114,7 @@ impl MainWindow {
 
         // Privacy level indicator in header
         let privacy_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
-        
+
         let privacy_icon = gtk4::Image::from_icon_name("security-medium-symbolic");
         privacy_icon.set_pixel_size(16);
         privacy_box.append(&privacy_icon);
@@ -133,12 +131,12 @@ impl MainWindow {
         // Menu button
         let menu_button = gtk4::MenuButton::new();
         menu_button.set_icon_name("open-menu-symbolic");
-        
+
         let menu = gio::Menu::new();
         menu.append(Some(&crate::gui::t("_Preferences")), Some("app.preferences"));
         menu.append(Some(&crate::gui::t("_About")), Some("app.about"));
         menu_button.set_menu_model(Some(&menu));
-        
+
         header_bar.pack_end(&menu_button);
 
         header_bar
@@ -163,15 +161,15 @@ impl MainWindow {
             let row = adw::ActionRow::new();
             row.set_title(&crate::gui::t(title));
             row.set_subtitle(&crate::gui::t(subtitle));
-            
+
             // Icon
             let icon_widget = gtk4::Label::new(Some(icon));
             icon_widget.set_width_request(32);
             row.add_prefix(&icon_widget);
-            
+
             // Store page ID using widget name
             row.set_widget_name(id);
-            
+
             sidebar.append(&row);
         }
 
@@ -290,7 +288,7 @@ impl MainWindow {
         page.append(&header);
 
         let description = gtk4::Label::new(Some(&crate::gui::t(
-            "Privacy-preserving hardware detection and compatibility analysis for Linux systems"
+            "Privacy-preserving hardware detection and compatibility analysis for Linux systems",
         )));
         description.add_css_class("subtitle");
         description.set_wrap(true);
@@ -312,7 +310,8 @@ impl MainWindow {
         load_button.set_size_request(-1, 48);
         button_box.append(&load_button);
 
-        let privacy_button = gtk4::Button::with_label(&crate::gui::t("⚙️ Configure Privacy Settings"));
+        let privacy_button =
+            gtk4::Button::with_label(&crate::gui::t("⚙️ Configure Privacy Settings"));
         privacy_button.add_css_class("pill");
         privacy_button.set_size_request(-1, 48);
         button_box.append(&privacy_button);
@@ -322,7 +321,7 @@ impl MainWindow {
         // Privacy notice
         let privacy_notice = gtk4::Label::new(Some(&crate::gui::t(
             "🔒 All hardware identifiers are cryptographically anonymized with rotating salts. \
-             No personal information is collected or stored."
+             No personal information is collected or stored.",
         )));
         privacy_notice.add_css_class("dim-label");
         privacy_notice.set_wrap(true);
@@ -354,7 +353,7 @@ impl MainWindow {
 
         // Detection controls
         let controls_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 12);
-        
+
         let start_button = gtk4::Button::with_label(&crate::gui::t("Start Detection"));
         start_button.add_css_class("suggested-action");
         controls_box.append(&start_button);
@@ -376,10 +375,10 @@ impl MainWindow {
             let row = adw::ActionRow::new();
             row.set_title(tool);
             row.set_subtitle(&format!("{} - Available", tool));
-            
+
             let status_icon = gtk4::Image::from_icon_name("emblem-ok-symbolic");
             row.add_suffix(&status_icon);
-            
+
             tools_group.add(&row);
         }
 
@@ -398,7 +397,7 @@ impl MainWindow {
 
         // Initially show placeholder
         let placeholder = gtk4::Label::new(Some(&crate::gui::t(
-            "No hardware data available. \nRun hardware detection first."
+            "No hardware data available. \nRun hardware detection first.",
         )));
         placeholder.add_css_class("dim-label");
         placeholder.set_valign(gtk4::Align::Center);
@@ -412,13 +411,13 @@ impl MainWindow {
     /// Create the configuration page
     fn create_configuration_page(_state: &SharedAppState) -> gtk4::ScrolledWindow {
         let scrolled = gtk4::ScrolledWindow::new();
-        
+
         let page = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         scrolled.set_child(Some(&page));
 
         // Placeholder
         let placeholder = gtk4::Label::new(Some(&crate::gui::t(
-            "No configuration recommendations available. \nRun hardware detection first."
+            "No configuration recommendations available. \nRun hardware detection first.",
         )));
         placeholder.add_css_class("dim-label");
         placeholder.set_valign(gtk4::Align::Center);
@@ -443,7 +442,7 @@ impl MainWindow {
         page.append(&header);
 
         let placeholder = gtk4::Label::new(Some(&crate::gui::t(
-            "Export functionality will be available after hardware detection."
+            "Export functionality will be available after hardware detection.",
         )));
         placeholder.add_css_class("dim-label");
         page.append(&placeholder);
@@ -454,7 +453,7 @@ impl MainWindow {
     /// Set up sidebar navigation handlers
     fn setup_sidebar_navigation(sidebar: &gtk4::ListBox, view_stack: &adw::ViewStack) {
         let view_stack_clone = view_stack.clone();
-        
+
         sidebar.connect_row_selected(move |_, row| {
             if let Some(row) = row {
                 let page_id = row.widget_name();

@@ -1,9 +1,9 @@
 //! Individual device card widget
 
+use crate::gui::models::HardwareDeviceDisplay;
+use adw::prelude::*;
 use gtk4::prelude::*;
 use libadwaita as adw;
-use adw::prelude::*;
-use crate::gui::models::HardwareDeviceDisplay;
 
 /// Card widget for displaying individual hardware device information
 pub struct DeviceCard {

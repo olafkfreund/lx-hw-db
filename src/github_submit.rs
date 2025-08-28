@@ -61,10 +61,7 @@ pub struct GitHubSubmitter {
 impl GitHubSubmitter {
     /// Create a new GitHub submitter
     pub fn new(config: GitHubConfig) -> Self {
-        Self {
-            config,
-            temp_dir: None,
-        }
+        Self { config, temp_dir: None }
     }
 
     /// Submit a hardware report to GitHub
@@ -89,9 +86,7 @@ impl GitHubSubmitter {
             self.show_submission_summary(&submission, &report, &filename)?;
             if !self.confirm_submission()? {
                 println!("❌ Submission cancelled by user");
-                return Err(LxHwError::Validation(
-                    "Submission cancelled by user".to_string(),
-                ));
+                return Err(LxHwError::Validation("Submission cancelled by user".to_string()));
             }
         }
 
@@ -118,7 +113,9 @@ impl GitHubSubmitter {
 
         println!("✅ Hardware report submitted successfully!");
         println!("📋 Pull Request: {}", pr_url);
-        println!("🔍 Your submission will be automatically validated and reviewed by the community.");
+        println!(
+            "🔍 Your submission will be automatically validated and reviewed by the community."
+        );
 
         Ok(pr_url)
     }
@@ -152,25 +149,19 @@ impl GitHubSubmitter {
     fn load_and_validate_report(&self, report_path: &Path) -> Result<HardwareReport> {
         println!("📄 Loading hardware report: {}", report_path.display());
 
-        let content = fs::read_to_string(report_path).map_err(|e| {
-            LxHwError::Io(format!("Failed to read report file: {}", e))
-        })?;
+        let content = fs::read_to_string(report_path)
+            .map_err(|e| LxHwError::Io(format!("Failed to read report file: {}", e)))?;
 
-        let report: HardwareReport = serde_json::from_str(&content).map_err(|e| {
-            LxHwError::Validation(format!("Invalid report format: {}", e))
-        })?;
+        let report: HardwareReport = serde_json::from_str(&content)
+            .map_err(|e| LxHwError::Validation(format!("Invalid report format: {}", e)))?;
 
         // Validate report has required fields
         if report.metadata.anonymized_system_id.is_empty() {
-            return Err(LxHwError::Validation(
-                "Report missing anonymized system ID".to_string(),
-            ));
+            return Err(LxHwError::Validation("Report missing anonymized system ID".to_string()));
         }
 
         if report.system.kernel_version.is_empty() {
-            return Err(LxHwError::Validation(
-                "Report missing kernel version".to_string(),
-            ));
+            return Err(LxHwError::Validation("Report missing kernel version".to_string()));
         }
 
         println!("✅ Report validation passed");
@@ -206,9 +197,11 @@ impl GitHubSubmitter {
         println!("\n📋 Submission Summary:");
         println!("═══════════════════════════════════════");
         println!("📁 File: {}", filename);
-        println!("💻 System: {} {}", 
-                 report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string()), 
-                 report.system.kernel_version);
+        println!(
+            "💻 System: {} {}",
+            report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string()),
+            report.system.kernel_version
+        );
         println!("🏗️  Architecture: {}", report.system.architecture);
         println!("🔒 Privacy Level: {:?}", report.metadata.privacy_level);
         println!("🛠️  Tools Used: {}", report.metadata.tools_used.join(", "));
@@ -238,9 +231,9 @@ impl GitHubSubmitter {
         io::stdout().flush().map_err(|e| LxHwError::Io(format!("IO error: {}", e)))?;
 
         let mut input = String::new();
-        io::stdin().read_line(&mut input).map_err(|e| {
-            LxHwError::Io(format!("Failed to read user input: {}", e))
-        })?;
+        io::stdin()
+            .read_line(&mut input)
+            .map_err(|e| LxHwError::Io(format!("Failed to read user input: {}", e)))?;
 
         let input = input.trim().to_lowercase();
         Ok(input.is_empty() || input == "y" || input == "yes")
@@ -271,23 +264,19 @@ impl GitHubSubmitter {
                 .args(["repo", "fork", &upstream_repo, "--clone=false"])
                 .env("GH_TOKEN", &self.config.token)
                 .output()
-                .map_err(|e| {
-                    LxHwError::Submission(format!("Failed to create fork: {}", e))
-                })?;
+                .map_err(|e| LxHwError::Submission(format!("Failed to create fork: {}", e)))?;
 
             if !output.status.success() {
                 let error = String::from_utf8_lossy(&output.stderr);
-                return Err(LxHwError::Submission(format!(
-                    "Fork creation failed: {}",
-                    error
-                )));
+                return Err(LxHwError::Submission(format!("Fork creation failed: {}", error)));
             }
 
             println!("✅ Fork created successfully");
             format!("https://github.com/{}/{}.git", self.config.username, self.config.upstream_repo)
         } else {
             return Err(LxHwError::Submission(
-                "Repository fork not found. Use --auto-fork to create one automatically.".to_string(),
+                "Repository fork not found. Use --auto-fork to create one automatically."
+                    .to_string(),
             ));
         };
 
@@ -298,9 +287,10 @@ impl GitHubSubmitter {
     async fn clone_fork(&mut self, fork_url: &str) -> Result<PathBuf> {
         println!("📥 Cloning repository...");
 
-        self.temp_dir = Some(TempDir::new().map_err(|e| {
-            LxHwError::Io(format!("Failed to create temporary directory: {}", e))
-        })?);
+        self.temp_dir =
+            Some(TempDir::new().map_err(|e| {
+                LxHwError::Io(format!("Failed to create temporary directory: {}", e))
+            })?);
 
         let temp_path = self.temp_dir.as_ref().unwrap().path();
         let repo_path = temp_path.join("lx-hw-db");
@@ -311,16 +301,11 @@ impl GitHubSubmitter {
             .stdout(Stdio::null())
             .stderr(Stdio::piped())
             .output()
-            .map_err(|e| {
-                LxHwError::Submission(format!("Git clone failed: {}", e))
-            })?;
+            .map_err(|e| LxHwError::Submission(format!("Git clone failed: {}", e)))?;
 
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(LxHwError::Submission(format!(
-                "Repository clone failed: {}",
-                error
-            )));
+            return Err(LxHwError::Submission(format!("Repository clone failed: {}", error)));
         }
 
         // Set up upstream remote
@@ -329,13 +314,14 @@ impl GitHubSubmitter {
                 "remote",
                 "add",
                 "upstream",
-                &format!("https://github.com/{}/{}.git", self.config.upstream_owner, self.config.upstream_repo),
+                &format!(
+                    "https://github.com/{}/{}.git",
+                    self.config.upstream_owner, self.config.upstream_repo
+                ),
             ])
             .current_dir(&repo_path)
             .output()
-            .map_err(|e| {
-                LxHwError::Submission(format!("Failed to add upstream remote: {}", e))
-            })?;
+            .map_err(|e| LxHwError::Submission(format!("Failed to add upstream remote: {}", e)))?;
 
         println!("✅ Repository cloned successfully");
         Ok(repo_path)
@@ -356,25 +342,18 @@ impl GitHubSubmitter {
             .args(["fetch", "upstream"])
             .current_dir(repo_path)
             .output()
-            .map_err(|e| {
-                LxHwError::Submission(format!("Failed to fetch upstream: {}", e))
-            })?;
+            .map_err(|e| LxHwError::Submission(format!("Failed to fetch upstream: {}", e)))?;
 
         // Create and checkout new branch from upstream main
         let output = Command::new("git")
             .args(["checkout", "-b", &branch_name, "upstream/main"])
             .current_dir(repo_path)
             .output()
-            .map_err(|e| {
-                LxHwError::Submission(format!("Failed to create branch: {}", e))
-            })?;
+            .map_err(|e| LxHwError::Submission(format!("Failed to create branch: {}", e)))?;
 
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(LxHwError::Submission(format!(
-                "Branch creation failed: {}",
-                error
-            )));
+            return Err(LxHwError::Submission(format!("Branch creation failed: {}", error)));
         }
 
         println!("✅ Feature branch '{}' created", branch_name);
@@ -393,31 +372,24 @@ impl GitHubSubmitter {
 
         // Create directory structure
         let target_dir = repo_path.join(directory);
-        fs::create_dir_all(&target_dir).map_err(|e| {
-            LxHwError::Io(format!("Failed to create directory structure: {}", e))
-        })?;
+        fs::create_dir_all(&target_dir)
+            .map_err(|e| LxHwError::Io(format!("Failed to create directory structure: {}", e)))?;
 
         // Copy report file
         let target_path = target_dir.join(filename);
-        fs::copy(report_path, &target_path).map_err(|e| {
-            LxHwError::Io(format!("Failed to copy report file: {}", e))
-        })?;
+        fs::copy(report_path, &target_path)
+            .map_err(|e| LxHwError::Io(format!("Failed to copy report file: {}", e)))?;
 
         // Add file to git
         let output = Command::new("git")
             .args(["add", &format!("{}/{}", directory, filename)])
             .current_dir(repo_path)
             .output()
-            .map_err(|e| {
-                LxHwError::Submission(format!("Failed to add file to git: {}", e))
-            })?;
+            .map_err(|e| LxHwError::Submission(format!("Failed to add file to git: {}", e)))?;
 
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(LxHwError::Submission(format!(
-                "Git add failed: {}",
-                error
-            )));
+            return Err(LxHwError::Submission(format!("Git add failed: {}", error)));
         }
 
         println!("✅ Report file added to repository");
@@ -441,16 +413,11 @@ impl GitHubSubmitter {
             .args(["commit", "-m", &commit_message])
             .current_dir(repo_path)
             .output()
-            .map_err(|e| {
-                LxHwError::Submission(format!("Failed to commit changes: {}", e))
-            })?;
+            .map_err(|e| LxHwError::Submission(format!("Failed to commit changes: {}", e)))?;
 
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(LxHwError::Submission(format!(
-                "Git commit failed: {}",
-                error
-            )));
+            return Err(LxHwError::Submission(format!("Git commit failed: {}", error)));
         }
 
         println!("✅ Changes committed successfully");
@@ -473,8 +440,10 @@ impl GitHubSubmitter {
         // System information
         message.push_str("System Information:\n");
         message.push_str(&format!("- Kernel: {}\n", report.system.kernel_version));
-        message.push_str(&format!("- Distribution: {}\n", 
-                                 report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string())));
+        message.push_str(&format!(
+            "- Distribution: {}\n",
+            report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string())
+        ));
         message.push_str(&format!("- Architecture: {}\n", report.system.architecture));
         message.push_str(&format!("- Privacy Level: {:?}\n", report.metadata.privacy_level));
         message.push('\n');
@@ -485,7 +454,8 @@ impl GitHubSubmitter {
             message.push_str(&format!("- CPU: {} {}\n", cpu.vendor, cpu.model));
         }
         if let Some(memory) = &report.memory {
-            message.push_str(&format!("- Memory: {}GB\n", memory.total_bytes / (1024 * 1024 * 1024)));
+            message
+                .push_str(&format!("- Memory: {}GB\n", memory.total_bytes / (1024 * 1024 * 1024)));
         }
         if !report.graphics.is_empty() {
             let gpu = &report.graphics[0];
@@ -512,16 +482,11 @@ impl GitHubSubmitter {
             .args(["push", "-u", "origin", branch_name])
             .current_dir(repo_path)
             .output()
-            .map_err(|e| {
-                LxHwError::Submission(format!("Failed to push branch: {}", e))
-            })?;
+            .map_err(|e| LxHwError::Submission(format!("Failed to push branch: {}", e)))?;
 
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(LxHwError::Submission(format!(
-                "Git push failed: {}",
-                error
-            )));
+            return Err(LxHwError::Submission(format!("Git push failed: {}", error)));
         }
 
         println!("✅ Branch pushed successfully");
@@ -543,27 +508,26 @@ impl GitHubSubmitter {
         let head_ref = format!("{}:{}", self.config.username, branch_name);
 
         let args = vec![
-            "pr", "create",
-            "--repo", &upstream_repo,
-            "--title", &title,
-            "--body", &body,
-            "--head", &head_ref,
+            "pr",
+            "create",
+            "--repo",
+            &upstream_repo,
+            "--title",
+            &title,
+            "--body",
+            &body,
+            "--head",
+            &head_ref,
         ];
 
-        let output = Command::new("gh")
-            .args(&args)
-            .env("GH_TOKEN", &self.config.token)
-            .output()
-            .map_err(|e| {
-                LxHwError::Submission(format!("Failed to create pull request: {}", e))
-            })?;
+        let output =
+            Command::new("gh").args(&args).env("GH_TOKEN", &self.config.token).output().map_err(
+                |e| LxHwError::Submission(format!("Failed to create pull request: {}", e)),
+            )?;
 
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(LxHwError::Submission(format!(
-                "Pull request creation failed: {}",
-                error
-            )));
+            return Err(LxHwError::Submission(format!("Pull request creation failed: {}", error)));
         }
 
         let pr_url = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -584,19 +548,30 @@ impl GitHubSubmitter {
 
         body.push_str("## Hardware Report Details\n\n");
         body.push_str("### System Information\n\n");
-        body.push_str(&format!("- **Anonymized System ID**: `{}`\n", report.metadata.anonymized_system_id));
+        body.push_str(&format!(
+            "- **Anonymized System ID**: `{}`\n",
+            report.metadata.anonymized_system_id
+        ));
         body.push_str(&format!("- **Kernel Version**: {}\n", report.system.kernel_version));
-        body.push_str(&format!("- **Distribution**: {}\n", 
-                               report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string())));
+        body.push_str(&format!(
+            "- **Distribution**: {}\n",
+            report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string())
+        ));
         body.push_str(&format!("- **Architecture**: {}\n", report.system.architecture));
         body.push_str(&format!("- **Privacy Level**: {:?}\n\n", report.metadata.privacy_level));
 
         body.push_str("### Hardware Summary\n\n");
         if let Some(cpu) = &report.cpu {
-            body.push_str(&format!("- **CPU**: {} {} ({} cores)\n", cpu.vendor, cpu.model, cpu.cores));
+            body.push_str(&format!(
+                "- **CPU**: {} {} ({} cores)\n",
+                cpu.vendor, cpu.model, cpu.cores
+            ));
         }
         if let Some(memory) = &report.memory {
-            body.push_str(&format!("- **Memory**: {}GB\n", memory.total_bytes / (1024 * 1024 * 1024)));
+            body.push_str(&format!(
+                "- **Memory**: {}GB\n",
+                memory.total_bytes / (1024 * 1024 * 1024)
+            ));
         }
         if !report.graphics.is_empty() {
             let gpu = &report.graphics[0];
@@ -623,7 +598,10 @@ impl GitHubSubmitter {
         body.push_str("### Additional Information\n\n");
         body.push_str("This hardware report was submitted using the automated `lx-hw-detect submit` command.\n\n");
         body.push_str(&format!("**Tools Used**: {}\n", report.metadata.tools_used.join(", ")));
-        body.push_str(&format!("**Generated**: {}\n", report.metadata.generated_at.format("%Y-%m-%d %H:%M:%S UTC")));
+        body.push_str(&format!(
+            "**Generated**: {}\n",
+            report.metadata.generated_at.format("%Y-%m-%d %H:%M:%S UTC")
+        ));
 
         body
     }
@@ -642,9 +620,9 @@ pub fn setup_github_config(
         print!("GitHub username: ");
         io::stdout().flush().map_err(|e| LxHwError::Io(format!("IO error: {}", e)))?;
         let mut input = String::new();
-        io::stdin().read_line(&mut input).map_err(|e| {
-            LxHwError::Io(format!("Failed to read username: {}", e))
-        })?;
+        io::stdin()
+            .read_line(&mut input)
+            .map_err(|e| LxHwError::Io(format!("Failed to read username: {}", e)))?;
         input.trim().to_string()
     };
 
@@ -653,15 +631,15 @@ pub fn setup_github_config(
     } else {
         print!("GitHub token (will be hidden): ");
         io::stdout().flush().map_err(|e| LxHwError::Io(format!("IO error: {}", e)))?;
-        
+
         // Use rpassword crate if available, otherwise fall back to regular input
         let token = if let Ok(token) = rpassword::read_password() {
             token
         } else {
             let mut input = String::new();
-            io::stdin().read_line(&mut input).map_err(|e| {
-                LxHwError::Io(format!("Failed to read token: {}", e))
-            })?;
+            io::stdin()
+                .read_line(&mut input)
+                .map_err(|e| LxHwError::Io(format!("Failed to read token: {}", e)))?;
             input.trim().to_string()
         };
         token

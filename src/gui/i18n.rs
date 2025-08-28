@@ -1,5 +1,5 @@
 //! Internationalization support for the GUI
-//! 
+//!
 //! This module provides a placeholder i18n system. In a full implementation,
 //! this would use Fluent for proper internationalization support.
 

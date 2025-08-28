@@ -1,8 +1,8 @@
 //! GTK4 GUI implementation for lx-hw-detect
-//! 
+//!
 //! Provides a modern Adwaita-compliant interface for hardware detection,
 //! configuration recommendations, and community submission.
-//! 
+//!
 //! Note: This is a simplified implementation demonstrating the GTK4 interface concept
 
 use crate::errors::LxHwError;
@@ -11,15 +11,15 @@ use crate::errors::LxHwError;
 #[cfg(feature = "gtk4-deps")]
 pub mod application;
 #[cfg(feature = "gtk4-deps")]
-pub mod window;
+pub mod utils;
 #[cfg(feature = "gtk4-deps")]
 pub mod widgets;
 #[cfg(feature = "gtk4-deps")]
-pub mod utils;
+pub mod window;
 
 // Always available modules
-pub mod models;
 pub mod i18n;
+pub mod models;
 
 /// Result type for GUI operations
 pub type GuiResult<T> = Result<T, LxHwError>;
@@ -32,45 +32,45 @@ pub fn run() -> GuiResult<()> {
 
 /// Run hardware detection demo with GTK4-style interface simulation
 fn run_hardware_detection_demo() -> GuiResult<()> {
-    use crate::hardware::PrivacyLevel;
     use crate::detectors::integration::HardwareAnalyzer;
-    
+    use crate::hardware::PrivacyLevel;
+
     println!("\n🚀 GTK4 Hardware Detection Demo - Linux Hardware Database");
     println!("════════════════════════════════════════════════════════════");
     println!("   Modern Adwaita Interface with Real Hardware Detection");
     println!();
-    
+
     // Show interface preview
     show_interface_preview();
-    
+
     println!("🔍 Starting Real Hardware Detection...");
     println!("─────────────────────────────────────────────");
-    
+
     // Create async runtime for detection
     let rt = tokio::runtime::Runtime::new()
         .map_err(|e| LxHwError::Gui(format!("Failed to create async runtime: {}", e)))?;
-        
+
     rt.block_on(async {
         // Show progress simulation
         show_detection_progress().await;
-        
+
         println!("\n📊 Running Hardware Analysis...");
-        
+
         // Create hardware analyzer with Basic privacy level
         let mut analyzer = HardwareAnalyzer::new(PrivacyLevel::Basic)
             .map_err(|e| LxHwError::Gui(format!("Failed to create hardware analyzer: {}", e)))?;
-        
+
         // Perform real hardware detection
         match analyzer.analyze_system().await {
             Ok(report) => {
                 println!("✅ Hardware detection completed successfully!");
-                
+
                 // Display results in GTK4-style format
                 display_hardware_results(&report);
-                
+
                 // Show export options
                 show_export_options();
-                
+
                 Ok(())
             }
             Err(e) => {
@@ -93,16 +93,12 @@ async fn show_detection_progress() {
         ("lsusb", "USB Devices", "USB peripherals and controllers"),
         ("inxi", "System Summary", "Additional system information"),
     ];
-    
+
     println!("\n┌─ Detection Progress ────────────────────────────┐");
-    
+
     for (i, (tool, name, desc)) in tools.iter().enumerate() {
-        print!("│ {} {} - {:<30} │ ", 
-            if i < tools.len() { "🔍" } else { "✅" }, 
-            name, 
-            desc
-        );
-        
+        print!("│ {} {} - {:<30} │ ", if i < tools.len() { "🔍" } else { "✅" }, name, desc);
+
         // Simulate progress bar
         print!("[");
         for j in 0..20 {
@@ -113,10 +109,10 @@ async fn show_detection_progress() {
             }
         }
         println!("] {}%", (i + 1) * 20);
-        
+
         tokio::time::sleep(Duration::from_millis(300)).await;
     }
-    
+
     println!("└─────────────────────────────────────────────────┘");
 }
 
@@ -124,15 +120,18 @@ async fn show_detection_progress() {
 fn display_hardware_results(report: &crate::hardware::HardwareReport) {
     println!("\n📋 Hardware Detection Results");
     println!("════════════════════════════════════════════");
-    
+
     // System Information
     println!("\n🖥️  System Information");
     println!("─────────────────────────");
-    println!("   Distribution: {}", report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string()));
+    println!(
+        "   Distribution: {}",
+        report.system.distribution.as_ref().unwrap_or(&"Unknown".to_string())
+    );
     println!("   Kernel: {}", report.system.kernel_version);
     println!("   Architecture: {}", report.system.architecture);
     println!("   Status: ✅ Fully Supported");
-    
+
     // CPU Information
     if let Some(cpu) = &report.cpu {
         println!("\n🧠 CPU Information");
@@ -146,13 +145,16 @@ fn display_hardware_results(report: &crate::hardware::HardwareReport) {
         }
         println!("   Status: ✅ Fully Supported");
     }
-    
+
     // Memory Information
     if let Some(memory) = &report.memory {
         println!("\n💾 Memory Information");
         println!("────────────────────");
         println!("   Total: {:.1} GB", memory.total_bytes as f64 / (1024.0 * 1024.0 * 1024.0));
-        println!("   Available: {:.1} GB", memory.available_bytes as f64 / (1024.0 * 1024.0 * 1024.0));
+        println!(
+            "   Available: {:.1} GB",
+            memory.available_bytes as f64 / (1024.0 * 1024.0 * 1024.0)
+        );
         println!("   DIMMs: {}", memory.dimms.len());
         if let Some(first_dimm) = memory.dimms.first() {
             if let Some(mem_type) = &first_dimm.memory_type {
@@ -161,7 +163,7 @@ fn display_hardware_results(report: &crate::hardware::HardwareReport) {
         }
         println!("   Status: ✅ Fully Supported");
     }
-    
+
     // Graphics Devices
     if !report.graphics.is_empty() {
         println!("\n🎮 Graphics Devices ({} found)", report.graphics.len());
@@ -171,10 +173,17 @@ fn display_hardware_results(report: &crate::hardware::HardwareReport) {
             println!("     Vendor: {}", gpu.vendor);
             println!("     PCI ID: {}", gpu.pci_id);
             println!("     Driver: {}", gpu.driver.as_ref().unwrap_or(&"Not loaded".to_string()));
-            println!("     Status: {}", if gpu.driver.is_some() { "✅ Working with Driver" } else { "⚠️  Driver Required" });
+            println!(
+                "     Status: {}",
+                if gpu.driver.is_some() {
+                    "✅ Working with Driver"
+                } else {
+                    "⚠️  Driver Required"
+                }
+            );
         }
     }
-    
+
     // Storage Devices
     if !report.storage.is_empty() {
         println!("\n💿 Storage Devices ({} found)", report.storage.len());
@@ -183,11 +192,14 @@ fn display_hardware_results(report: &crate::hardware::HardwareReport) {
             println!("   Storage {}: {}", i + 1, storage.model);
             println!("     Vendor: {}", storage.vendor.as_ref().unwrap_or(&"Unknown".to_string()));
             println!("     Size: {:.1} GB", storage.size_bytes as f64 / (1024.0 * 1024.0 * 1024.0));
-            println!("     Interface: {}", storage.interface.as_ref().unwrap_or(&"Unknown".to_string()));
+            println!(
+                "     Interface: {}",
+                storage.interface.as_ref().unwrap_or(&"Unknown".to_string())
+            );
             println!("     Status: ✅ Fully Supported");
         }
     }
-    
+
     // Network Devices
     if !report.network.is_empty() {
         println!("\n🌐 Network Devices ({} found)", report.network.len());
@@ -197,10 +209,17 @@ fn display_hardware_results(report: &crate::hardware::HardwareReport) {
             println!("     Vendor: {}", net.vendor);
             println!("     Type: {}", net.device_type);
             println!("     Driver: {}", net.driver.as_ref().unwrap_or(&"Not loaded".to_string()));
-            println!("     Status: {}", if net.driver.is_some() { "✅ Fully Supported" } else { "⚠️  Driver Required" });
+            println!(
+                "     Status: {}",
+                if net.driver.is_some() {
+                    "✅ Fully Supported"
+                } else {
+                    "⚠️  Driver Required"
+                }
+            );
         }
     }
-    
+
     // Audio Devices
     if !report.audio.is_empty() {
         println!("\n🔊 Audio Devices ({} found)", report.audio.len());
@@ -213,8 +232,8 @@ fn display_hardware_results(report: &crate::hardware::HardwareReport) {
             println!("     Status: ✅ Fully Supported");
         }
     }
-    
-    // USB Devices  
+
+    // USB Devices
     if !report.usb.is_empty() {
         println!("\n🔌 USB Devices ({} found)", report.usb.len());
         println!("─────────────────────────────");
@@ -228,7 +247,7 @@ fn display_hardware_results(report: &crate::hardware::HardwareReport) {
             println!("     Status: ✅ Fully Supported");
         }
     }
-    
+
     // Summary
     let total_devices = [
         1, // System
@@ -239,8 +258,10 @@ fn display_hardware_results(report: &crate::hardware::HardwareReport) {
         report.network.len(),
         report.audio.len(),
         report.usb.len(),
-    ].iter().sum::<usize>();
-    
+    ]
+    .iter()
+    .sum::<usize>();
+
     println!("\n📊 Detection Summary");
     println!("───────────────────");
     println!("   Total Devices: {}", total_devices);
