@@ -2,7 +2,7 @@
   "data": {
     "growth_stats": [
       {
-        "date": "2025-08-28T13:41:47.614694832Z",
+        "date": "2025-08-28T13:54:19.027986425Z",
         "new_reports": 1,
         "total_reports": 1
       }
@@ -40,16 +40,16 @@
         "compatibility_score": 35.0,
         "component_diversity": 1,
         "total_reports": 1,
-        "vendor": "2646"
+        "vendor": "1d6a"
       },
       {
         "compatibility_score": 35.0,
         "component_diversity": 1,
         "total_reports": 1,
-        "vendor": "1d6a"
+        "vendor": "2646"
       }
     ]
   },
-  "generated": "2025-08-28T13:41:47.615927686+00:00",
+  "generated": "2025-08-28T13:54:19.029240064+00:00",
   "version": "1.0"
 }
