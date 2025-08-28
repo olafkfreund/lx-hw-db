@@ -59,6 +59,7 @@ jobs:
           bundle: lx-hw-db.flatpak
           manifest-path: packaging/flatpak/org.lxhwdb.LxHwDb.yml
           cache-key: flatpak-builder-${{ github.sha }}
+          upload-artifact: false
 
       - name: Upload Flatpak bundle
         uses: actions/upload-artifact@v4
