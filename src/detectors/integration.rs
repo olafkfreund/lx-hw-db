@@ -3,6 +3,8 @@
 //! This module combines hardware detection tools with kernel support verification
 //! to provide comprehensive compatibility reports.
 
+#![allow(clippy::excessive_nesting)]
+
 use crate::detectors::kernel::{KernelSupportVerifier, SupportLevel};
 use crate::detectors::{DetectionData, DetectionResult, DetectorRegistry};
 use crate::errors::Result;

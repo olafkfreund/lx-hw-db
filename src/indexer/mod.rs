@@ -4,6 +4,8 @@
 //! search indices, compatibility matrices, and statistics for
 //! client-side search and analysis.
 
+#![allow(clippy::needless_borrows_for_generic_args)]
+
 pub mod analysis;
 pub mod builder;
 pub mod compatibility;
