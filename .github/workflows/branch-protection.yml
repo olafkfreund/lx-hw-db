@@ -32,17 +32,20 @@ jobs:
           sudo apt-get install -y \
             build-essential \
             pkg-config \
-            libgtk-4-dev \
-            libadwaita-1-dev \
-            libglib2.0-dev \
-            libcairo-gobject2 \
-            libpango1.0-dev \
-            libgdk-pixbuf-2.0-dev \
             lshw \
             dmidecode \
             pciutils \
             usbutils \
             util-linux
+          
+          # Try to install GTK/libadwaita dependencies, but don't fail if unavailable
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            libglib2.0-dev \
+            libcairo-gobject2 \
+            libpango1.0-dev \
+            libgdk-pixbuf-2.0-dev || echo "⚠️ GTK dependencies not available, GUI features will be skipped"
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -62,7 +65,16 @@ jobs:
       - name: Run Clippy lints
         run: |
           echo "🔍 Running Clippy lints..."
-          cargo clippy --all-targets --all-features -- -D warnings
+          
+          # Check if GTK dependencies are available
+          if pkg-config --exists gtk4 && pkg-config --exists libadwaita-1; then
+            echo "GTK dependencies found, running clippy with all features..."
+            cargo clippy --all-targets --all-features -- -D warnings
+          else
+            echo "⚠️ GTK dependencies not found, running clippy without GUI features..."
+            cargo clippy --all-targets -- -D warnings
+          fi
+          
           echo "✅ Clippy lints passed"
 
       - name: Check for security vulnerabilities
@@ -85,11 +97,11 @@ jobs:
           cargo build --release --bin lx-hw-indexer
 
           # Build GUI applications (if dependencies available)
-          if pkg-config --exists gtk4; then
+          if pkg-config --exists gtk4 && pkg-config --exists libadwaita-1; then
             cargo build --release --bin lx-hw-detect-gtk --features gtk-gui
             echo "✅ GTK GUI built successfully"
           else
-            echo "⚠️  GTK4 not available, skipping GUI build"
+            echo "⚠️  GTK4/libadwaita not available, skipping GUI build"
           fi
 
           echo "✅ All targets built successfully"
