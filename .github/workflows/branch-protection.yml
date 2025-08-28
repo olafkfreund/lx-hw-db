@@ -66,8 +66,8 @@ jobs:
         run: |
           echo "🔍 Running Clippy lints..."
           
-          # Check if GTK dependencies are available
-          if pkg-config --exists gtk4 && pkg-config --exists libadwaita-1; then
+          # Check if GTK dependencies are available with correct versions
+          if pkg-config --exists gtk4 && pkg-config --atleast-version=1.6 libadwaita-1; then
             echo "GTK dependencies found, running clippy with all features..."
             cargo clippy --all-targets --all-features -- -D warnings
           else
@@ -96,8 +96,8 @@ jobs:
           cargo build --release --bin lx-hw-detect
           cargo build --release --bin lx-hw-indexer
 
-          # Build GUI applications (if dependencies available)
-          if pkg-config --exists gtk4 && pkg-config --exists libadwaita-1; then
+          # Build GUI applications (if dependencies available with correct versions)
+          if pkg-config --exists gtk4 && pkg-config --atleast-version=1.6 libadwaita-1; then
             cargo build --release --bin lx-hw-detect-gtk --features gtk-gui
             echo "✅ GTK GUI built successfully"
           else
@@ -212,7 +212,8 @@ jobs:
               "Unicode-DFS-2016",
               "Unicode-3.0",
               "CC0-1.0",
-              "AGPL-3.0-or-later"
+              "AGPL-3.0-or-later",
+              "CDLA-Permissive-2.0"
           ]
           exceptions = []
 

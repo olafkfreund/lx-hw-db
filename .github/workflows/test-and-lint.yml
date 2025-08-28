@@ -66,8 +66,8 @@ jobs:
 
     - name: Run clippy
       run: |
-        # Check if GTK dependencies are available
-        if pkg-config --exists gtk4 && pkg-config --exists libadwaita-1; then
+        # Check if GTK dependencies are available with correct versions
+        if pkg-config --exists gtk4 && pkg-config --atleast-version=1.6 libadwaita-1; then
           echo "GTK dependencies found, running clippy with all features..."
           cargo clippy --all-targets --all-features -- -D warnings
         else
@@ -80,8 +80,8 @@ jobs:
 
     - name: Build GTK GUI
       run: |
-        # Build GUI application if dependencies available
-        if pkg-config --exists gtk4 && pkg-config --exists libadwaita-1; then
+        # Build GUI application if dependencies available with correct versions
+        if pkg-config --exists gtk4 && pkg-config --atleast-version=1.6 libadwaita-1; then
           echo "Building GTK GUI with libadwaita..."
           cargo build --bin lx-hw-detect-gtk --features gtk-gui
         else
@@ -146,8 +146,8 @@ jobs:
 
     - name: Generate code coverage
       run: |
-        # Check if GTK dependencies are available
-        if pkg-config --exists gtk4 && pkg-config --exists libadwaita-1; then
+        # Check if GTK dependencies are available with correct versions
+        if pkg-config --exists gtk4 && pkg-config --atleast-version=1.6 libadwaita-1; then
           echo "GTK dependencies found, generating coverage with all features..."
           cargo tarpaulin --verbose --all-features --workspace --timeout 120 --out xml
         else
