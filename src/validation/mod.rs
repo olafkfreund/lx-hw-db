@@ -10,12 +10,13 @@
 //! # Examples
 //!
 //! Basic usage:
-//! ```rust
+//! ```rust,no_run
 //! use lx_hw_db::validation::{validate_report, ValidationConfig, HardwareReportValidator};
 //! use lx_hw_db::hardware::HardwareReport;
 //!
+//! # fn example(report: &HardwareReport) {
 //! // Quick validation with defaults
-//! let result = validate_report(&report);
+//! let result = validate_report(report);
 //! if result.valid {
 //!     println!("Report is valid with {:.1}% confidence", result.confidence_score * 100.0);
 //! }
@@ -27,7 +28,8 @@
 //!     ..ValidationConfig::default()
 //! };
 //! let validator = HardwareReportValidator::with_config(config);
-//! let result = validator.validate(&report);
+//! let result = validator.validate(report);
+//! # }
 //! ```
 
 use crate::hardware::{HardwareReport, PrivacyLevel};
