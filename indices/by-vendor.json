@@ -1,17 +1,4 @@
 {
-  "1b21": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Unknown Device 1b21:2142"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T21:37:49.524637664Z"
-  },
   "1d6a": {
     "total_reports": 1,
     "components": {
@@ -23,7 +10,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T21:37:49.524641411Z"
+    "last_updated": "2025-08-28T07:34:25.612476005Z"
   },
   "2646": {
     "total_reports": 1,
@@ -36,7 +23,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T21:37:49.524644848Z"
+    "last_updated": "2025-08-28T07:34:25.612479792Z"
   },
   "1022": {
     "total_reports": 24,
@@ -72,7 +59,20 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T21:37:49.524634809Z"
+    "last_updated": "2025-08-28T07:34:25.612468431Z"
+  },
+  "1b21": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Unknown Device 1b21:2142"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T07:34:25.612471567Z"
   },
   "1002": {
     "total_reports": 4,
@@ -88,6 +88,6 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-27T21:37:49.524572833Z"
+    "last_updated": "2025-08-28T07:34:25.612394312Z"
   }
 }
