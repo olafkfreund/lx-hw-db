@@ -1,7 +1,7 @@
-# Hardware Compatibility Database - Build 92
+# Hardware Compatibility Database - Build 93
 
-Built on: Thu Aug 28 21:41:10 UTC 2025
-Commit: 14b8c2b9bd9dd9f41949453d73a99016357ac987
+Built on: Thu Aug 28 21:55:09 UTC 2025
+Commit: 0b7c264e28d54daf7ff0b7f02ceec01d2f7672a0
 Reports processed: 1
 
 Analyzing hardware reports...
@@ -49,15 +49,15 @@ Compatibility Overview:
   Poor: 1 (100.0%)
 
 Top Hardware (by report count):
-  1. 1022 Unknown Device 1022:1481 - 1 reports (compatibility: 17.5)
-  2. 1022 Device 1022:1497 - 1 reports (compatibility: 17.5)
-  3. 1022 Device 1022:1491 - 1 reports (compatibility: 17.5)
-  4. 1002 HDMI - 1 reports (compatibility: 17.5)
-  5. 1022 Device 1022:1493 - 1 reports (compatibility: 17.5)
-  6. 1022 Device 1022:57ad - 1 reports (compatibility: 17.5)
-  7. 1022 Unknown Device 1022:790b - 1 reports (compatibility: 17.5)
-  8. 1d6a Ethernet interface - 1 reports (compatibility: 17.5)
-  9. 1022 Device 1022:790e - 1 reports (compatibility: 17.5)
-  10. 1022 Device 1022:57a4 - 1 reports (compatibility: 17.5)
+  1. 1022 Device 1022:1497 - 1 reports (compatibility: 17.5)
+  2. 1022 Unknown Device 1022:1486 - 1 reports (compatibility: 17.5)
+  3. 1022 Device 1022:1493 - 1 reports (compatibility: 17.5)
+  4. 1022 Unknown Device 1022:148a - 1 reports (compatibility: 17.5)
+  5. 1022 Device 1022:1496 - 1 reports (compatibility: 17.5)
+  6. 1022 Device 1022:57a4 - 1 reports (compatibility: 17.5)
+  7. 1002 HDMI - 1 reports (compatibility: 17.5)
+  8. 1022 Device 1022:57a3 - 1 reports (compatibility: 17.5)
+  9. 1022 Device 1022:57ad - 1 reports (compatibility: 17.5)
+  10. 1022 Device 1022:1483 - 1 reports (compatibility: 17.5)
 
-Last Updated: 2025-08-28 21:41:08.967794952 UTC
+Last Updated: 2025-08-28 21:55:08.330955785 UTC
