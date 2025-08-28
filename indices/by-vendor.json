@@ -1,4 +1,46 @@
 {
+  "2646": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "NVMe device"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T07:56:51.485332937Z"
+  },
+  "1002": {
+    "total_reports": 4,
+    "components": {
+      "PCI Device": [
+        "Device 1002:1478",
+        "Device 1002:1479",
+        "Device 1002:744c",
+        "HDMI"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T07:56:51.485261515Z"
+  },
+  "1d6a": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Ethernet interface"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-28T07:56:51.485330633Z"
+  },
   "1022": {
     "total_reports": 24,
     "components": {
@@ -33,7 +75,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:53:57.935807730Z"
+    "last_updated": "2025-08-28T07:56:51.485325995Z"
   },
   "1b21": {
     "total_reports": 1,
@@ -46,48 +88,6 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:53:57.935809393Z"
-  },
-  "1002": {
-    "total_reports": 4,
-    "components": {
-      "PCI Device": [
-        "Device 1002:1478",
-        "Device 1002:1479",
-        "Device 1002:744c",
-        "HDMI"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:53:57.935764088Z"
-  },
-  "2646": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "NVMe device"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:53:57.935813871Z"
-  },
-  "1d6a": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Ethernet interface"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T07:53:57.935811807Z"
+    "last_updated": "2025-08-28T07:56:51.485327868Z"
   }
 }

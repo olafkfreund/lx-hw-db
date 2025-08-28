@@ -13,19 +13,19 @@
         },
         {
           "count": 1,
-          "vendor": "1b21"
-        },
-        {
-          "count": 24,
-          "vendor": "1022"
+          "vendor": "1d6a"
         },
         {
           "count": 1,
-          "vendor": "1d6a"
+          "vendor": "1b21"
         },
         {
           "count": 4,
           "vendor": "1002"
+        },
+        {
+          "count": 24,
+          "vendor": "1022"
         }
       ],
       "total_reports": 31
@@ -33,6 +33,6 @@
     "performance_leaders": [],
     "recommended_models": []
   },
-  "generated": "2025-08-28T07:53:57.937261350+00:00",
+  "generated": "2025-08-28T07:56:51.486867010+00:00",
   "version": "1.0"
 }

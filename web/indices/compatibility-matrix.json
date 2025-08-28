@@ -1,20 +1,11 @@
 {
-  "1022 Unknown Device 1022:1485": {
+  "1022 Unknown Device 1022:148a": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935928133Z"
-    }
-  },
-  "1022 Device 1022:1491": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935933293Z"
+      "last_updated": "2025-08-28T07:56:51.485461106Z"
     }
   },
   "1022 Device 1022:1492": {
@@ -23,34 +14,16 @@
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935933773Z"
+      "last_updated": "2025-08-28T07:56:51.485466776Z"
     }
   },
-  "1b21 Unknown Device 1b21:2142": {
+  "1022 Unknown Device 1022:1485": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935942580Z"
-    }
-  },
-  "1002 Device 1002:1478": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935918275Z"
-    }
-  },
-  "1002 HDMI": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935920920Z"
+      "last_updated": "2025-08-28T07:56:51.485459934Z"
     }
   },
   "1022 Device 1022:1496": {
@@ -59,70 +32,7 @@
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935935176Z"
-    }
-  },
-  "1022 Device 1022:1497": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935935527Z"
-    }
-  },
-  "1022 Device 1022:1493": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935934154Z"
-    }
-  },
-  "1022 Device 1022:1494": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935934495Z"
-    }
-  },
-  "1022 Unknown Device 1022:149c": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935935908Z"
-    }
-  },
-  "2646 NVMe device": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935943542Z"
-    }
-  },
-  "1022 Unknown Device 1022:1481": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935922443Z"
-    }
-  },
-  "1002 Device 1002:744c": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935919888Z"
+      "last_updated": "2025-08-28T07:56:51.485469111Z"
     }
   },
   "1022 Unknown Device 1022:1486": {
@@ -131,16 +41,25 @@
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935928784Z"
+      "last_updated": "2025-08-28T07:56:51.485460525Z"
     }
   },
-  "1022 Device 1022:1490": {
+  "1022 Device 1022:1491": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935930478Z"
+      "last_updated": "2025-08-28T07:56:51.485466035Z"
+    }
+  },
+  "1022 Unknown Device 1022:149c": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485472667Z"
     }
   },
   "1022 Device 1022:57ad": {
@@ -149,79 +68,34 @@
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935938573Z"
+      "last_updated": "2025-08-28T07:56:51.485474491Z"
     }
   },
-  "1002 Device 1002:1479": {
+  "1002 Device 1002:1478": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935919197Z"
+      "last_updated": "2025-08-28T07:56:51.485450767Z"
     }
   },
-  "1022 Device 1022:1482": {
+  "1002 HDMI": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935923054Z"
+      "last_updated": "2025-08-28T07:56:51.485453211Z"
     }
   },
-  "1022 Device 1022:1483": {
+  "1022 Device 1022:1497": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935926771Z"
-    }
-  },
-  "1022 Unknown Device 1022:790b": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935939334Z"
-    }
-  },
-  "1022 Unknown Device 1022:148c": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935929917Z"
-    }
-  },
-  "1022 Device 1022:1480": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935921591Z"
-    }
-  },
-  "1022 Device 1022:57a4": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935938242Z"
-    }
-  },
-  "1022 Device 1022:1484": {
-    "6.16.0_NixOS 25.11 (Xantusia)": {
-      "score": 35,
-      "driver": null,
-      "sample_size": 1,
-      "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935927472Z"
+      "last_updated": "2025-08-28T07:56:51.485469682Z"
     }
   },
   "1022 Device 1022:790e": {
@@ -230,25 +104,34 @@
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935939735Z"
+      "last_updated": "2025-08-28T07:56:51.485476324Z"
     }
   },
-  "1022 Device 1022:57a3": {
+  "1022 Device 1022:1484": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935937871Z"
+      "last_updated": "2025-08-28T07:56:51.485459242Z"
     }
   },
-  "1022 Device 1022:1495": {
+  "1022 Device 1022:1494": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935934835Z"
+      "last_updated": "2025-08-28T07:56:51.485468039Z"
+    }
+  },
+  "1022 Device 1022:1483": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485458551Z"
     }
   },
   "1022 Device 1022:7901": {
@@ -257,7 +140,97 @@
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935938923Z"
+      "last_updated": "2025-08-28T07:56:51.485475062Z"
+    }
+  },
+  "1022 Device 1022:1480": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485453893Z"
+    }
+  },
+  "1022 Unknown Device 1022:790b": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485475753Z"
+    }
+  },
+  "1022 Device 1022:1490": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485462278Z"
+    }
+  },
+  "1022 Device 1022:57a4": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485473910Z"
+    }
+  },
+  "1022 Device 1022:1482": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485455225Z"
+    }
+  },
+  "1b21 Unknown Device 1b21:2142": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485480722Z"
+    }
+  },
+  "1002 Device 1002:1479": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485451578Z"
+    }
+  },
+  "1002 Device 1002:744c": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485452179Z"
+    }
+  },
+  "1022 Unknown Device 1022:1481": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485454634Z"
+    }
+  },
+  "1022 Unknown Device 1022:148c": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485461707Z"
     }
   },
   "1d6a Ethernet interface": {
@@ -266,16 +239,43 @@
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935943031Z"
+      "last_updated": "2025-08-28T07:56:51.485481534Z"
     }
   },
-  "1022 Unknown Device 1022:148a": {
+  "2646 NVMe device": {
     "6.16.0_NixOS 25.11 (Xantusia)": {
       "score": 35,
       "driver": null,
       "sample_size": 1,
       "confidence": "Low",
-      "last_updated": "2025-08-28T07:53:57.935929345Z"
+      "last_updated": "2025-08-28T07:56:51.485482275Z"
+    }
+  },
+  "1022 Device 1022:57a3": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485473358Z"
+    }
+  },
+  "1022 Device 1022:1495": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485468580Z"
+    }
+  },
+  "1022 Device 1022:1493": {
+    "6.16.0_NixOS 25.11 (Xantusia)": {
+      "score": 35,
+      "driver": null,
+      "sample_size": 1,
+      "confidence": "Low",
+      "last_updated": "2025-08-28T07:56:51.485467438Z"
     }
   }
 }
