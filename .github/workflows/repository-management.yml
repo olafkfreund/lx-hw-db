@@ -2,7 +2,7 @@ name: Repository Management
 
 on:
   schedule:
-    # Run daily at 3 AM UTC  
+    # Run daily at 3 AM UTC
     - cron: '0 3 * * *'
   workflow_dispatch:
   push:
@@ -19,21 +19,21 @@ jobs:
   repository-health-check:
     name: Repository Health Check
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Check repository structure
         run: |
           echo "🔍 Checking repository structure..."
-          
+
           # Required directories
           required_dirs=(
             "src"
             "docs"
-            "hardware" 
+            "hardware"
             "tests"
             ".github/workflows"
             ".github/ISSUE_TEMPLATE"
@@ -41,27 +41,27 @@ jobs:
             "web"
             "packaging"
           )
-          
+
           missing_dirs=()
-          
+
           for dir in "${required_dirs[@]}"; do
             if [ ! -d "$dir" ]; then
               missing_dirs+=("$dir")
             fi
           done
-          
+
           if [ ${#missing_dirs[@]} -gt 0 ]; then
             echo "❌ Missing directories:"
             printf '%s\n' "${missing_dirs[@]}"
             exit 1
           fi
-          
+
           echo "✅ Repository structure is complete"
-      
+
       - name: Check required files
         run: |
           echo "📄 Checking required files..."
-          
+
           # Required files
           required_files=(
             "README.md"
@@ -75,27 +75,27 @@ jobs:
             "docs/HARDWARE_SUBMISSION_GUIDE.md"
             "docs/COMMUNITY_GUIDELINES.md"
           )
-          
+
           missing_files=()
-          
+
           for file in "${required_files[@]}"; do
             if [ ! -f "$file" ]; then
               missing_files+=("$file")
             fi
           done
-          
+
           if [ ${#missing_files[@]} -gt 0 ]; then
             echo "❌ Missing files:"
             printf '%s\n' "${missing_files[@]}"
             exit 1
           fi
-          
+
           echo "✅ All required files are present"
-      
+
       - name: Validate GitHub Actions workflows
         run: |
           echo "⚙️ Validating GitHub Actions workflows..."
-          
+
           # Check that key workflows exist
           key_workflows=(
             ".github/workflows/test-and-lint.yml"
@@ -104,14 +104,14 @@ jobs:
             ".github/workflows/community-engagement.yml"
             ".github/workflows/hardware-processing.yml"
           )
-          
+
           for workflow in "${key_workflows[@]}"; do
             if [ ! -f "$workflow" ]; then
               echo "❌ Missing workflow: $workflow"
               exit 1
             fi
           done
-          
+
           # Basic YAML syntax check
           find .github/workflows -name "*.yml" -o -name "*.yaml" | while read -r workflow; do
             if ! python -c "import yaml; yaml.safe_load(open('$workflow'))" 2>/dev/null; then
@@ -119,49 +119,49 @@ jobs:
               exit 1
             fi
           done
-          
+
           echo "✅ GitHub Actions workflows are valid"
-      
+
       - name: Check issue templates
         run: |
           echo "🎫 Checking issue templates..."
-          
+
           # Check that issue templates exist
           if [ ! -d ".github/ISSUE_TEMPLATE" ]; then
             echo "❌ Missing issue templates directory"
             exit 1
           fi
-          
+
           # Count issue templates
           template_count=$(find .github/ISSUE_TEMPLATE -name "*.yml" -o -name "*.yaml" | wc -l)
-          
+
           if [ $template_count -lt 3 ]; then
             echo "❌ Insufficient issue templates (found: $template_count, minimum: 3)"
             exit 1
           fi
-          
+
           echo "✅ Issue templates are configured ($template_count templates)"
 
   update-repository-stats:
     name: Update Repository Statistics
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install PyGithub requests python-dateutil
-      
+
       - name: Generate repository statistics
         run: |
           cat > repo_stats.py << 'EOF'
@@ -171,27 +171,27 @@ jobs:
           from github import Github
           from datetime import datetime, timedelta
           from collections import defaultdict
-          
+
           def get_git_stats():
               """Get Git repository statistics"""
-              
+
               try:
                   # Total commits
                   total_commits = int(subprocess.check_output(['git', 'rev-list', '--all', '--count']).decode().strip())
-                  
+
                   # Contributors
                   contributors = subprocess.check_output(['git', 'shortlog', '-sn', '--all']).decode().strip().split('\n')
                   contributor_count = len(contributors)
-                  
+
                   # Repository age
                   first_commit = subprocess.check_output(['git', 'log', '--reverse', '--format=%ci', '--max-parents=0']).decode().strip().split('\n')[0]
                   first_commit_date = datetime.fromisoformat(first_commit[:-6])
                   repo_age_days = (datetime.now() - first_commit_date).days
-                  
+
                   # Recent activity (last 30 days)
                   since_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
                   recent_commits = int(subprocess.check_output(['git', 'rev-list', '--count', '--since', since_date, '--all']).decode().strip())
-                  
+
                   return {
                       "total_commits": total_commits,
                       "contributors": contributor_count,
@@ -199,18 +199,18 @@ jobs:
                       "recent_commits_30d": recent_commits,
                       "first_commit_date": first_commit_date.isoformat()
                   }
-                  
+
               except Exception as e:
                   print(f"Error getting git stats: {e}")
                   return {}
-          
+
           def get_github_stats():
               """Get GitHub repository statistics"""
-              
+
               try:
                   g = Github(os.environ['GITHUB_TOKEN'])
                   repo = g.get_repo(f"{os.environ['GITHUB_REPOSITORY']}")
-                  
+
                   # Basic repository stats
                   stats = {
                       "stars": repo.stargazers_count,
@@ -225,103 +225,103 @@ jobs:
                       "pushed_at": repo.pushed_at.isoformat(),
                       "topics": repo.get_topics()
                   }
-                  
+
                   # Count different types of content
                   stats["pull_requests"] = repo.get_pulls(state='all').totalCount
                   stats["releases"] = repo.get_releases().totalCount
-                  
-                  # Recent activity analysis  
+
+                  # Recent activity analysis
                   now = datetime.now()
                   one_month_ago = now - timedelta(days=30)
-                  
+
                   recent_issues = list(repo.get_issues(since=one_month_ago))
                   stats["recent_issues"] = len([i for i in recent_issues if not i.pull_request])
                   stats["recent_pull_requests"] = len([i for i in recent_issues if i.pull_request])
-                  
+
                   return stats
-                  
+
               except Exception as e:
                   print(f"Error getting GitHub stats: {e}")
                   return {}
-          
+
           def count_hardware_reports():
               """Count hardware reports in the repository"""
-              
+
               try:
                   import glob
-                  
+
                   # Count hardware report files
                   yaml_files = glob.glob('hardware/**/*.yaml', recursive=True)
                   yml_files = glob.glob('hardware/**/*.yml', recursive=True)
                   json_files = glob.glob('hardware/**/*.json', recursive=True)
-                  
+
                   total_reports = len(yaml_files) + len(yml_files) + len(json_files)
-                  
+
                   # Count by category
                   categories = defaultdict(int)
                   all_files = yaml_files + yml_files + json_files
-                  
+
                   for file_path in all_files:
                       parts = file_path.split('/')
                       if len(parts) >= 2:
                           category = parts[1]
                           categories[category] += 1
-                  
+
                   return {
                       "total_hardware_reports": total_reports,
                       "yaml_reports": len(yaml_files),
-                      "yml_reports": len(yml_files), 
+                      "yml_reports": len(yml_files),
                       "json_reports": len(json_files),
                       "categories": dict(categories)
                   }
-                  
+
               except Exception as e:
                   print(f"Error counting hardware reports: {e}")
                   return {"total_hardware_reports": 0}
-          
+
           def count_lines_of_code():
               """Count lines of code in the repository"""
-              
+
               try:
                   # Use git to count lines (excludes binary files)
                   result = subprocess.run(['git', 'ls-files'], capture_output=True, text=True)
                   if result.returncode != 0:
                       return {"total_lines": 0}
-                  
+
                   files = result.stdout.strip().split('\n')
-                  
+
                   # Filter for code files
                   code_extensions = ['.rs', '.py', '.js', '.ts', '.html', '.css', '.yml', '.yaml', '.toml', '.md']
                   code_files = [f for f in files if any(f.endswith(ext) for ext in code_extensions)]
-                  
+
                   total_lines = 0
                   lines_by_type = defaultdict(int)
-                  
+
                   for file_path in code_files:
                       try:
                           with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                               lines = len(f.readlines())
                               total_lines += lines
-                              
+
                               # Categorize by file extension
                               ext = '.' + file_path.split('.')[-1] if '.' in file_path else 'other'
                               lines_by_type[ext] += lines
                       except:
                           continue
-                  
+
                   return {
                       "total_lines": total_lines,
                       "code_files": len(code_files),
                       "lines_by_type": dict(lines_by_type)
                   }
-                  
+
               except Exception as e:
                   print(f"Error counting lines of code: {e}")
                   return {"total_lines": 0}
-          
+
           # Generate comprehensive statistics
           print("Generating repository statistics...")
-          
+
           repo_stats = {
               "generated_at": datetime.now().isoformat(),
               "git_stats": get_git_stats(),
@@ -329,84 +329,84 @@ jobs:
               "hardware_stats": count_hardware_reports(),
               "code_stats": count_lines_of_code()
           }
-          
+
           # Save statistics
           os.makedirs('data', exist_ok=True)
           with open('data/repository-stats.json', 'w') as f:
               json.dump(repo_stats, f, indent=2)
-          
+
           # Create human-readable summary
           with open('data/repository-summary.txt', 'w') as f:
               f.write("Linux Hardware Database - Repository Statistics\n")
               f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
-              
+
               github = repo_stats.get('github_stats', {})
               git = repo_stats.get('git_stats', {})
               hardware = repo_stats.get('hardware_stats', {})
               code = repo_stats.get('code_stats', {})
-              
+
               f.write("📊 GitHub Statistics:\n")
               f.write(f"  Stars: {github.get('stars', 0)}\n")
               f.write(f"  Forks: {github.get('forks', 0)}\n")
               f.write(f"  Open Issues: {github.get('open_issues', 0)}\n")
               f.write(f"  Total Pull Requests: {github.get('pull_requests', 0)}\n")
               f.write(f"  Repository Size: {github.get('size_kb', 0)} KB\n\n")
-              
+
               f.write("🔧 Development Statistics:\n")
               f.write(f"  Total Commits: {git.get('total_commits', 0)}\n")
               f.write(f"  Contributors: {git.get('contributors', 0)}\n")
               f.write(f"  Repository Age: {git.get('repository_age_days', 0)} days\n")
               f.write(f"  Recent Commits (30d): {git.get('recent_commits_30d', 0)}\n\n")
-              
+
               f.write("💾 Hardware Database:\n")
               f.write(f"  Total Hardware Reports: {hardware.get('total_hardware_reports', 0)}\n")
-              
+
               if 'categories' in hardware:
                   f.write("  Reports by Category:\n")
                   for category, count in hardware['categories'].items():
                       f.write(f"    {category}: {count}\n")
-              
+
               f.write(f"\n📝 Codebase:\n")
               f.write(f"  Total Lines of Code: {code.get('total_lines', 0)}\n")
               f.write(f"  Code Files: {code.get('code_files', 0)}\n")
-          
+
           print("Repository statistics generated successfully!")
           EOF
-          
+
           python repo_stats.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-      
+
       - name: Update README badges
         run: |
           echo "🏷️ Updating README badges..."
-          
+
           # Read current stats
           if [ -f "data/repository-stats.json" ]; then
             STARS=$(jq -r '.github_stats.stars // 0' data/repository-stats.json)
             FORKS=$(jq -r '.github_stats.forks // 0' data/repository-stats.json)
             HARDWARE_REPORTS=$(jq -r '.hardware_stats.total_hardware_reports // 0' data/repository-stats.json)
-            
+
             echo "Current stats: Stars: $STARS, Forks: $FORKS, Hardware Reports: $HARDWARE_REPORTS"
-            
+
             # Note: Actual README badge updating would require more sophisticated text processing
             # This is a placeholder for the concept
           fi
-      
+
       - name: Commit repository statistics
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           git add data/repository-stats.json data/repository-summary.txt || true
-          
+
           if ! git diff --cached --quiet; then
             git commit -m "Update repository statistics
 
             Daily repository health and activity metrics:
             - GitHub stars, forks, and activity tracking
-            - Git commit history and contributor analysis  
+            - Git commit history and contributor analysis
             - Hardware database growth metrics
             - Codebase size and composition analysis
 
@@ -421,7 +421,7 @@ jobs:
   cleanup-artifacts:
     name: Cleanup Old Artifacts
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Delete old artifacts
         uses: actions/github-script@v7
@@ -429,22 +429,22 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            
+
             // Get artifacts older than 30 days
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
+
             const artifacts = await github.rest.actions.listArtifactsForRepo({
               owner: owner,
               repo: repo,
               per_page: 100
             });
-            
+
             let deletedCount = 0;
-            
+
             for (const artifact of artifacts.data.artifacts) {
               const createdAt = new Date(artifact.created_at);
-              
+
               if (createdAt < thirtyDaysAgo) {
                 try {
                   await github.rest.actions.deleteArtifact({
@@ -459,28 +459,28 @@ jobs:
                 }
               }
             }
-            
+
             console.log(`Cleaned up ${deletedCount} old artifacts`);
 
   check-dependencies:
     name: Check Dependencies Health
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
-      
+
       - name: Install cargo-outdated
         run: cargo install cargo-outdated --locked
-      
+
       - name: Check for outdated dependencies
         run: |
           echo "📦 Checking for outdated dependencies..."
-          
+
           # Check for outdated Rust dependencies
           if cargo outdated --exit-code 1; then
             echo "✅ All Rust dependencies are up to date"
@@ -488,14 +488,14 @@ jobs:
             echo "⚠️ Some Rust dependencies are outdated"
             echo "Consider updating dependencies with 'cargo update'"
           fi
-      
+
       - name: Security audit
         run: |
           echo "🔒 Running security audit..."
-          
+
           # Install cargo-audit if not already installed
           cargo install cargo-audit --locked || true
-          
+
           if cargo audit; then
             echo "✅ No known security vulnerabilities"
           else

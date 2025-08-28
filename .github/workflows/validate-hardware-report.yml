@@ -12,33 +12,33 @@ jobs:
   validate-report:
     runs-on: ubuntu-latest
     name: Validate Hardware Compatibility Report
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        
+
     - name: Set up Rust
       uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
         toolchain: stable
         components: rustfmt, clippy
-        
+
     - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential pkg-config
-        
+
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
       with:
         prefix-key: "validate"
-        
+
     - name: Build validation tool
       run: |
         cargo build --release --bin lx-hw-detect
-        
+
     - name: Get changed files
       id: changed-files
       uses: tj-actions/changed-files@v41
@@ -47,16 +47,16 @@ jobs:
           hardware/**/*.yaml
           hardware/**/*.yml
           hardware/**/*.json
-          
+
     - name: Validate changed hardware reports
       if: steps.changed-files.outputs.any_changed == 'true'
       run: |
         echo "Validating hardware reports..."
         VALIDATION_FAILED=0
-        
+
         for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
           echo "Validating: $file"
-          
+
           if ! ./target/release/lx-hw-detect validate "$file" --format json; then
             echo "❌ Validation failed for: $file"
             VALIDATION_FAILED=1
@@ -64,19 +64,19 @@ jobs:
             echo "✅ Validation passed for: $file"
           fi
         done
-        
+
         if [ $VALIDATION_FAILED -eq 1 ]; then
           echo "❌ One or more hardware reports failed validation"
           exit 1
         else
           echo "✅ All hardware reports passed validation"
         fi
-        
+
     - name: Check hardware report format
       if: steps.changed-files.outputs.any_changed == 'true'
       run: |
         echo "Checking report format compliance..."
-        
+
         for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
           # Check if file follows proper naming convention
           if [[ ! "$file" =~ hardware/[a-z]+/[a-z0-9_-]+/[a-z0-9_-]+\.(yaml|yml|json)$ ]]; then
@@ -84,25 +84,25 @@ jobs:
             echo "Expected format: hardware/{category}/{manufacturer}/{device}.{yaml|yml|json}"
             exit 1
           fi
-          
+
           # Extract category from path
           CATEGORY=$(echo "$file" | cut -d'/' -f2)
-          
+
           # Verify category is valid
           if [[ ! "$CATEGORY" =~ ^(cpu|gpu|motherboard|network|storage|audio|usb|other)$ ]]; then
             echo "❌ Invalid hardware category: $CATEGORY"
             echo "Valid categories: cpu, gpu, motherboard, network, storage, audio, usb, other"
             exit 1
           fi
-          
+
           echo "✅ Format check passed for: $file"
         done
-        
+
     - name: Privacy compliance check
       if: steps.changed-files.outputs.any_changed == 'true'
       run: |
         echo "Checking privacy compliance..."
-        
+
         # Define patterns that should not appear in hardware reports
         PRIVACY_VIOLATIONS=(
           "serial.*number.*[A-Z0-9]{8,}"
@@ -113,12 +113,12 @@ jobs:
           "email"
           "ip.*address.*[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
         )
-        
+
         PRIVACY_FAILED=0
-        
+
         for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
           echo "Checking privacy compliance for: $file"
-          
+
           for pattern in "${PRIVACY_VIOLATIONS[@]}"; do
             if grep -i -E "$pattern" "$file" > /dev/null; then
               echo "❌ Privacy violation detected in $file: matches pattern '$pattern'"
@@ -126,7 +126,7 @@ jobs:
             fi
           done
         done
-        
+
         if [ $PRIVACY_FAILED -eq 1 ]; then
           echo "❌ Privacy compliance check failed"
           echo "Please ensure all personal identifiers are properly anonymized"
@@ -134,21 +134,21 @@ jobs:
         else
           echo "✅ Privacy compliance check passed"
         fi
-        
+
     - name: Generate validation report
       if: always()
       run: |
         echo "## Hardware Report Validation Results" > validation-report.md
         echo "" >> validation-report.md
-        
+
         if [ "${{ steps.changed-files.outputs.any_changed }}" == "true" ]; then
           echo "### Files Validated" >> validation-report.md
           echo "" >> validation-report.md
-          
+
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo "- \`$file\`" >> validation-report.md
           done
-          
+
           echo "" >> validation-report.md
           echo "### Validation Status" >> validation-report.md
           echo "" >> validation-report.md
@@ -158,7 +158,7 @@ jobs:
         else
           echo "No hardware report files changed in this PR." >> validation-report.md
         fi
-        
+
     - name: Comment validation results
       if: github.event_name == 'pull_request'
       uses: actions/github-script@v7
@@ -166,10 +166,10 @@ jobs:
         script: |
           const fs = require('fs');
           const path = 'validation-report.md';
-          
+
           if (fs.existsSync(path)) {
             const report = fs.readFileSync(path, 'utf8');
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

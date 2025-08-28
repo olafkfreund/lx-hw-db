@@ -125,7 +125,8 @@ jobs:
             --verbose; then
             echo "Index validation completed successfully"
           else
-            echo "Index validation had warnings (likely due to sparse data) - continuing build"
+            echo "Index validation had warnings" \
+                 "(likely due to sparse data) - continuing build"
           fi
 
       - name: Generate statistics report
@@ -150,12 +151,12 @@ jobs:
             cp web/index.html web/index.html.backup
             echo "Backed up existing index.html"
           fi
-          
+
           if [ -d "web/js" ]; then
             cp -r web/js web/js.backup
             echo "Backed up existing JavaScript files"
           fi
-          
+
           if [ -d "web/css" ]; then
             cp -r web/css web/css.backup
             echo "Backed up existing CSS files"
@@ -172,13 +173,13 @@ jobs:
             mv web/index.html.backup web/index.html
             echo "Restored custom index.html"
           fi
-          
+
           if [ -d "web/js.backup" ]; then
             rm -rf web/js
             mv web/js.backup web/js
             echo "Restored custom JavaScript files"
           fi
-          
+
           if [ -d "web/css.backup" ]; then
             rm -rf web/css
             mv web/css.backup web/css
@@ -221,11 +222,13 @@ jobs:
           EOF
 
           # Create index summary
-          echo "# Hardware Compatibility Database - Build ${{ github.run_number }}" > web/README.md
+          echo "# Hardware Compatibility Database" \
+               "- Build ${{ github.run_number }}" > web/README.md
           echo "" >> web/README.md
           echo "Built on: $(date -u)" >> web/README.md
           echo "Commit: ${{ github.sha }}" >> web/README.md
-          echo "Reports processed: ${{ steps.check-reports.outputs.report_count }}" >> web/README.md
+          echo "Reports processed:" \
+               "${{ steps.check-reports.outputs.report_count }}" >> web/README.md
           echo "" >> web/README.md
           cat statistics/latest-stats.txt >> web/README.md
 
@@ -240,7 +243,9 @@ jobs:
           path: web/
 
       - name: Commit updated indices (if on main)
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: >
+          github.ref == 'refs/heads/main' &&
+          github.event_name != 'pull_request'
         run: |
           echo "Committing updated indices to repository..."
 
@@ -289,9 +294,12 @@ jobs:
           - **Last Updated**: $(date -u)
 
           ## 🔗 Access Points
-          - **Web Interface**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
-          - **API Base**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/api/
-          - **Search Indices**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/indices/
+          - **Web Interface**: \
+            https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          - **API Base**: \
+            https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/api/
+          - **Search Indices**: \
+            https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/indices/
 
           ## 📈 Latest Statistics
           $(cat statistics/latest-stats.txt)

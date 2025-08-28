@@ -10,7 +10,7 @@ on:
     branches: [main]
     paths:
       - 'hardware/**/*.yaml'
-      - 'hardware/**/*.yml' 
+      - 'hardware/**/*.yml'
       - 'hardware/**/*.json'
   workflow_dispatch:
     inputs:
@@ -30,12 +30,12 @@ jobs:
     outputs:
       new-reports: ${{ steps.detect.outputs.new-reports }}
       has-changes: ${{ steps.detect.outputs.has-changes }}
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Detect new or modified hardware reports
         id: detect
         run: |
@@ -51,7 +51,7 @@ jobs:
               git diff --name-only HEAD~1..HEAD | grep -E "hardware/.*\.(yaml|yml|json)$" > changed_files.txt || true
             fi
           fi
-          
+
           if [ -s changed_files.txt ]; then
             echo "has-changes=true" >> $GITHUB_OUTPUT
             echo "new-reports=$(cat changed_files.txt | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
@@ -68,19 +68,19 @@ jobs:
     runs-on: ubuntu-latest
     needs: detect-new-hardware
     if: needs.detect-new-hardware.outputs.has-changes == 'true'
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-      
+
       - name: Set up Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           components: rustfmt, clippy
-      
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -93,56 +93,56 @@ jobs:
             usbutils \
             util-linux \
             jq
-      
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: "hardware-processing"
-      
+
       - name: Build hardware processing tools
         run: |
           cargo build --release --bin lx-hw-indexer
           cargo build --release --bin lx-hw-detect
-      
+
       - name: Process new hardware reports
         run: |
           echo "Processing hardware reports..."
-          
+
           # Create processing script
           cat > process_reports.sh << 'EOF'
           #!/bin/bash
-          
+
           set -e
-          
+
           REPORTS='${{ needs.detect-new-hardware.outputs.new-reports }}'
           PROCESSED=0
           ERRORS=0
-          
+
           echo "Reports to process: $REPORTS"
-          
+
           # Process each report
           echo "$REPORTS" | jq -r '.[]' | while read -r report; do
               if [ -z "$report" ] || [ ! -f "$report" ]; then
                   continue
               fi
-              
+
               echo "Processing: $report"
-              
+
               # Extract hardware category from path
               CATEGORY=$(echo "$report" | cut -d'/' -f2)
               MANUFACTURER=$(echo "$report" | cut -d'/' -f3)
               DEVICE=$(basename "$report" .yaml)
               DEVICE=$(basename "$DEVICE" .yml)
               DEVICE=$(basename "$DEVICE" .json)
-              
+
               echo "  Category: $CATEGORY"
-              echo "  Manufacturer: $MANUFACTURER" 
+              echo "  Manufacturer: $MANUFACTURER"
               echo "  Device: $DEVICE"
-              
+
               # Validate report schema
               if ./target/release/lx-hw-detect validate "$report" --format json; then
                   echo "  ✅ Schema validation passed"
-                  
+
                   # Extract key hardware information for indexing
                   if [ "${report##*.}" = "json" ]; then
                       HARDWARE_ID=$(jq -r '.hardware_id // "unknown"' "$report")
@@ -154,11 +154,11 @@ jobs:
                       COMPATIBILITY=$(grep "^compatibility_status:" "$report" | cut -d':' -f2 | tr -d ' "' || echo "unknown")
                       KERNEL_VERSION=$(grep "kernel_version:" "$report" | head -1 | cut -d':' -f2 | tr -d ' "' || echo "unknown")
                   fi
-                  
+
                   echo "  Hardware ID: $HARDWARE_ID"
                   echo "  Compatibility: $COMPATIBILITY"
                   echo "  Kernel Version: $KERNEL_VERSION"
-                  
+
                   # Add to processed list
                   echo "$report" >> processed_reports.txt
                   PROCESSED=$((PROCESSED + 1))
@@ -167,26 +167,26 @@ jobs:
                   echo "$report" >> failed_reports.txt
                   ERRORS=$((ERRORS + 1))
               fi
-              
+
               echo "  ---"
           done
-          
+
           echo "Processing complete:"
           echo "  Processed: $PROCESSED reports"
           echo "  Errors: $ERRORS reports"
-          
+
           # Create summary
           cat > processing_summary.md << SUMMARY
           # Hardware Report Processing Summary
-          
+
           ## Processing Results
-          
+
           - **Total Reports Processed**: $PROCESSED
           - **Processing Errors**: $ERRORS
           - **Processing Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          
+
           SUMMARY
-          
+
           if [ -f processed_reports.txt ]; then
               echo "## Successfully Processed Reports" >> processing_summary.md
               echo "" >> processing_summary.md
@@ -195,7 +195,7 @@ jobs:
               done < processed_reports.txt
               echo "" >> processing_summary.md
           fi
-          
+
           if [ -f failed_reports.txt ]; then
               echo "## Reports with Errors" >> processing_summary.md
               echo "" >> processing_summary.md
@@ -204,29 +204,29 @@ jobs:
               done < failed_reports.txt
               echo "" >> processing_summary.md
           fi
-          
+
           EOF
-          
+
           chmod +x process_reports.sh
           ./process_reports.sh
-      
+
       - name: Update hardware indices
         run: |
           echo "Updating hardware indices..."
-          
+
           # Run the indexer to update all indices
           ./target/release/lx-hw-indexer build \
             --input-dir hardware \
             --output-dir indices \
             --generate-stats \
             --update-api
-          
+
           echo "Hardware indices updated successfully"
-      
+
       - name: Generate hardware statistics
         run: |
           echo "Generating hardware statistics..."
-          
+
           # Create statistics script
           cat > generate_stats.py << 'EOF'
           import json
@@ -234,7 +234,7 @@ jobs:
           from datetime import datetime
           from collections import defaultdict
           import glob
-          
+
           def collect_hardware_stats():
               stats = {
                   "last_updated": datetime.now().isoformat(),
@@ -245,14 +245,14 @@ jobs:
                   "kernel_versions": defaultdict(int),
                   "recent_additions": []
               }
-              
+
               # Find all hardware report files
               report_files = []
               for ext in ['*.yaml', '*.yml', '*.json']:
                   report_files.extend(glob.glob(f'hardware/**/{ext}', recursive=True))
-              
+
               print(f"Found {len(report_files)} hardware reports")
-              
+
               for report_path in report_files:
                   try:
                       # Extract category and manufacturer from path
@@ -260,77 +260,77 @@ jobs:
                       if len(path_parts) >= 4:
                           category = path_parts[1]
                           manufacturer = path_parts[2]
-                          
+
                           stats["categories"][category] += 1
                           stats["manufacturers"][manufacturer] += 1
                           stats["total_reports"] += 1
-                          
+
                           # Try to read file content
                           if report_path.endswith('.json'):
                               with open(report_path, 'r') as f:
                                   data = json.load(f)
-                                  
+
                               if 'compatibility_status' in data:
                                   stats["compatibility_status"][data['compatibility_status']] += 1
-                              
+
                               if 'tested_configurations' in data and data['tested_configurations']:
                                   kernel_version = data['tested_configurations'][0].get('kernel_version', 'unknown')
                                   stats["kernel_versions"][kernel_version] += 1
-                      
+
                   except Exception as e:
                       print(f"Error processing {report_path}: {e}")
                       continue
-              
+
               # Convert defaultdicts to regular dicts for JSON serialization
               stats["categories"] = dict(stats["categories"])
               stats["manufacturers"] = dict(stats["manufacturers"])
               stats["compatibility_status"] = dict(stats["compatibility_status"])
               stats["kernel_versions"] = dict(stats["kernel_versions"])
-              
+
               return stats
-          
+
           # Generate statistics
           hardware_stats = collect_hardware_stats()
-          
+
           # Save statistics
           os.makedirs('statistics', exist_ok=True)
           with open('statistics/hardware-stats.json', 'w') as f:
               json.dump(hardware_stats, f, indent=2)
-          
+
           # Create human-readable summary
           with open('statistics/hardware-summary.txt', 'w') as f:
               f.write(f"Linux Hardware Database Statistics\n")
               f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
               f.write(f"Total Hardware Reports: {hardware_stats['total_reports']}\n\n")
-              
+
               f.write("Hardware Categories:\n")
               for category, count in sorted(hardware_stats['categories'].items()):
                   f.write(f"  {category}: {count}\n")
-              
+
               f.write(f"\nTop Manufacturers:\n")
-              top_manufacturers = sorted(hardware_stats['manufacturers'].items(), 
-                                       key=lambda x: x[1], reverse=True)[:10]
+              top_manufacturers = sorted(hardware_stats['manufacturers'].items(),
+                                                 key=lambda x: x[1], reverse=True)[:10]
               for manufacturer, count in top_manufacturers:
                   f.write(f"  {manufacturer}: {count}\n")
-              
+
               f.write(f"\nCompatibility Status:\n")
               for status, count in sorted(hardware_stats['compatibility_status'].items()):
                   f.write(f"  {status}: {count}\n")
-          
+
           print("Hardware statistics generated successfully!")
           EOF
-          
+
           python3 generate_stats.py
-      
+
       - name: Commit processed changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           # Add generated files
           git add indices/ statistics/ || true
           git add api/v1/ web/api/v1/ || true
-          
+
           if ! git diff --cached --quiet; then
             git commit -m "Process hardware reports and update indices
 
@@ -347,13 +347,13 @@ jobs:
             🤖 Generated with [Claude Code](https://claude.ai/code)
 
             Co-Authored-By: Claude <noreply@anthropic.com>"
-            
+
             # Only push if this is not a PR
             if [ "${{ github.event_name }}" != "pull_request" ]; then
               git push
             fi
           fi
-      
+
       - name: Upload processing artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -363,25 +363,25 @@ jobs:
             failed_reports.txt
             processing_summary.md
             statistics/
-      
+
       - name: Comment on PR with processing results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            
+
             let comment = "## 🔧 Hardware Report Processing Results\n\n";
-            
+
             if (fs.existsSync('processing_summary.md')) {
               const summary = fs.readFileSync('processing_summary.md', 'utf8');
               comment += summary;
             } else {
               comment += "No hardware reports found to process in this PR.\n";
             }
-            
+
             comment += "\n---\n*Automated hardware report processing*";
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -394,23 +394,23 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-new-hardware, process-hardware-reports]
     if: needs.detect-new-hardware.outputs.has-changes == 'true' && github.event_name != 'pull_request'
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
-      - name: Install dependencies  
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyyaml requests pandas matplotlib seaborn
-      
+
       - name: Generate compatibility matrix
         run: |
           cat > generate_matrix.py << 'EOF'
@@ -421,19 +421,19 @@ jobs:
           from datetime import datetime
           from collections import defaultdict
           import pandas as pd
-          
+
           def load_hardware_reports():
               """Load all hardware reports and build compatibility matrix"""
-              
+
               compatibility_data = defaultdict(lambda: defaultdict(list))
-              
+
               # Find all hardware report files
               report_files = []
               for ext in ['*.yaml', '*.yml', '*.json']:
                   report_files.extend(glob.glob(f'hardware/**/{ext}', recursive=True))
-              
+
               print(f"Processing {len(report_files)} hardware reports for compatibility matrix...")
-              
+
               for report_path in report_files:
                   try:
                       # Load report data
@@ -443,18 +443,18 @@ jobs:
                       else:
                           with open(report_path, 'r') as f:
                               data = yaml.safe_load(f)
-                      
+
                       # Extract key information
                       hardware_id = data.get('hardware_id', 'unknown')
                       compatibility = data.get('compatibility_status', 'unknown')
-                      
+
                       # Get kernel information
                       if 'tested_configurations' in data:
                           for config in data['tested_configurations']:
                               kernel_version = config.get('kernel_version', 'unknown')
                               distribution = config.get('distribution', 'unknown')
                               status = config.get('status', compatibility)
-                              
+
                               # Store compatibility information
                               key = f"{hardware_id}_{kernel_version}_{distribution}"
                               compatibility_data[hardware_id][kernel_version].append({
@@ -462,18 +462,18 @@ jobs:
                                   'status': status,
                                   'report_path': report_path
                               })
-                  
+
                   except Exception as e:
                       print(f"Error processing {report_path}: {e}")
                       continue
-              
+
               return compatibility_data
-          
+
           def generate_matrix():
               """Generate the compatibility matrix"""
-              
+
               compatibility_data = load_hardware_reports()
-              
+
               # Build matrix structure
               matrix = {
                   "last_updated": datetime.now().isoformat(),
@@ -489,7 +489,7 @@ jobs:
                   "hardware_categories": defaultdict(lambda: defaultdict(int)),
                   "detailed_matrix": {}
               }
-              
+
               # Process compatibility data
               for hardware_id, kernel_data in compatibility_data.items():
                   hardware_entry = {
@@ -497,33 +497,33 @@ jobs:
                       "kernel_compatibility": {},
                       "overall_status": "unknown"
                   }
-                  
+
                   status_counts = defaultdict(int)
-                  
+
                   for kernel_version, configs in kernel_data.items():
                       kernel_statuses = [config['status'] for config in configs]
-                      
+
                       # Determine best status for this kernel
                       if 'full' in kernel_statuses:
                           best_status = 'full'
                       elif 'partial' in kernel_statuses:
-                          best_status = 'partial' 
+                          best_status = 'partial'
                       elif 'limited' in kernel_statuses:
                           best_status = 'limited'
                       elif 'none' in kernel_statuses:
                           best_status = 'none'
                       else:
                           best_status = 'unknown'
-                      
+
                       hardware_entry["kernel_compatibility"][kernel_version] = {
                           "status": best_status,
                           "tested_distributions": len(set(c['distribution'] for c in configs)),
                           "configurations": configs
                       }
-                      
+
                       status_counts[best_status] += 1
                       matrix["kernel_coverage"][kernel_version] += 1
-                  
+
                   # Determine overall hardware status
                   if status_counts['full'] > 0:
                       hardware_entry["overall_status"] = 'full'
@@ -533,53 +533,53 @@ jobs:
                       hardware_entry["overall_status"] = 'limited'
                   elif status_counts['none'] > 0:
                       hardware_entry["overall_status"] = 'none'
-                  
+
                   matrix["compatibility_summary"][hardware_entry["overall_status"]] += 1
                   matrix["detailed_matrix"][hardware_id] = hardware_entry
-              
+
               # Convert defaultdicts to regular dicts
               matrix["kernel_coverage"] = dict(matrix["kernel_coverage"])
               matrix["hardware_categories"] = {k: dict(v) for k, v in matrix["hardware_categories"].items()}
-              
+
               return matrix
-          
+
           # Generate the matrix
           compatibility_matrix = generate_matrix()
-          
+
           # Save compatibility matrix
           os.makedirs('indices', exist_ok=True)
           with open('indices/compatibility-matrix.json', 'w') as f:
               json.dump(compatibility_matrix, f, indent=2)
-          
+
           # Create summary report
           with open('indices/compatibility-summary.txt', 'w') as f:
               f.write("Linux Hardware Database - Compatibility Matrix Summary\n")
               f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
               f.write(f"Total Hardware Entries: {compatibility_matrix['total_hardware_entries']}\n\n")
-              
+
               f.write("Compatibility Status Distribution:\n")
               for status, count in compatibility_matrix['compatibility_summary'].items():
                   percentage = (count / compatibility_matrix['total_hardware_entries'] * 100) if compatibility_matrix['total_hardware_entries'] > 0 else 0
                   f.write(f"  {status.capitalize()}: {count} ({percentage:.1f}%)\n")
-              
+
               f.write(f"\nKernel Version Coverage:\n")
-              top_kernels = sorted(compatibility_matrix['kernel_coverage'].items(), 
-                                 key=lambda x: x[1], reverse=True)[:10]
+              top_kernels = sorted(compatibility_matrix['kernel_coverage'].items(),
+                                               key=lambda x: x[1], reverse=True)[:10]
               for kernel, count in top_kernels:
                   f.write(f"  {kernel}: {count} hardware entries\n")
-          
+
           print(f"Compatibility matrix generated with {compatibility_matrix['total_hardware_entries']} hardware entries")
           EOF
-          
+
           python3 generate_matrix.py
-      
+
       - name: Commit compatibility matrix updates
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           git add indices/compatibility-matrix.json indices/compatibility-summary.txt || true
-          
+
           if ! git diff --cached --quiet; then
             git commit -m "Update hardware compatibility matrix
 

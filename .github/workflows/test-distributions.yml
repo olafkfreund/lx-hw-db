@@ -18,42 +18,42 @@ jobs:
         version: ['20.04', '22.04', '24.04']
         arch: [amd64, arm64]
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up QEMU for multi-arch
         if: matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
-      
+
       - name: Test installation script
         run: |
           # Create test container
           cat > Dockerfile.test << EOF
           FROM ubuntu:${{ matrix.version }}
-          
+
           # Install dependencies
           RUN apt-get update && apt-get install -y \
               curl wget sudo ca-certificates \
               lshw dmidecode pciutils usbutils util-linux
-          
+
           # Copy installation script
           COPY install.sh /install.sh
           COPY scripts/install-ubuntu.sh /install-ubuntu.sh
-          
+
           # Make scripts executable
           RUN chmod +x /install.sh /install-ubuntu.sh
-          
+
           # Test basic functionality (dry run mode)
           RUN echo "Testing installation script syntax..."
           RUN bash -n /install.sh
           RUN bash -n /install-ubuntu.sh
-          
+
           CMD ["/bin/bash"]
           EOF
-          
+
           docker build --platform linux/${{ matrix.arch }} -t test-ubuntu:${{ matrix.version }}-${{ matrix.arch }} .
-          
+
           # Test script execution
           docker run --rm --platform linux/${{ matrix.arch }} test-ubuntu:${{ matrix.version }}-${{ matrix.arch }} \
             bash -c '/install.sh --help && /install-ubuntu.sh --help || true'
@@ -65,40 +65,40 @@ jobs:
         version: ['38', '39', '40']
         arch: [amd64, arm64]
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up QEMU for multi-arch
         if: matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
-      
+
       - name: Test installation script
         run: |
           cat > Dockerfile.test << EOF
           FROM fedora:${{ matrix.version }}
-          
+
           # Install dependencies
           RUN dnf install -y \
               curl wget sudo ca-certificates \
               lshw dmidecode pciutils usbutils util-linux
-          
+
           # Copy installation scripts
           COPY install.sh /install.sh
           COPY scripts/install-fedora.sh /install-fedora.sh
-          
+
           # Make scripts executable
           RUN chmod +x /install.sh /install-fedora.sh
-          
+
           # Test basic functionality
           RUN bash -n /install.sh
           RUN bash -n /install-fedora.sh
-          
+
           CMD ["/bin/bash"]
           EOF
-          
+
           docker build --platform linux/${{ matrix.arch }} -t test-fedora:${{ matrix.version }}-${{ matrix.arch }} .
-          
+
           docker run --rm --platform linux/${{ matrix.arch }} test-fedora:${{ matrix.version }}-${{ matrix.arch }} \
             bash -c '/install.sh --help && /install-fedora.sh --help || true'
 
@@ -108,67 +108,67 @@ jobs:
       matrix:
         arch: [amd64, arm64]
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up QEMU for multi-arch
         if: matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
-      
+
       - name: Test installation script
         run: |
           cat > Dockerfile.test << EOF
           FROM archlinux:latest
-          
+
           # Update system and install dependencies
           RUN pacman -Syu --noconfirm && pacman -S --noconfirm \
               curl wget sudo ca-certificates \
               lshw dmidecode pciutils usbutils util-linux
-          
+
           # Copy installation scripts
           COPY install.sh /install.sh
           COPY scripts/install-arch.sh /install-arch.sh
-          
+
           # Make scripts executable
           RUN chmod +x /install.sh /install-arch.sh
-          
+
           # Test basic functionality
           RUN bash -n /install.sh
           RUN bash -n /install-arch.sh
-          
+
           CMD ["/bin/bash"]
           EOF
-          
+
           docker build --platform linux/${{ matrix.arch }} -t test-arch:${{ matrix.arch }} .
-          
+
           docker run --rm --platform linux/${{ matrix.arch }} test-arch:${{ matrix.arch }} \
             bash -c '/install.sh --help && /install-arch.sh --help || true'
 
   test-nixos:
     name: Test NixOS Installation
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
-        
+
       - name: Setup Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-      
+
       - name: Test Nix build
         run: |
           # Test flake evaluation
           nix flake check --impure
-          
+
           # Test development shell
           nix develop --impure -c echo "Development shell works"
-          
+
           # Test package building
           nix build .#lx-hw-db --impure
-          
+
           # Test installation script
           bash -n scripts/install-nixos.sh
 
@@ -179,16 +179,16 @@ jobs:
         target: [cli, web]
         platform: [linux/amd64, linux/arm64]
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Build test image
         uses: docker/build-push-action@v5
         with:
@@ -198,59 +198,59 @@ jobs:
           tags: test:${{ matrix.target }}-${{ strategy.job-index }}
           load: true
           cache-from: type=gha
-      
+
       - name: Test CLI image
         if: matrix.target == 'cli' && matrix.platform == 'linux/amd64'
         run: |
           echo "Testing CLI functionality..."
           docker run --rm test:${{ matrix.target }}-${{ strategy.job-index }} --version
           docker run --rm test:${{ matrix.target }}-${{ strategy.job-index }} --help
-          
+
           # Test hardware detection help (cannot detect hardware in CI)
           docker run --rm test:${{ matrix.target }}-${{ strategy.job-index }} detect --help
-          
+
           echo "CLI tests passed!"
-      
+
       - name: Test Web image
         if: matrix.target == 'web' && matrix.platform == 'linux/amd64'
         run: |
           echo "Testing Web interface..."
-          
+
           # Start container in background
           docker run -d --name test-web -p 8080:8000 test:${{ matrix.target }}-${{ strategy.job-index }}
-          
+
           # Wait for service to start
           sleep 15
-          
+
           # Test web interface
           curl -f http://localhost:8080/ || exit 1
           curl -f http://localhost:8080/api/v1/index.json || exit 1
-          
+
           # Stop and remove container
           docker stop test-web
           docker rm test-web
-          
+
           echo "Web interface tests passed!"
 
   test-installation-scripts:
     name: Test Installation Scripts
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Test main installation script
         run: |
           # Test script syntax
           bash -n install.sh
-          
+
           # Test help output
           bash install.sh --help
-          
+
           # Test various parameter combinations (dry run)
           bash install.sh --help > /dev/null
           echo "Main installation script syntax check passed"
-      
+
       - name: Test distribution-specific scripts
         run: |
           for script in scripts/install-*.sh; do
@@ -258,7 +258,7 @@ jobs:
             bash -n "$script"
             echo "$script syntax check passed"
           done
-      
+
       - name: Test script documentation
         run: |
           # Check that all scripts have help text
@@ -270,10 +270,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-ubuntu, test-fedora, test-arch]
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install packaging tools
         run: |
           sudo apt-get update
@@ -283,7 +283,7 @@ jobs:
             build-essential \
             fakeroot \
             lintian
-      
+
       - name: Test Debian package structure
         run: |
           # Check debian/ directory structure
@@ -294,7 +294,7 @@ jobs:
             [ -f "debian/rules" ] || exit 1
             echo "Debian package structure valid"
           fi
-      
+
       - name: Test RPM spec file
         run: |
           # Check Fedora spec file
@@ -305,7 +305,7 @@ jobs:
             grep -q "License:" packaging/fedora/lx-hw-db.spec || exit 1
             echo "RPM spec file valid"
           fi
-      
+
       - name: Test PKGBUILD
         run: |
           # Check Arch PKGBUILD
@@ -327,66 +327,66 @@ jobs:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-musl
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      
+
       - name: Install cross-compilation tool
         run: cargo install cross --git https://github.com/cross-rs/cross
-      
+
       - name: Build for target
         run: |
           echo "Building for ${{ matrix.target }}..."
           cross build --target ${{ matrix.target }} --bin lx-hw-detect
           cross build --target ${{ matrix.target }} --bin lx-hw-indexer
-          
+
           # Verify binaries were created
           [ -f "target/${{ matrix.target }}/debug/lx-hw-detect" ] || exit 1
           [ -f "target/${{ matrix.target }}/debug/lx-hw-indexer" ] || exit 1
-          
+
           echo "Cross-compilation successful for ${{ matrix.target }}"
 
   test-web-interface:
     name: Test Web Interface
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Test web server
         run: |
           cd web
-          
+
           # Start web server in background
           python3 serve.py --port 8080 &
           SERVER_PID=$!
-          
+
           # Wait for server to start
           sleep 5
-          
+
           # Test endpoints
           curl -f http://localhost:8080/ || exit 1
           curl -f http://localhost:8080/api/v1/index.json || exit 1
-          
+
           # Stop server
           kill $SERVER_PID
-          
+
           echo "Web interface tests passed!"
-      
+
       - name: Test web build process
         run: |
           cd web
-          
+
           # Check if Node.js build tools are available (optional)
           if command -v npm >/dev/null 2>&1; then
             npm install --only=dev || true
@@ -401,7 +401,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [
       test-ubuntu,
-      test-fedora, 
+      test-fedora,
       test-arch,
       test-nixos,
       test-docker-images,
@@ -411,14 +411,14 @@ jobs:
       test-web-interface
     ]
     if: always()
-    
+
     steps:
       - name: Report Success
         if: ${{ needs.test-ubuntu.result == 'success' && needs.test-fedora.result == 'success' && needs.test-arch.result == 'success' && needs.test-nixos.result == 'success' && needs.test-docker-images.result == 'success' && needs.test-installation-scripts.result == 'success' && needs.test-cross-platform.result == 'success' && needs.test-web-interface.result == 'success' }}
         run: |
           echo "✅ All distribution tests passed!"
           echo "The lx-hw-db project is ready for distribution across multiple platforms."
-      
+
       - name: Report Failure
         if: ${{ needs.test-ubuntu.result == 'failure' || needs.test-fedora.result == 'failure' || needs.test-arch.result == 'failure' || needs.test-nixos.result == 'failure' || needs.test-docker-images.result == 'failure' || needs.test-installation-scripts.result == 'failure' || needs.test-cross-platform.result == 'failure' || needs.test-web-interface.result == 'failure' }}
         run: |

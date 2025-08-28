@@ -14,18 +14,18 @@ jobs:
   quality-gate:
     name: Code Quality Gate
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Set up Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           components: rustfmt, clippy
-      
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -39,12 +39,12 @@ jobs:
             pciutils \
             usbutils \
             util-linux
-      
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: "quality-gate"
-      
+
       - name: Check formatting
         run: |
           echo "🎨 Checking code formatting..."
@@ -54,13 +54,13 @@ jobs:
             exit 1
           fi
           echo "✅ Code formatting is correct"
-      
+
       - name: Run Clippy lints
         run: |
           echo "🔍 Running Clippy lints..."
           cargo clippy --all-targets --all-features -- -D warnings
           echo "✅ Clippy lints passed"
-      
+
       - name: Check for security vulnerabilities
         run: |
           echo "🔒 Checking for security vulnerabilities..."
@@ -71,15 +71,15 @@ jobs:
           else
             echo "⚠️  cargo-audit not available, skipping security check"
           fi
-      
+
       - name: Build all targets
         run: |
           echo "🔨 Building all targets..."
-          
+
           # Build CLI tools
           cargo build --release --bin lx-hw-detect
           cargo build --release --bin lx-hw-indexer
-          
+
           # Build GUI applications (if dependencies available)
           if pkg-config --exists gtk4; then
             cargo build --release --bin lx-hw-detect-gtk --features gtk-gui
@@ -87,24 +87,26 @@ jobs:
           else
             echo "⚠️  GTK4 not available, skipping GUI build"
           fi
-          
+
           echo "✅ All targets built successfully"
-      
+
       - name: Run comprehensive tests
         run: |
           echo "🧪 Running test suite..."
           cargo test --all --release
           echo "✅ All tests passed"
-      
+
       - name: Validate hardware report schemas
         run: |
           echo "📋 Validating hardware report schemas..."
-          
+
           # Find example hardware reports
-          if find hardware -name "*.json" -o -name "*.yaml" -o -name "*.yml" | head -5 | while read -r report; do
+          if find hardware -name "*.json" -o -name "*.yaml" -o -name "*.yml" | \
+            head -5 | while read -r report; do
             if [ -f "$report" ]; then
               echo "Validating: $report"
-              if ! ./target/release/lx-hw-detect validate "$report" --format json; then
+              if ! ./target/release/lx-hw-detect validate "$report" \
+                --format json; then
                 echo "❌ Validation failed for: $report"
                 exit 1
               fi
@@ -115,66 +117,66 @@ jobs:
             echo "❌ Hardware report validation failed"
             exit 1
           fi
-      
+
       - name: Check documentation
         run: |
           echo "📚 Checking documentation..."
-          
+
           # Check that key documentation files exist
           required_docs=(
             "README.md"
-            "CONTRIBUTING.md" 
+            "CONTRIBUTING.md"
             "docs/INSTALLATION.md"
             "docs/USAGE.md"
             "CHANGELOG.md"
           )
-          
+
           for doc in "${required_docs[@]}"; do
             if [ ! -f "$doc" ]; then
               echo "❌ Missing required documentation: $doc"
               exit 1
             fi
           done
-          
+
           echo "✅ Documentation check passed"
-      
+
       - name: License compliance check
         run: |
           echo "📄 Checking license compliance..."
-          
+
           # Check that LICENSE file exists
           if [ ! -f "LICENSE" ]; then
             echo "❌ LICENSE file is missing"
             exit 1
           fi
-          
+
           # Check that Cargo.toml has license specified
           if ! grep -q "license.*=" Cargo.toml; then
             echo "❌ License not specified in Cargo.toml"
             exit 1
           fi
-          
+
           echo "✅ License compliance check passed"
 
   dependency-audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
-      
+
       - name: Install cargo-deny
         run: cargo install cargo-deny --locked
-      
+
       - name: Run cargo-deny
         run: |
           echo "🔍 Auditing dependencies..."
-          
+
           # Create cargo-deny configuration if it doesn't exist
           if [ ! -f "deny.toml" ]; then
             cat > deny.toml << 'EOF'
@@ -186,14 +188,14 @@ jobs:
           yanked = "warn"
           notice = "warn"
           ignore = []
-          
+
           [licenses]
           unlicensed = "deny"
           allow = [
               "MIT",
               "Apache-2.0",
               "Apache-2.0 WITH LLVM-exception",
-              "BSD-2-Clause", 
+              "BSD-2-Clause",
               "BSD-3-Clause",
               "ISC",
               "Unicode-DFS-2016",
@@ -201,7 +203,7 @@ jobs:
           ]
           deny = [
               "GPL-2.0",
-              "GPL-3.0", 
+              "GPL-3.0",
               "AGPL-1.0",
               "AGPL-3.0"
           ]
@@ -210,7 +212,7 @@ jobs:
           default = "deny"
           confidence-threshold = 0.8
           exceptions = []
-          
+
           [bans]
           multiple-versions = "warn"
           wildcards = "allow"
@@ -221,7 +223,7 @@ jobs:
           deny = []
           skip = []
           skip-tree = []
-          
+
           [sources]
           unknown-registry = "warn"
           unknown-git = "warn"
@@ -229,32 +231,35 @@ jobs:
           allow-git = []
           EOF
           fi
-          
+
           cargo deny check
           echo "✅ Dependency audit passed"
 
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run security scan with Semgrep
         run: |
           python -m pip install semgrep
           semgrep --config=auto --error --json --output=semgrep.json . || true
-          
+
           if [ -s semgrep.json ]; then
             echo "🔒 Security scan results:"
             python -c "
           import json
           with open('semgrep.json', 'r') as f:
               data = json.load(f)
-              
+
           results = data.get('results', [])
-          errors = [r for r in results if r.get('extra', {}).get('severity') in ['ERROR', 'WARNING']]
-          
+          errors = [
+            r for r in results
+            if r.get('extra', {}).get('severity') in ['ERROR', 'WARNING']
+          ]
+
           if errors:
               print(f'❌ Found {len(errors)} security issues:')
               for error in errors[:5]:  # Show first 5
@@ -272,62 +277,66 @@ jobs:
     name: Commit Message Quality
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Validate commit messages
         run: |
           echo "📝 Validating commit messages..."
-          
+
           # Get commits in this PR
-          git log --format="%H %s" origin/${{ github.base_ref }}..HEAD > commits.txt
-          
+          git log --format="%H %s" \
+            origin/${{ github.base_ref }}..HEAD > commits.txt
+
           INVALID_COMMITS=0
-          
+
           while read -r commit_hash commit_message; do
             echo "Checking commit: $commit_hash"
             echo "Message: $commit_message"
-            
+
             # Basic commit message validation rules
             if [ ${#commit_message} -lt 10 ]; then
               echo "❌ Commit message too short (minimum 10 characters)"
               INVALID_COMMITS=$((INVALID_COMMITS + 1))
               continue
             fi
-            
+
             if [ ${#commit_message} -gt 72 ]; then
-              echo "⚠️  Commit message longer than 72 characters (consider using body)"
+              echo "⚠️  Commit message longer than 72 characters" \
+                   "(consider using body)"
             fi
-            
+
             # Check for common patterns that should be avoided
-            if echo "$commit_message" | grep -qi "^fix\|^update\|^change" && [ ${#commit_message} -lt 20 ]; then
+            if echo "$commit_message" | grep -qi "^fix\|^update\|^change" && \
+               [ ${#commit_message} -lt 20 ]; then
               echo "⚠️  Generic commit message, consider being more specific"
             fi
-            
+
             echo "✅ Commit message acceptable"
             echo "---"
-            
+
           done < commits.txt
-          
+
           if [ $INVALID_COMMITS -gt 0 ]; then
             echo "❌ Found $INVALID_COMMITS invalid commit messages"
-            echo "Please improve commit messages to be descriptive and meaningful"
+            echo "Please improve commit messages to be" \
+                 "descriptive and meaningful"
             exit 1
           fi
-          
+
           echo "✅ All commit messages are acceptable"
 
   pr-size-check:
     name: Pull Request Size Check
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Check PR size
         uses: actions/github-script@v7
         with:
@@ -337,49 +346,54 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
-            
+
             const additions = pullRequest.additions;
             const deletions = pullRequest.deletions;
             const changedFiles = pullRequest.changed_files;
-            
+
             console.log(`PR Statistics:`);
             console.log(`  Lines added: ${additions}`);
             console.log(`  Lines deleted: ${deletions}`);
             console.log(`  Files changed: ${changedFiles}`);
-            
+
             // Guidelines for PR size
             let sizeCategory = 'Unknown';
             let recommendation = '';
-            
+
             if (additions + deletions < 100) {
               sizeCategory = '🟢 Small';
               recommendation = 'Perfect size for quick review!';
             } else if (additions + deletions < 500) {
               sizeCategory = '🟡 Medium';
-              recommendation = 'Good size, should be reviewable in reasonable time.';
+              recommendation = \
+                'Good size, should be reviewable in reasonable time.';
             } else if (additions + deletions < 1000) {
               sizeCategory = '🟠 Large';
-              recommendation = 'Consider breaking this into smaller PRs for easier review.';
+              recommendation = \
+                'Consider breaking this into smaller PRs for easier review.';
             } else {
               sizeCategory = '🔴 Very Large';
-              recommendation = 'This PR is quite large. Please consider splitting it into multiple smaller PRs.';
+              recommendation = \
+                'This PR is quite large. Please consider splitting it into' +
+                ' multiple smaller PRs.';
             }
-            
+
             const comment = `## 📊 Pull Request Size Analysis
-            
+
             **Size Category:** ${sizeCategory}
-            
+
             **Statistics:**
             - Lines Added: ${additions}
-            - Lines Deleted: ${deletions} 
+            - Lines Deleted: ${deletions}
             - Files Changed: ${changedFiles}
             - Total Changes: ${additions + deletions}
-            
+
             **Recommendation:** ${recommendation}
-            
+
             ---
-            *Smaller PRs are easier to review and less likely to introduce bugs.*`;
-            
+            *Smaller PRs are easier to review and less likely to* \
+            *introduce bugs.*`;
+
             // Only comment if PR is large
             if (additions + deletions >= 500) {
               github.rest.issues.createComment({

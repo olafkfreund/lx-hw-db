@@ -19,7 +19,7 @@ jobs:
     name: Welcome New Contributors
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'opened'
-    
+
     steps:
       - name: Check if first-time contributor
         uses: actions/github-script@v7
@@ -32,10 +32,10 @@ jobs:
               state: 'all',
               creator: context.payload.pull_request.user.login,
             });
-            
+
             const isFirstTime = pullRequests.length === 1;
             return isFirstTime;
-      
+
       - name: Welcome first-time contributor
         if: steps.check-contributor.outputs.result == 'true'
         uses: actions/github-script@v7
@@ -46,21 +46,21 @@ jobs:
             Thank you @${context.payload.pull_request.user.login} for your first contribution! We're excited to have you help improve hardware compatibility for the Linux community.
 
             Here are some helpful resources to get you started:
-            
+
             📖 **Documentation**
             - [Contributing Guidelines](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md)
             - [Hardware Submission Guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/docs/HARDWARE_SUBMISSION_GUIDE.md)
             - [Community Guidelines](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/docs/COMMUNITY_GUIDELINES.md)
-            
+
             🏆 **Recognition**
             Your contribution will be automatically tracked for our contributor recognition system!
-            
+
             💬 **Need Help?**
             - Join our [discussions](https://github.com/${context.repo.owner}/${context.repo.repo}/discussions)
             - Check our [troubleshooting guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/docs/TROUBLESHOOTING.md)
-            
+
             Thanks again for contributing to open-source hardware compatibility! 🚀`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -72,23 +72,23 @@ jobs:
     name: Update Contributor Recognition
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'merged'
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install PyGithub requests python-dateutil
-      
+
       - name: Update contributor stats
         run: |
           cat > update_contributors.py << 'EOF'
@@ -97,11 +97,11 @@ jobs:
           from github import Github
           from datetime import datetime, timedelta
           from collections import defaultdict
-          
+
           # Initialize GitHub client
           g = Github(os.environ['GITHUB_TOKEN'])
           repo = g.get_repo(f"{os.environ['GITHUB_REPOSITORY']}")
-          
+
           # Initialize contributor data structure
           contributors = {
               "last_updated": datetime.now().isoformat(),
@@ -114,7 +114,7 @@ jobs:
                   "community_helpers": []
               }
           }
-          
+
           # Track contributions by type
           contribution_types = defaultdict(lambda: {
               "name": "",
@@ -128,45 +128,45 @@ jobs:
               "first_contribution": None,
               "badges": []
           })
-          
+
           # Get all merged pull requests
           pulls = repo.get_pulls(state='closed', sort='updated', direction='desc')
-          
+
           for pr in pulls:
               if not pr.merged:
                   continue
-                  
+
               author = pr.user.login
               user_data = contribution_types[author]
-              
+
               # Set user info
               user_data["name"] = pr.user.name or author
               user_data["avatar_url"] = pr.user.avatar_url
               user_data["html_url"] = pr.user.html_url
-              
+
               # Track first contribution
               if not user_data["first_contribution"]:
                   user_data["first_contribution"] = pr.created_at.isoformat()
               else:
                   if pr.created_at < datetime.fromisoformat(user_data["first_contribution"].replace('Z', '+00:00')):
                       user_data["first_contribution"] = pr.created_at.isoformat()
-              
+
               # Categorize contribution type
               files_changed = [f.filename for f in pr.get_files()]
-              
+
               if any(f.startswith('hardware/') for f in files_changed):
                   user_data["hardware_reports"] += 1
               elif any(f.startswith('docs/') or f.endswith('.md') for f in files_changed):
                   user_data["documentation"] += 1
               elif any(f.startswith('src/') or f.endswith('.rs') for f in files_changed):
                   user_data["code_contributions"] += 1
-              
+
               user_data["total_contributions"] += 1
-          
+
           # Assign badges based on contributions
           for username, data in contribution_types.items():
               badges = []
-              
+
               # Hardware Hero badges
               if data["hardware_reports"] >= 50:
                   badges.append("🏆 Hardware Legend")
@@ -178,7 +178,7 @@ jobs:
                   badges.append("🥉 Hardware Contributor")
               elif data["hardware_reports"] >= 1:
                   badges.append("🔧 Hardware Tester")
-              
+
               # Code Contributor badges
               if data["code_contributions"] >= 20:
                   badges.append("💎 Core Developer")
@@ -186,13 +186,13 @@ jobs:
                   badges.append("💻 Code Contributor")
               elif data["code_contributions"] >= 5:
                   badges.append("🐛 Bug Fixer")
-              
+
               # Documentation badges
               if data["documentation"] >= 10:
                   badges.append("📚 Documentation Champion")
               elif data["documentation"] >= 5:
                   badges.append("📝 Documentation Helper")
-              
+
               # Community badges
               total_contributions = data["total_contributions"]
               if total_contributions >= 100:
@@ -201,71 +201,71 @@ jobs:
                   badges.append("🎯 Super Contributor")
               elif total_contributions >= 25:
                   badges.append("🚀 Active Contributor")
-              
+
               # Time-based badges
               if data["first_contribution"]:
                   first_contrib = datetime.fromisoformat(data["first_contribution"].replace('Z', '+00:00'))
                   days_ago = (datetime.now(first_contrib.tzinfo) - first_contrib).days
-                  
+
                   if days_ago >= 365:
                       badges.append("🎂 Veteran Contributor")
                   elif days_ago >= 180:
                       badges.append("🕰️ Long-time Contributor")
-              
+
               data["badges"] = badges
-          
+
           # Sort contributors by total contributions
           sorted_contributors = dict(sorted(
-              contribution_types.items(), 
-              key=lambda x: x[1]["total_contributions"], 
+              contribution_types.items(),
+              key=lambda x: x[1]["total_contributions"],
               reverse=True
           ))
-          
+
           # Update contributors data
           contributors["total_contributors"] = len(sorted_contributors)
           contributors["contributors"] = sorted_contributors
-          
+
           # Create recognition lists
           contributors["recognition"]["hardware_heroes"] = [
-              username for username, data in sorted_contributors.items() 
+              username for username, data in sorted_contributors.items()
               if data["hardware_reports"] >= 10
           ][:10]
-          
+
           contributors["recognition"]["code_contributors"] = [
-              username for username, data in sorted_contributors.items() 
+              username for username, data in sorted_contributors.items()
               if data["code_contributions"] >= 5
           ][:10]
-          
+
           contributors["recognition"]["documentation_champions"] = [
-              username for username, data in sorted_contributors.items() 
+              username for username, data in sorted_contributors.items()
               if data["documentation"] >= 5
           ][:10]
-          
+
           # Save contributor data
           os.makedirs('data', exist_ok=True)
           with open('data/contributors.json', 'w') as f:
               json.dump(contributors, f, indent=2)
-          
+
           print(f"Updated contributor data for {len(sorted_contributors)} contributors")
           EOF
-          
+
           python update_contributors.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-      
+
       - name: Commit contributor updates
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           if [ -f "data/contributors.json" ]; then
             git add data/contributors.json
             if ! git diff --cached --quiet; then
               git commit -m "Update contributor recognition data
-              
+
               🤖 Generated with [Claude Code](https://claude.ai/code)
-              
+
               Co-Authored-By: Claude <noreply@anthropic.com>"
               git push
             fi
@@ -275,7 +275,7 @@ jobs:
     name: Automatic Issue Triage
     runs-on: ubuntu-latest
     if: github.event_name == 'issues' && github.event.action == 'opened'
-    
+
     steps:
       - name: Label hardware issues
         if: contains(github.event.issue.title, '[Hardware]') || contains(github.event.issue.labels.*.name, 'hardware')
@@ -288,7 +288,7 @@ jobs:
               repo: context.repo.repo,
               labels: ['needs-triage', 'hardware-compatibility']
             });
-      
+
       - name: Auto-assign hardware experts
         if: contains(github.event.issue.labels.*.name, 'hardware')
         uses: actions/github-script@v7
@@ -298,19 +298,19 @@ jobs:
             const message = `👋 Thank you for reporting this hardware compatibility issue!
 
             🔍 **Automatic Triage**: This issue has been labeled for hardware compatibility review.
-            
+
             📋 **Next Steps**:
             1. A community member will review this issue within 48 hours
             2. You may be asked for additional hardware information
             3. If you can help test solutions, please mention it in the comments
-            
+
             🚀 **Speed up resolution**:
             - Run \`lx-hw-detect analyze\` and attach the output
             - Include output of \`lspci -k\` and \`lsusb\` if relevant
             - Mention if you're willing to test proposed fixes
-            
+
             Thank you for contributing to better Linux hardware support! 🐧`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -322,20 +322,20 @@ jobs:
     name: Generate Monthly Community Report
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install PyGithub matplotlib seaborn pandas
-      
+
       - name: Generate community statistics
         run: |
           cat > community_report.py << 'EOF'
@@ -345,14 +345,14 @@ jobs:
           from datetime import datetime, timedelta
           import matplotlib.pyplot as plt
           import pandas as pd
-          
+
           # Initialize GitHub client
           g = Github(os.environ['GITHUB_TOKEN'])
           repo = g.get_repo(f"{os.environ['GITHUB_REPOSITORY']}")
-          
+
           # Get data for last 30 days
           since = datetime.now() - timedelta(days=30)
-          
+
           # Collect statistics
           stats = {
               "period": f"{since.strftime('%Y-%m-%d')} to {datetime.now().strftime('%Y-%m-%d')}",
@@ -365,7 +365,7 @@ jobs:
               "hardware_categories": {},
               "top_contributors": []
           }
-          
+
           # Get issues
           issues = repo.get_issues(state='all', since=since)
           for issue in issues:
@@ -373,65 +373,65 @@ jobs:
                   stats["new_issues"] += 1
                   if issue.state == 'closed':
                       stats["closed_issues"] += 1
-          
+
           # Get pull requests
           pulls = repo.get_pulls(state='all', sort='created', direction='desc')
           for pr in pulls:
               if pr.created_at >= since:
                   stats["new_prs"] += 1
                   stats["active_contributors"].add(pr.user.login)
-                  
+
                   if pr.merged:
                       stats["merged_prs"] += 1
-          
+
           # Create report markdown
           report = f"""# Monthly Community Report - {stats["period"]}
-          
+
           ## 📊 Overview
-          
+
           - **New Issues**: {stats["new_issues"]}
           - **Closed Issues**: {stats["closed_issues"]}
           - **New Pull Requests**: {stats["new_prs"]}
           - **Merged Pull Requests**: {stats["merged_prs"]}
           - **Active Contributors**: {len(stats["active_contributors"])}
-          
+
           ## 🚀 Community Growth
-          
+
           Thank you to all our amazing contributors who helped improve Linux hardware compatibility this month!
-          
+
           ## 🎯 Goals for Next Month
-          
+
           - Continue expanding hardware coverage
           - Improve documentation and guides
           - Enhance automated testing workflows
           - Grow community engagement
-          
+
           ---
-          
+
           *Report generated automatically on {datetime.now().strftime('%Y-%m-%d')}*
           """
-          
+
           # Save report
           with open('community-report.md', 'w') as f:
               f.write(report)
-          
+
           print("Community report generated successfully!")
           EOF
-          
+
           python community_report.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-      
+
       - name: Create discussion with report
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            
+
             if (fs.existsSync('community-report.md')) {
               const report = fs.readFileSync('community-report.md', 'utf8');
-              
+
               // This would create a discussion if the repo has discussions enabled
               console.log('Community report generated:', report.substring(0, 200) + '...');
             }
@@ -440,50 +440,50 @@ jobs:
     name: Manage Stale Issues
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'
-    
+
     steps:
       - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-issue-message: |
             👋 This issue has been automatically marked as stale because it has not had activity for 60 days.
-            
+
             If this hardware compatibility issue is still relevant:
             - Comment to remove the stale label
             - Provide any updates on testing or workarounds
             - Let us know if you need help reproducing the issue
-            
+
             The issue will be automatically closed in 14 days if no activity occurs.
-            
+
             Thank you for contributing to Linux hardware compatibility! 🐧
           stale-pr-message: |
             👋 This pull request has been automatically marked as stale because it has not had activity for 30 days.
-            
+
             To keep this PR active:
             - Rebase against the latest main branch
             - Address any review comments
             - Comment if you need help finishing this contribution
-            
+
             The PR will be automatically closed in 7 days if no activity occurs.
-            
+
             Thank you for your contribution! 🚀
           close-issue-message: |
             This issue has been automatically closed due to inactivity.
-            
+
             If this hardware compatibility issue is still relevant, please reopen it with:
             - Current system information
             - Steps to reproduce the issue
             - Any new testing or workarounds discovered
-            
+
             Thank you for understanding! 🐧
           close-pr-message: |
             This pull request has been automatically closed due to inactivity.
-            
+
             If you'd like to continue this contribution:
             - Reopen the PR
-            - Rebase against current main branch  
+            - Rebase against current main branch
             - Address any review feedback
-            
+
             Thank you for your contribution! 🚀
           days-before-issue-stale: 60
           days-before-pr-stale: 30

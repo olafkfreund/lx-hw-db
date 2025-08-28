@@ -9,7 +9,7 @@ on:
     branches: [main]
     paths:
       - 'hardware/**/*.yaml'
-      - 'hardware/**/*.yml' 
+      - 'hardware/**/*.yml'
       - 'hardware/**/*.json'
 
 env:
@@ -19,23 +19,23 @@ jobs:
   update-contributor-stats:
     name: Update Contributor Statistics
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install PyGithub requests python-dateutil matplotlib seaborn pandas
-      
+
       - name: Generate comprehensive contributor statistics
         run: |
           cat > contributor_stats.py << 'EOF'
@@ -45,14 +45,14 @@ jobs:
           from datetime import datetime, timedelta, timezone
           from collections import defaultdict
           import requests
-          
+
           # Initialize GitHub client
           g = Github(os.environ['GITHUB_TOKEN'])
           repo = g.get_repo(f"{os.environ['GITHUB_REPOSITORY']}")
-          
+
           def calculate_contributor_stats():
               """Generate comprehensive contributor statistics"""
-              
+
               stats = {
                   "last_updated": datetime.now(timezone.utc).isoformat(),
                   "repository_info": {
@@ -86,7 +86,7 @@ jobs:
                       "available_badges": [
                           "🔧 First Hardware Report",
                           "🥉 Hardware Contributor (5+ reports)",
-                          "🥈 Hardware Expert (20+ reports)", 
+                          "🥈 Hardware Expert (20+ reports)",
                           "🥇 Hardware Hero (50+ reports)",
                           "🏆 Hardware Legend (100+ reports)",
                           "💻 Code Contributor",
@@ -100,7 +100,7 @@ jobs:
                       ]
                   }
               }
-              
+
               # Track all contributors
               contributor_data = defaultdict(lambda: {
                   "login": "",
@@ -122,114 +122,114 @@ jobs:
                   "badges": [],
                   "specialties": []
               })
-              
+
               now = datetime.now(timezone.utc)
               one_month_ago = now - timedelta(days=30)
               one_year_ago = now - timedelta(days=365)
-              
+
               print("Analyzing pull requests...")
-              
+
               # Analyze pull requests
               pulls = repo.get_pulls(state='all', sort='updated', direction='desc')
               processed_pulls = 0
-              
+
               for pr in pulls:
                   # Limit to recent activity to avoid rate limits
                   if pr.updated_at < one_year_ago:
                       break
-                      
+
                   processed_pulls += 1
                   if processed_pulls % 50 == 0:
                       print(f"Processed {processed_pulls} pull requests...")
-                  
+
                   author = pr.user.login
                   user_data = contributor_data[author]
-                  
+
                   # Set user information
                   if not user_data["login"]:
                       user_data["login"] = author
                       user_data["name"] = pr.user.name or author
                       user_data["avatar_url"] = pr.user.avatar_url
                       user_data["profile_url"] = pr.user.html_url
-                  
+
                   # Track contribution dates
                   if not user_data["first_contribution_date"] or pr.created_at < user_data["first_contribution_date"]:
                       user_data["first_contribution_date"] = pr.created_at
-                  
+
                   if not user_data["last_contribution_date"] or pr.updated_at > user_data["last_contribution_date"]:
                       user_data["last_contribution_date"] = pr.updated_at
-                  
+
                   # Count contributions
                   user_data["contributions"]["pull_requests"] += 1
-                  
+
                   if pr.merged:
                       user_data["contributions"]["total"] += 1
-                      
+
                       # Analyze changed files to categorize contribution
                       try:
                           files_changed = [f.filename for f in pr.get_files()]
-                          
+
                           if any(f.startswith('hardware/') for f in files_changed):
                               user_data["contributions"]["hardware_reports"] += 1
                               if "Hardware Reporter" not in user_data["specialties"]:
                                   user_data["specialties"].append("Hardware Reporter")
-                          
+
                           if any(f.startswith('src/') or f.endswith('.rs') for f in files_changed):
                               user_data["contributions"]["code_changes"] += 1
                               if "Code Developer" not in user_data["specialties"]:
                                   user_data["specialties"].append("Code Developer")
-                          
+
                           if any(f.startswith('docs/') or f.endswith('.md') for f in files_changed):
                               user_data["contributions"]["documentation"] += 1
                               if "Documentation Writer" not in user_data["specialties"]:
                                   user_data["specialties"].append("Documentation Writer")
-                      
+
                       except Exception as e:
                           print(f"Error analyzing PR {pr.number}: {e}")
                           continue
-                      
+
                       # Track monthly activity
                       month_key = pr.merged_at.strftime('%Y-%m')
                       user_data["monthly_activity"][month_key] += 1
                       stats["activity_timeline"]["monthly_contributions"][month_key] += 1
-              
+
               print("Analyzing issues...")
-              
+
               # Analyze issues
               issues = repo.get_issues(state='all', sort='updated', direction='desc')
               processed_issues = 0
-              
+
               for issue in issues:
                   if issue.pull_request or issue.updated_at < one_year_ago:
                       continue
-                      
+
                   processed_issues += 1
                   if processed_issues % 50 == 0:
                       print(f"Processed {processed_issues} issues...")
-                  
+
                   author = issue.user.login
                   user_data = contributor_data[author]
-                  
+
                   if not user_data["login"]:
                       user_data["login"] = author
                       user_data["name"] = issue.user.name or author
                       user_data["avatar_url"] = issue.user.avatar_url
                       user_data["profile_url"] = issue.user.html_url
-                  
+
                   user_data["contributions"]["issues_opened"] += 1
-                  
+
                   if not user_data["first_contribution_date"] or issue.created_at < user_data["first_contribution_date"]:
                       user_data["first_contribution_date"] = issue.created_at
-                  
+
                   if not user_data["last_contribution_date"] or issue.updated_at > user_data["last_contribution_date"]:
                       user_data["last_contribution_date"] = issue.updated_at
-              
+
               print("Calculating badges and achievements...")
-              
+
               # Calculate badges for each contributor
               for username, data in contributor_data.items():
                   badges = []
-                  
+
                   # Hardware contribution badges
                   hw_reports = data["contributions"]["hardware_reports"]
                   if hw_reports >= 100:
@@ -242,7 +242,7 @@ jobs:
                       badges.append("🥉 Hardware Contributor")
                   elif hw_reports >= 1:
                       badges.append("🔧 First Hardware Report")
-                  
+
                   # Code contribution badges
                   code_contrib = data["contributions"]["code_changes"]
                   if code_contrib >= 20:
@@ -251,51 +251,51 @@ jobs:
                       badges.append("💻 Code Contributor")
                   elif code_contrib >= 5:
                       badges.append("🐛 Bug Fixer")
-                  
+
                   # Documentation badges
                   docs_contrib = data["contributions"]["documentation"]
                   if docs_contrib >= 10:
                       badges.append("📚 Documentation Champion")
                   elif docs_contrib >= 5:
                       badges.append("📝 Documentation Helper")
-                  
+
                   # Activity badges
                   total_contrib = data["contributions"]["total"]
                   if total_contrib >= 100:
                       badges.append("🌟 Community Legend")
                   elif total_contrib >= 25:
                       badges.append("🚀 Active Contributor")
-                  
+
                   # Time-based badges
                   if data["first_contribution_date"]:
                       days_contributing = (now - data["first_contribution_date"]).days
                       if days_contributing >= 365:
                           badges.append("🎂 Veteran Contributor")
-                  
+
                   data["badges"] = badges
-              
+
               # Calculate summary statistics
               stats["contributor_summary"]["total_contributors"] = len(contributor_data)
-              
+
               for username, data in contributor_data.items():
                   if data["last_contribution_date"] and data["last_contribution_date"] >= one_month_ago:
                       stats["contributor_summary"]["active_this_month"] += 1
-                  
+
                   if data["first_contribution_date"] and data["first_contribution_date"] >= one_month_ago:
                       stats["contributor_summary"]["new_this_month"] += 1
-                  
+
                   if data["contributions"]["hardware_reports"] > 0:
                       stats["contributor_summary"]["hardware_reporters"] += 1
-                  
+
                   if data["contributions"]["code_changes"] > 0:
                       stats["contributor_summary"]["code_contributors"] += 1
-                  
+
                   if data["contributions"]["documentation"] > 0:
                       stats["contributor_summary"]["documentation_writers"] += 1
-              
+
               # Create leaderboards
               sorted_contributors = sorted(contributor_data.items(), key=lambda x: x[1]["contributions"]["total"], reverse=True)
-              
+
               stats["leaderboard"]["top_hardware_contributors"] = [
                   {
                       "login": username,
@@ -304,26 +304,26 @@ jobs:
                       "contributions": data["contributions"]["hardware_reports"],
                       "badges": data["badges"]
                   }
-                  for username, data in sorted(contributor_data.items(), 
-                                             key=lambda x: x[1]["contributions"]["hardware_reports"], 
-                                             reverse=True)
+                  for username, data in sorted(contributor_data.items(),
+                                               key=lambda x: x[1]["contributions"]["hardware_reports"],
+                                               reverse=True)
                   if data["contributions"]["hardware_reports"] > 0
               ][:10]
-              
+
               stats["leaderboard"]["top_code_contributors"] = [
                   {
                       "login": username,
-                      "name": data["name"], 
+                      "name": data["name"],
                       "avatar_url": data["avatar_url"],
                       "contributions": data["contributions"]["code_changes"],
                       "badges": data["badges"]
                   }
                   for username, data in sorted(contributor_data.items(),
-                                             key=lambda x: x[1]["contributions"]["code_changes"],
-                                             reverse=True)
+                                               key=lambda x: x[1]["contributions"]["code_changes"],
+                                               reverse=True)
                   if data["contributions"]["code_changes"] > 0
               ][:10]
-              
+
               stats["leaderboard"]["recent_contributors"] = [
                   {
                       "login": username,
@@ -333,10 +333,10 @@ jobs:
                       "badges": data["badges"]
                   }
                   for username, data in sorted(contributor_data.items(),
-                                             key=lambda x: x[1]["last_contribution_date"] or datetime.min.replace(tzinfo=timezone.utc),
-                                             reverse=True)
+                                               key=lambda x: x[1]["last_contribution_date"] or datetime.min.replace(tzinfo=timezone.utc),
+                                               reverse=True)
               ][:10]
-              
+
               # Convert contributor data for storage
               stats["contributors"] = {
                   username: {
@@ -347,89 +347,89 @@ jobs:
                   }
                   for username, data in contributor_data.items()
               }
-              
+
               # Convert activity timeline
               stats["activity_timeline"]["monthly_contributions"] = dict(stats["activity_timeline"]["monthly_contributions"])
-              
+
               return stats
-          
+
           # Generate statistics
           print("Starting contributor statistics generation...")
           contributor_stats = calculate_contributor_stats()
-          
+
           # Save statistics
           os.makedirs('web/data', exist_ok=True)
           os.makedirs('data', exist_ok=True)
-          
+
           # Save to multiple locations for different uses
           with open('web/data/contributor-stats.json', 'w') as f:
               json.dump(contributor_stats, f, indent=2)
-              
+
           with open('data/contributor-stats.json', 'w') as f:
               json.dump(contributor_stats, f, indent=2)
-          
+
           # Create human-readable summary
           with open('data/contributor-summary.txt', 'w') as f:
               f.write("Linux Hardware Database - Contributor Statistics\n")
               f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
-              
+
               summary = contributor_stats['contributor_summary']
               f.write(f"Total Contributors: {summary['total_contributors']}\n")
-              f.write(f"Active This Month: {summary['active_this_month']}\n")  
+              f.write(f"Active This Month: {summary['active_this_month']}\n")
               f.write(f"New This Month: {summary['new_this_month']}\n")
               f.write(f"Hardware Reports Contributors: {summary['hardware_reporters']}\n")
               f.write(f"Code Contributors: {summary['code_contributors']}\n")
               f.write(f"Documentation Contributors: {summary['documentation_writers']}\n\n")
-              
+
               f.write("Top Hardware Contributors:\n")
               for i, contrib in enumerate(contributor_stats['leaderboard']['top_hardware_contributors'][:5], 1):
                   f.write(f"  {i}. {contrib['name']} ({contrib['login']}) - {contrib['contributions']} reports\n")
-              
+
               f.write(f"\nTop Code Contributors:\n")
               for i, contrib in enumerate(contributor_stats['leaderboard']['top_code_contributors'][:5], 1):
                   f.write(f"  {i}. {contrib['name']} ({contrib['login']}) - {contrib['contributions']} contributions\n")
-          
+
           print(f"Contributor statistics generated for {contributor_stats['contributor_summary']['total_contributors']} contributors")
           print(f"Active this month: {contributor_stats['contributor_summary']['active_this_month']}")
           print(f"New this month: {contributor_stats['contributor_summary']['new_this_month']}")
           EOF
-          
+
           python contributor_stats.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-      
+
       - name: Generate contributor badges
         run: |
           cat > generate_badges.py << 'EOF'
           import json
           import os
           from datetime import datetime
-          
+
           # Load contributor stats
           with open('data/contributor-stats.json', 'r') as f:
               stats = json.load(f)
-          
+
           # Generate badges page
           badges_md = f"""# 🏆 Contributor Recognition & Badges
-          
+
           > Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
-          
+
           The Linux Hardware Database recognizes community contributions through our badge system. Contributors earn badges based on their contributions to hardware compatibility, code development, documentation, and community engagement.
-          
+
           ## 📊 Community Overview
-          
+
           - **Total Contributors**: {stats['contributor_summary']['total_contributors']}
           - **Active This Month**: {stats['contributor_summary']['active_this_month']}
           - **New Contributors This Month**: {stats['contributor_summary']['new_this_month']}
           - **Hardware Report Contributors**: {stats['contributor_summary']['hardware_reporters']}
           - **Code Contributors**: {stats['contributor_summary']['code_contributors']}
           - **Documentation Contributors**: {stats['contributor_summary']['documentation_writers']}
-          
+
           ## 🎖️ Badge System
-          
+
           ### Hardware Contribution Badges
-          
+
           | Badge | Requirement | Description |
           |-------|-------------|-------------|
           | 🔧 First Hardware Report | 1+ hardware report | Your first contribution to the hardware database |
@@ -437,93 +437,93 @@ jobs:
           | 🥈 Hardware Expert | 20+ hardware reports | Experienced hardware compatibility reporter |
           | 🥇 Hardware Hero | 50+ hardware reports | Major contributor to hardware database |
           | 🏆 Hardware Legend | 100+ hardware reports | Legendary status in hardware compatibility |
-          
+
           ### Code Contribution Badges
-          
+
           | Badge | Requirement | Description |
           |-------|-------------|-------------|
           | 💻 Code Contributor | 1+ code contribution | Contributed code improvements or features |
           | 🐛 Bug Fixer | 5+ code contributions | Helped fix bugs and improve stability |
           | 💎 Core Developer | 20+ code contributions | Core developer with significant code contributions |
-          
+
           ### Documentation Badges
-          
+
           | Badge | Requirement | Description |
           |-------|-------------|-------------|
           | 📝 Documentation Helper | 5+ documentation contributions | Helped improve project documentation |
           | 📚 Documentation Champion | 10+ documentation contributions | Champion of clear and helpful documentation |
-          
+
           ### Community Engagement Badges
-          
+
           | Badge | Requirement | Description |
           |-------|-------------|-------------|
           | 🚀 Active Contributor | 25+ total contributions | Active member of the community |
           | 🌟 Community Legend | 100+ total contributions | Legendary community member |
           | 🎂 Veteran Contributor | 1+ year contributing | Long-time community member |
-          
+
           ## 🏅 Top Contributors
-          
+
           ### Hardware Heroes
           """
-          
+
           for i, contrib in enumerate(stats['leaderboard']['top_hardware_contributors'][:10], 1):
               badges_str = " ".join(contrib['badges'][:3])  # Show first 3 badges
               badges_md += f"**{i}.** [{contrib['name']}](https://github.com/{contrib['login']}) - {contrib['contributions']} reports {badges_str}\n\n"
-          
+
           badges_md += "\n### Code Champions\n\n"
-          
+
           for i, contrib in enumerate(stats['leaderboard']['top_code_contributors'][:10], 1):
               badges_str = " ".join(contrib['badges'][:3])
               badges_md += f"**{i}.** [{contrib['name']}](https://github.com/{contrib['login']}) - {contrib['contributions']} contributions {badges_str}\n\n"
-          
+
           badges_md += f"""
           ## 🎯 How to Earn Badges
-          
+
           ### Hardware Contributions
           1. Run `lx-hw-detect analyze` on your system
           2. Submit hardware compatibility reports via GitHub PR
           3. Follow the [Hardware Submission Guide](docs/HARDWARE_SUBMISSION_GUIDE.md)
-          
-          ### Code Contributions  
+
+          ### Code Contributions
           1. Find issues labeled `good-first-issue` or `help-wanted`
           2. Submit pull requests with bug fixes or features
           3. Follow the [Contributing Guidelines](CONTRIBUTING.md)
-          
+
           ### Documentation Contributions
           1. Improve existing documentation
           2. Add new guides and tutorials
           3. Help with translations
-          
+
           ---
-          
+
           *Want to see your badge here? Start contributing today! Every contribution, no matter how small, helps improve Linux hardware compatibility for everyone.* 🐧
           """
-          
+
           # Save badges page
           with open('docs/CONTRIBUTOR_BADGES.md', 'w') as f:
               f.write(badges_md)
-          
+
           print("Generated contributor badges page")
           EOF
-          
+
           python generate_badges.py
-      
+
       - name: Commit updated statistics
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           # Add generated files
           git add data/contributor-stats.json data/contributor-summary.txt || true
           git add web/data/contributor-stats.json || true
           git add docs/CONTRIBUTOR_BADGES.md || true
-          
+
           if ! git diff --cached --quiet; then
             git commit -m "Update contributor statistics and badges
 
             Daily update of community contributor statistics:
             - Refreshed contributor leaderboards
-            - Updated badge assignments  
+            - Updated badge assignments
             - Generated community activity metrics
             - Updated contributor recognition page
 
