@@ -1,5 +1,7 @@
 //! Integration tests for dmidecode detector with real system execution
 
+#![allow(clippy::excessive_nesting)]
+
 use lx_hw_detect::detectors::dmidecode::DmidecodeDetector;
 use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 

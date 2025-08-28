@@ -1,5 +1,7 @@
 //! Integration test for lsusb with real system execution
 
+#![allow(clippy::excessive_nesting)]
+
 use lx_hw_detect::detectors::lsusb::LsusbDetector;
 use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 

@@ -1,5 +1,7 @@
 //! Integration test for lspci with real system execution
 
+#![allow(clippy::excessive_nesting)]
+
 use lx_hw_detect::detectors::lspci::LspciDetector;
 use lx_hw_detect::detectors::{DetectionData, HardwareDetector};
 
