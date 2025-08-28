@@ -1,0 +1,91 @@
+{
+  "last_updated": "2025-08-28T06:11:46.426932+00:00",
+  "repository_info": {
+    "name": "olafkfreund/lx-hw-db",
+    "description": "Linux hardware probe system index",
+    "stars": 0,
+    "forks": 0,
+    "open_issues": 0
+  },
+  "contributor_summary": {
+    "total_contributors": 1,
+    "active_this_month": 1,
+    "new_this_month": 1,
+    "hardware_reporters": 0,
+    "code_contributors": 1,
+    "documentation_writers": 1
+  },
+  "contributors": {
+    "olafkfreund": {
+      "login": "olafkfreund",
+      "name": "Olaf Krasicki-Freund",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12804862?v=4",
+      "profile_url": "https://github.com/olafkfreund",
+      "first_contribution_date": "2025-08-26T11:58:13+00:00",
+      "last_contribution_date": "2025-08-26T15:08:32+00:00",
+      "contributions": {
+        "total": 4,
+        "hardware_reports": 0,
+        "code_changes": 3,
+        "documentation": 4,
+        "issues_opened": 0,
+        "pull_requests": 4,
+        "reviews": 0
+      },
+      "monthly_activity": {
+        "2025-08": 4
+      },
+      "badges": [],
+      "specialties": [
+        "Documentation Writer",
+        "Code Developer"
+      ]
+    }
+  },
+  "leaderboard": {
+    "top_hardware_contributors": [],
+    "top_code_contributors": [
+      {
+        "login": "olafkfreund",
+        "name": "Olaf Krasicki-Freund",
+        "avatar_url": "https://avatars.githubusercontent.com/u/12804862?v=4",
+        "contributions": 3,
+        "badges": []
+      }
+    ],
+    "top_documentation_contributors": [],
+    "recent_contributors": [
+      {
+        "login": "olafkfreund",
+        "name": "Olaf Krasicki-Freund",
+        "avatar_url": "https://avatars.githubusercontent.com/u/12804862?v=4",
+        "last_contribution": "2025-08-26T15:08:32+00:00",
+        "badges": []
+      }
+    ],
+    "most_active_this_month": []
+  },
+  "activity_timeline": {
+    "monthly_contributions": {
+      "2025-08": 4
+    },
+    "contribution_types": {}
+  },
+  "achievement_system": {
+    "available_badges": [
+      "\ud83d\udd27 First Hardware Report",
+      "\ud83e\udd49 Hardware Contributor (5+ reports)",
+      "\ud83e\udd48 Hardware Expert (20+ reports)",
+      "\ud83e\udd47 Hardware Hero (50+ reports)",
+      "\ud83c\udfc6 Hardware Legend (100+ reports)",
+      "\ud83d\udcbb Code Contributor",
+      "\ud83d\udc1b Bug Fixer",
+      "\ud83d\udc8e Core Developer",
+      "\ud83d\udcdd Documentation Helper",
+      "\ud83d\udcda Documentation Champion",
+      "\ud83c\udf82 Veteran Contributor (1+ year)",
+      "\ud83c\udf1f Community Legend (100+ contributions)",
+      "\ud83d\ude80 Active Contributor (25+ contributions)"
+    ]
+  }
+}
