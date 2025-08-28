@@ -5,24 +5,8 @@
       "component_types": [
         "PCI Device"
       ],
-      "total_reports": 24,
-      "vendor": "1022"
-    },
-    {
-      "compatibility_score": 35.0,
-      "component_types": [
-        "PCI Device"
-      ],
       "total_reports": 1,
       "vendor": "1b21"
-    },
-    {
-      "compatibility_score": 35.0,
-      "component_types": [
-        "PCI Device"
-      ],
-      "total_reports": 1,
-      "vendor": "1d6a"
     },
     {
       "compatibility_score": 35.0,
@@ -37,10 +21,26 @@
       "component_types": [
         "PCI Device"
       ],
+      "total_reports": 1,
+      "vendor": "1d6a"
+    },
+    {
+      "compatibility_score": 35.0,
+      "component_types": [
+        "PCI Device"
+      ],
       "total_reports": 4,
       "vendor": "1002"
+    },
+    {
+      "compatibility_score": 35.0,
+      "component_types": [
+        "PCI Device"
+      ],
+      "total_reports": 24,
+      "vendor": "1022"
     }
   ],
-  "generated": "2025-08-28T11:21:00.207369595+00:00",
+  "generated": "2025-08-28T13:41:47.615404118+00:00",
   "version": "1.0"
 }
