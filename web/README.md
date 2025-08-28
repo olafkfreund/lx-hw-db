@@ -1,7 +1,7 @@
-# Hardware Compatibility Database - Build 79
+# Hardware Compatibility Database - Build 80
 
-Built on: Thu Aug 28 10:20:14 UTC 2025
-Commit: b23b4e69377db0be88d6692458e5155f0e7fc8c1
+Built on: Thu Aug 28 10:28:02 UTC 2025
+Commit: 243fa9bee8718bc1c35b6afc44ee2d44aa62d9d1
 Reports processed: 1
 
 Analyzing hardware reports...
@@ -49,15 +49,15 @@ Compatibility Overview:
   Poor: 1 (100.0%)
 
 Top Hardware (by report count):
-  1. 1002 Device 1002:1478 - 1 reports (compatibility: 17.5)
-  2. 1022 Device 1022:1484 - 1 reports (compatibility: 17.5)
-  3. 1022 Device 1022:1493 - 1 reports (compatibility: 17.5)
-  4. 1022 Device 1022:1483 - 1 reports (compatibility: 17.5)
-  5. 1022 Device 1022:1496 - 1 reports (compatibility: 17.5)
-  6. 1022 Device 1022:57a3 - 1 reports (compatibility: 17.5)
-  7. 1022 Device 1022:1491 - 1 reports (compatibility: 17.5)
-  8. 1022 Unknown Device 1022:1485 - 1 reports (compatibility: 17.5)
-  9. 2646 NVMe device - 1 reports (compatibility: 17.5)
-  10. 1002 Device 1002:1479 - 1 reports (compatibility: 17.5)
+  1. 1022 Device 1022:1495 - 1 reports (compatibility: 17.5)
+  2. 1022 Unknown Device 1022:149c - 1 reports (compatibility: 17.5)
+  3. 1022 Unknown Device 1022:1486 - 1 reports (compatibility: 17.5)
+  4. 1022 Device 1022:1496 - 1 reports (compatibility: 17.5)
+  5. 1002 Device 1002:1479 - 1 reports (compatibility: 17.5)
+  6. 1002 Device 1002:1478 - 1 reports (compatibility: 17.5)
+  7. 1022 Device 1022:1483 - 1 reports (compatibility: 17.5)
+  8. 1022 Unknown Device 1022:148c - 1 reports (compatibility: 17.5)
+  9. 1022 Unknown Device 1022:1481 - 1 reports (compatibility: 17.5)
+  10. 1022 Device 1022:1497 - 1 reports (compatibility: 17.5)
 
-Last Updated: 2025-08-28 10:20:12.872111069 UTC
+Last Updated: 2025-08-28 10:28:01.540491970 UTC
