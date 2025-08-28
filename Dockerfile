@@ -99,7 +99,7 @@ WORKDIR /var/www/lx-hw-db
 
 EXPOSE 8000
 
-CMD ["python3", "serve.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3", "serve.py", "8000"]
 
 # Development stage with all tools
 FROM builder as dev

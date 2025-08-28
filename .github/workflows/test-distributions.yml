@@ -368,7 +368,7 @@ jobs:
           cd web
 
           # Start web server in background
-          python3 serve.py --port 8080 &
+          python3 serve.py 8080 &
           SERVER_PID=$!
 
           # Wait for server to start
