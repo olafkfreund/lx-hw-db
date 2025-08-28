@@ -554,6 +554,7 @@ impl CliHandler {
     }
 
     /// Handle the submit command
+    #[allow(clippy::too_many_arguments)]
     async fn handle_submit(
         &self,
         github_username: Option<String>,

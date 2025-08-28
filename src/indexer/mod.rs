@@ -671,6 +671,7 @@ impl HardwareIndexer {
     }
 
     /// Analyze compatibility from report and components
+    #[allow(clippy::excessive_nesting)]
     fn analyze_compatibility(
         &self,
         report: &HardwareReport,
