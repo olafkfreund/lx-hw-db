@@ -77,8 +77,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          libgtk-4-dev \
-          libadwaita-1-dev \
           pkg-config \
           build-essential \
           lshw \
@@ -86,6 +84,10 @@ jobs:
           pciutils \
           usbutils \
           util-linux
+        
+        # Try to install GTK dependencies (may not be available in all Ubuntu versions)
+        sudo apt-get install -y libgtk-4-dev || echo "⚠️ libgtk-4-dev not available"
+        sudo apt-get install -y libadwaita-1-dev || echo "⚠️ libadwaita-1-dev not available"
 
     - name: Build CLI (native)
       if: '!matrix.cross'
@@ -117,11 +119,19 @@ jobs:
 
     - name: Build GTK GUI (native only)
       if: matrix.target == 'x86_64-unknown-linux-gnu'
-      run: >
-        cargo build --release
-        --target ${{ matrix.target }}
-        --bin lx-hw-detect-gtk
-        --features gtk-gui
+      run: |
+        # Check if libadwaita is available with correct version
+        if pkg-config --exists libadwaita-1 && pkg-config --atleast-version=1.6 libadwaita-1; then
+          echo "✅ libadwaita >= 1.6 found, building GTK GUI..."
+          cargo build --release \
+            --target ${{ matrix.target }} \
+            --bin lx-hw-detect-gtk \
+            --features gtk-gui
+        else
+          echo "⚠️ libadwaita >= 1.6 not found, skipping GTK GUI build"
+          echo "Available libadwaita version:"
+          pkg-config --modversion libadwaita-1 || echo "libadwaita-1 not found"
+        fi
 
     - name: Run tests (native only)
       if: matrix.target == 'x86_64-unknown-linux-gnu'
