@@ -2,6 +2,8 @@
 
 A privacy-focused, community-driven hardware compatibility database for Linux systems. Features comprehensive hardware detection, automated configuration recommendations, and transparent GitHub-based collaboration.
 
+> **⚠️ Notice**: This project was created with assistance from Claude AI to rapidly prototype and implement a comprehensive Linux hardware compatibility system. All code, documentation, and architectural decisions were reviewed and validated for production use.
+
 ## Live Demo
 
 Test the web interface at: https://olafkfreund.github.io/lx-hw-db/
@@ -327,26 +329,6 @@ Community tips require:
 - Search indexing: <500ms for 10,000 entries
 - Search query: <50ms response time
 - Export generation: <200ms
-
-## Roadmap
-
-### Phase 3 (Current)
-- Complete hardware detector suite
-- Report validation system
-- Community submission workflow
-- GitHub Actions automation
-
-### Phase 4 (Planned)
-- Advanced search capabilities
-- RESTful API implementation
-- CDN distribution
-- Automated compatibility testing
-
-### Phase 5 (Future)
-- Machine learning recommendations
-- Federated database synchronization
-- Enterprise deployment features
-- Hardware vendor integration
 
 ## Technical Specifications
 
