@@ -219,12 +219,54 @@ jobs:
           # Start container in background
           docker run -d --name test-web -p 8080:8000 test:${{ matrix.target }}-${{ github.run_id }}
 
-          # Wait for service to start
-          sleep 15
+          # Wait for container to start and check logs
+          echo "Waiting for web server to start..."
+          for i in {1..30}; do
+            if docker logs test-web 2>&1 | grep -q "Server starting on"; then
+              echo "Web server started successfully"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Web server failed to start within 30 seconds"
+              echo "Container logs:"
+              docker logs test-web
+              exit 1
+            fi
+            sleep 1
+          done
 
-          # Test web interface
-          curl -f http://localhost:8080/ || exit 1
-          curl -f http://localhost:8080/api/v1/index.json || exit 1
+          # Additional wait for server to be ready for connections
+          sleep 5
+
+          # Test web interface with retries
+          echo "Testing web interface endpoints..."
+          for i in {1..5}; do
+            if curl -f --connect-timeout 10 http://localhost:8080/ > /dev/null 2>&1; then
+              echo "✅ Homepage endpoint working"
+              break
+            fi
+            if [ $i -eq 5 ]; then
+              echo "❌ Homepage endpoint failed after 5 retries"
+              docker logs test-web
+              exit 1
+            fi
+            echo "Retry $i/5 for homepage endpoint..."
+            sleep 2
+          done
+
+          for i in {1..5}; do
+            if curl -f --connect-timeout 10 http://localhost:8080/api/v1/index.json > /dev/null 2>&1; then
+              echo "✅ API endpoint working"
+              break
+            fi
+            if [ $i -eq 5 ]; then
+              echo "❌ API endpoint failed after 5 retries"
+              docker logs test-web
+              exit 1
+            fi
+            echo "Retry $i/5 for API endpoint..."
+            sleep 2
+          done
 
           # Stop and remove container
           docker stop test-web
