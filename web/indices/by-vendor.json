@@ -1,4 +1,17 @@
 {
+  "1d6a": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Ethernet interface"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-29T06:32:56.465551010Z"
+  },
   "2646": {
     "total_reports": 1,
     "components": {
@@ -10,20 +23,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T22:14:47.210316096Z"
-  },
-  "1b21": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Unknown Device 1b21:2142"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T22:14:47.210309002Z"
+    "last_updated": "2025-08-29T06:32:56.465553134Z"
   },
   "1022": {
     "total_reports": 24,
@@ -59,7 +59,20 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T22:14:47.210306057Z"
+    "last_updated": "2025-08-29T06:32:56.465546812Z"
+  },
+  "1b21": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Unknown Device 1b21:2142"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-29T06:32:56.465548505Z"
   },
   "1002": {
     "total_reports": 4,
@@ -75,19 +88,6 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T22:14:47.210246024Z"
-  },
-  "1d6a": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Ethernet interface"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-28T22:14:47.210313040Z"
+    "last_updated": "2025-08-29T06:32:56.465502348Z"
   }
 }
