@@ -1,16 +1,16 @@
 {
-  "1d6a": {
+  "1b21": {
     "total_reports": 1,
     "components": {
       "PCI Device": [
-        "Ethernet interface"
+        "Unknown Device 1b21:2142"
       ]
     },
     "recent_reports": [
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T06:32:56.465551010Z"
+    "last_updated": "2025-08-29T08:01:45.184247580Z"
   },
   "2646": {
     "total_reports": 1,
@@ -23,7 +23,36 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T06:32:56.465553134Z"
+    "last_updated": "2025-08-29T08:01:45.184255244Z"
+  },
+  "1d6a": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Ethernet interface"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-29T08:01:45.184251547Z"
+  },
+  "1002": {
+    "total_reports": 4,
+    "components": {
+      "PCI Device": [
+        "Device 1002:1478",
+        "Device 1002:1479",
+        "Device 1002:744c",
+        "HDMI"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2025-08-29T08:01:45.184195432Z"
   },
   "1022": {
     "total_reports": 24,
@@ -59,35 +88,6 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T06:32:56.465546812Z"
-  },
-  "1b21": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Unknown Device 1b21:2142"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T06:32:56.465548505Z"
-  },
-  "1002": {
-    "total_reports": 4,
-    "components": {
-      "PCI Device": [
-        "Device 1002:1478",
-        "Device 1002:1479",
-        "Device 1002:744c",
-        "HDMI"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T06:32:56.465502348Z"
+    "last_updated": "2025-08-29T08:01:45.184244464Z"
   }
 }
