@@ -1,6 +1,6 @@
 # 🏆 Contributor Recognition & Badges
 
-> Last Updated: 2025-08-28 06:11:52 UTC
+> Last Updated: 2025-08-29 06:11:47 UTC
 
 The Linux Hardware Database recognizes community contributions through our badge system. Contributors earn badges based on their contributions to hardware compatibility, code development, documentation, and community engagement.
 
@@ -64,7 +64,7 @@ The Linux Hardware Database recognizes community contributions through our badge
 2. Submit hardware compatibility reports via GitHub PR
 3. Follow the [Hardware Submission Guide](docs/HARDWARE_SUBMISSION_GUIDE.md)
 
-### Code Contributions  
+### Code Contributions
 1. Find issues labeled `good-first-issue` or `help-wanted`
 2. Submit pull requests with bug fixes or features
 3. Follow the [Contributing Guidelines](CONTRIBUTING.md)
