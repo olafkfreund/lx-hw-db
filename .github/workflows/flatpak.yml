@@ -54,12 +54,12 @@ jobs:
           path: packaging/flatpak/
 
       - name: Build Flatpak
-        uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6.3
+        uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6.5
         with:
           bundle: lxhwdb.flatpak
           manifest-path: packaging/flatpak/org.lxhwdb.LxHwDb.yml
           cache-key: flatpak-builder-${{ github.sha }}
-          upload-artifact: "false"
+          upload-artifact: false
 
       - name: Upload Flatpak bundle
         uses: actions/upload-artifact@v4
