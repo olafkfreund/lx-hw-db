@@ -1,43 +1,4 @@
 {
-  "1b21": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Unknown Device 1b21:2142"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T08:01:45.184247580Z"
-  },
-  "2646": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "NVMe device"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T08:01:45.184255244Z"
-  },
-  "1d6a": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Ethernet interface"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T08:01:45.184251547Z"
-  },
   "1002": {
     "total_reports": 4,
     "components": {
@@ -52,7 +13,33 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T08:01:45.184195432Z"
+    "last_updated": "2026-06-05T13:25:19.340823011Z"
+  },
+  "1d6a": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Ethernet interface"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2026-06-05T13:25:19.340880778Z"
+  },
+  "2646": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "NVMe device"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2026-06-05T13:25:19.340883131Z"
   },
   "1022": {
     "total_reports": 24,
@@ -88,6 +75,19 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2025-08-29T08:01:45.184244464Z"
+    "last_updated": "2026-06-05T13:25:19.340876201Z"
+  },
+  "1b21": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Unknown Device 1b21:2142"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2026-06-05T13:25:19.340877964Z"
   }
 }
