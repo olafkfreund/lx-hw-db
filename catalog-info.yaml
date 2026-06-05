@@ -7,6 +7,7 @@ metadata:
   name: lx-hw-db
   description: "Linux hardware probe system index"
   annotations:
+    backstage.io/techdocs-ref: dir:.
     github.com/project-slug: olafkfreund/lx-hw-db
   tags: []
 spec:
