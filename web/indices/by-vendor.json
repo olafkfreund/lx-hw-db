@@ -1,4 +1,30 @@
 {
+  "2646": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "NVMe device"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2026-06-05T15:24:35.442943663Z"
+  },
+  "1b21": {
+    "total_reports": 1,
+    "components": {
+      "PCI Device": [
+        "Unknown Device 1b21:2142"
+      ]
+    },
+    "recent_reports": [
+      "real-system-20250826"
+    ],
+    "compatibility_score": 35.0,
+    "last_updated": "2026-06-05T15:24:35.442937052Z"
+  },
   "1002": {
     "total_reports": 4,
     "components": {
@@ -13,33 +39,7 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2026-06-05T13:25:19.340823011Z"
-  },
-  "1d6a": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "Ethernet interface"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2026-06-05T13:25:19.340880778Z"
-  },
-  "2646": {
-    "total_reports": 1,
-    "components": {
-      "PCI Device": [
-        "NVMe device"
-      ]
-    },
-    "recent_reports": [
-      "real-system-20250826"
-    ],
-    "compatibility_score": 35.0,
-    "last_updated": "2026-06-05T13:25:19.340883131Z"
+    "last_updated": "2026-06-05T15:24:35.442878787Z"
   },
   "1022": {
     "total_reports": 24,
@@ -75,19 +75,19 @@
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2026-06-05T13:25:19.340876201Z"
+    "last_updated": "2026-06-05T15:24:35.442934850Z"
   },
-  "1b21": {
+  "1d6a": {
     "total_reports": 1,
     "components": {
       "PCI Device": [
-        "Unknown Device 1b21:2142"
+        "Ethernet interface"
       ]
     },
     "recent_reports": [
       "real-system-20250826"
     ],
     "compatibility_score": 35.0,
-    "last_updated": "2026-06-05T13:25:19.340877964Z"
+    "last_updated": "2026-06-05T15:24:35.442940463Z"
   }
 }
