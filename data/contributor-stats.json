@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-05T07:43:59.288971+00:00",
+  "last_updated": "2026-06-06T07:16:23.991835+00:00",
   "repository_info": {
     "name": "olafkfreund/lx-hw-db",
     "description": "Linux hardware probe system index",
@@ -9,7 +9,7 @@
   },
   "contributor_summary": {
     "total_contributors": 1,
-    "active_this_month": 0,
+    "active_this_month": 1,
     "new_this_month": 0,
     "hardware_reporters": 0,
     "code_contributors": 1,
@@ -22,20 +22,23 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/12804862?v=4",
       "profile_url": "https://github.com/olafkfreund",
       "first_contribution_date": "2025-08-26T11:58:13+00:00",
-      "last_contribution_date": "2025-08-26T15:08:32+00:00",
+      "last_contribution_date": "2026-06-05T15:22:04+00:00",
       "contributions": {
-        "total": 4,
+        "total": 6,
         "hardware_reports": 0,
         "code_changes": 3,
-        "documentation": 4,
+        "documentation": 5,
         "issues_opened": 0,
-        "pull_requests": 4,
+        "pull_requests": 6,
         "reviews": 0
       },
       "monthly_activity": {
+        "2026-06": 2,
         "2025-08": 4
       },
-      "badges": [],
+      "badges": [
+        "\ud83d\udcdd Documentation Helper"
+      ],
       "specialties": [
         "Documentation Writer",
         "Code Developer"
@@ -50,7 +53,9 @@
         "name": "Olaf Krasicki-Freund",
         "avatar_url": "https://avatars.githubusercontent.com/u/12804862?v=4",
         "contributions": 3,
-        "badges": []
+        "badges": [
+          "\ud83d\udcdd Documentation Helper"
+        ]
       }
     ],
     "top_documentation_contributors": [],
@@ -59,14 +64,17 @@
         "login": "olafkfreund",
         "name": "Olaf Krasicki-Freund",
         "avatar_url": "https://avatars.githubusercontent.com/u/12804862?v=4",
-        "last_contribution": "2025-08-26T15:08:32+00:00",
-        "badges": []
+        "last_contribution": "2026-06-05T15:22:04+00:00",
+        "badges": [
+          "\ud83d\udcdd Documentation Helper"
+        ]
       }
     ],
     "most_active_this_month": []
   },
   "activity_timeline": {
     "monthly_contributions": {
+      "2026-06": 2,
       "2025-08": 4
     },
     "contribution_types": {}
